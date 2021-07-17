@@ -86,9 +86,10 @@ int main(int argc, char* argv[])
 
     // For frame time
     float lastFrameTime = glfwGetTime();
+    int lastMouseLeftState = GLFW_RELEASE;
     double lastMousePosX, lastMousePosY;
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
-
+    cout << lastMousePosX;
     // Other OpenGL states to set once before the Game Loop
     // Enable Backface culling
     glEnable(GL_CULL_FACE);
@@ -180,8 +181,12 @@ int main(int argc, char* argv[])
 
         // Convert to spherical coordinates
         const float cameraAngularSpeed = 60.0f;
-        cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
-        cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+        if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+            cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
+        }
+        if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
+            cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+        }
 
         // Clamp vertical angle to [-85, 85] degrees
         cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
