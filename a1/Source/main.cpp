@@ -1,9 +1,12 @@
 //
 // Structure based on COMP 371 Labs Framework created by Nicolas Bergeron on 20/06/2019.
 //
-/*
+
 #include <iostream>
 #include <list>
+#include <fstream>
+#include <string>
+#include <vector>
 #include <algorithm>
 
 #define GLEW_STATIC 1   // This allows linking with Static Library on Windows, without DLL
@@ -20,10 +23,108 @@
 using namespace glm;
 using namespace std;
 
+////////////////////// CONSTANTS //////////////////////
+const int WALL_SIZE = 8;
+const float WALL_THICKNESS = 0.1f;
+const int WALL_DISTANCE = 10 / WALL_THICKNESS;
 
-const char* getVertexShaderSource();
+/////////////////////// MODELS ///////////////////////
 
-const char* getFragmentShaderSource();
+class Voxel {
+public:
+    // Functions
+    Voxel(vec3 position, int vao, int shaderProgram, vec3 localScale = vec3(1.0f, 1.0f, 1.0f)) : mPosition(position), mvao(vao), mScaleVector(localScale)
+    {
+        mWorldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+    }
+    
+    void Draw(GLenum renderingMode) {
+        glBindVertexArray(mvao);
+        mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), mScale * mScaleVector);
+        glUniformMatrix4fv(mWorldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+        glDrawArrays(renderingMode, 0, 36);
+    }
+
+    // Properties
+    GLuint mWorldMatrixLocation;
+    vec3 mPosition;
+    vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
+    vec3 mScaleVector = vec3(1.0f, 1.0f, 1.0f);
+    float mScale = 1.0f;
+    int mvao;
+};
+
+struct coordinates
+{
+    int x;
+    int y;
+    int z;
+};
+
+class Shape {
+public:
+    // Functions
+    Shape(vec3 position, vector<coordinates> description, int vao, int shaderProgram, bool hasWall) : mPosition(position), mvao(vao)
+    {
+        mWorldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+        bool projection[WALL_SIZE][WALL_SIZE];
+        for (int i = 0; i < WALL_SIZE; i++) {
+            for (int j = 0; j < WALL_SIZE; j++) {
+                projection[i][j] = false;
+            }
+        }
+        int originX = description.front().x;
+        int originY = description.front().y;
+        int originZ = description.front().z;
+        for (auto it = begin(description); it != end(description); ++it) {
+            if (it->x + WALL_SIZE / 2 >= 0 && it->x < WALL_SIZE / 2
+                && it->y + WALL_SIZE / 2 >= 0 && it->y  < WALL_SIZE / 2) 
+            {
+                projection[it->x + WALL_SIZE / 2][it->y + WALL_SIZE / 2] = true;
+            }
+            struct coordinates remappedCoordinates = { it->x - originX, it->y - originY, it->z - originZ };
+            mDescription.push_back(remappedCoordinates);
+            voxels.push_back(Voxel(vec3(remappedCoordinates.x, remappedCoordinates.y, remappedCoordinates.z), vao, shaderProgram));
+        }
+
+        if (hasWall) {
+            // Draw wall
+            for (int i = 0; i < WALL_SIZE; i++) {
+                for (int j = 0; j < WALL_SIZE; j++) {
+                    if (projection[i][j] == false) {    // If the projection does not cover this area, create a wall section here
+                        coordinates placedWall = {  };
+                        voxels.push_back(Voxel(
+                            vec3(
+                                i - WALL_SIZE / 2 - originX,    // Wall segment x
+                                j - WALL_SIZE / 2 - originY,    // Wall segment y
+                                originZ + WALL_DISTANCE         // Wall segment z
+                            ), vao, shaderProgram, vec3(1.0f, 1.0f, WALL_THICKNESS)));
+                    }
+                }
+            }
+        }
+    }
+
+    void Draw(GLenum renderingMode) {
+        glBindVertexArray(mvao);
+        for (auto it = begin(voxels); it != end(voxels); ++it) {
+            mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), it->mScaleVector * mScale) * translate(mat4(1.0f), it->mPosition);
+            glUniformMatrix4fv(mWorldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+            glDrawArrays(renderingMode, 0, 36);
+        }
+    }
+
+    // Properties
+    GLuint mWorldMatrixLocation;
+    vector<struct coordinates> mDescription;
+    vector<Voxel> voxels;
+    vec3 mPosition;
+    vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
+    float mScale = 1.0f;
+    int mvao;
+};
+
+/////////////////////// MAIN ///////////////////////
 
 int compileAndLinkShaders();
 
@@ -54,7 +155,7 @@ int main(int argc, char* argv[])
     vec3 userTranslate = vec3(0.0f, 0.0f, 0.0f);
 
     // Camera parameters for view transform
-    vec3 cameraPosition(-2.0f, 1.0f, 5.0f);
+    vec3 cameraPosition(-20.0f, 1.0f, -5.0f);
     vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
@@ -96,6 +197,20 @@ int main(int argc, char* argv[])
     // @TODO 1 - Enable Depth Test
     glEnable(GL_DEPTH_TEST);
 
+    GLenum renderingMode = GL_TRIANGLES;
+
+
+    // Test shape
+    struct coordinates coord1 = { 0, 0, 0 };
+    struct coordinates coord2 = { 0, 1, 0 };
+    struct coordinates coord3 = { 0, -1, 0 };
+    struct coordinates coord4 = { 1, 0, 0 };
+    struct coordinates coord5 = { 0, 0, 1 };
+    struct coordinates coord6 = { 0, 0, 2 };
+    vector<struct coordinates> vect{ coord1, coord2, coord3, coord4, coord5, coord6 };
+
+    Shape myShape(vec3(0.0f, 0.0f, 0.0f), vect, vao, shaderProgram, true);
+
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -118,18 +233,18 @@ int main(int argc, char* argv[])
         for (int i = -100; i <= 100; i++) {
             mat4 gridMatrix = translate(mat4(1.0f), vec3(0, -10.0f, i)) * scale(mat4(1.0f), vec3(200.0f, 0.02f, 0.02f));
             glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDrawArrays(renderingMode, 0, 36);
         }
         for (int i = -100; i <= 100; i++) {
             mat4 gridMatrix = translate(mat4(1.0f), vec3(i, -10.0f, 0)) * scale(mat4(1.0f), vec3(0.02f, 0.02f, 200.0f));
             glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDrawArrays(renderingMode, 0, 36);
         }
-
+        /*
         // Draw a single cube
         mat4 cubeMatrix = translate(mat4(1.0f), userTranslate) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * userScale);
         glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &cubeMatrix[0][0]);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(renderingMode, 0, 36);
 
         // Draw a wall in a 9x9 grid
         for (int i = -4; i <= 4; i++) {
@@ -139,9 +254,13 @@ int main(int argc, char* argv[])
                 }
                 mat4 wallMatrix = translate(mat4(1.0f), vec3(1.0f * i, 1.0f * j, -10.0f) + userTranslate) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f) * userScale);
                 glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &wallMatrix[0][0]);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glDrawArrays(renderingMode, 0, 36);
             }
-        }
+        }*/
+
+
+        // Draw shape and test transformations
+        myShape.Draw(renderingMode);
 
 
         glBindVertexArray(0);
@@ -202,30 +321,58 @@ int main(int argc, char* argv[])
         glm::normalize(cameraSideVector);
 
 
-        // @TODO 5 = use camera look at and side vectors to update positions with ASDW
-        // adjust code below
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move camera to the left
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Rz
         {
-            //cameraPosition -= cameraSideVector * currentCameraSpeed * dt;
-            userTranslate.x -= moveRate * dt;
+            myShape.mOrientation.z += 20 * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move camera to the right
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) // R-z
         {
-            //cameraPosition += cameraSideVector * currentCameraSpeed * dt;
-            userTranslate.x += moveRate * dt;
+            myShape.mOrientation.z -= 20 * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move camera up
+        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) // Ry
         {
-            //cameraPosition -= cameraLookAt * currentCameraSpeed * dt;
-            userTranslate.y -= moveRate * dt;
+            myShape.mOrientation.y += 20 * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move camera down
+        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) // R-y
         {
-            //cameraPosition += cameraLookAt * currentCameraSpeed * dt;
-            userTranslate.y += moveRate * dt;
+            myShape.mOrientation.y -= 20 * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) // grow object
+        {
+            myShape.mScale += 0.2f * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) // shrink object
+        {
+            myShape.mScale -= 0.2f * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) // move object forward
+        {
+            myShape.mPosition.z += 2 * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) // move object backward
+        {
+            myShape.mPosition.z -= 2 * dt;
+        }
+        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) // move camera down
+        {
+            renderingMode = GL_TRIANGLES;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) // move camera down
+        {
+            renderingMode = GL_LINE_LOOP;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // move camera down
+        {
+            renderingMode = GL_POINTS;
         }
 
         // TODO 6
@@ -249,82 +396,58 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-const char* getVertexShaderSource()
-{
-    // For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
-    return
-        "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;"
-        "layout (location = 1) in vec3 aColor;"
-        ""
-        "uniform mat4 worldMatrix;"
-        "uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
-        "uniform mat4 projectionMatrix = mat4(1.0);"
-        ""
-        "out vec3 vertexColor;"
-        "void main()"
-        "{"
-        "   vertexColor = aColor;"
-        "   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
-        "   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-        "}";
-}
+const string VERTEX_SHADER_FILEPATH = "../Source/VertexShader.glsl";
+const string FRAGMENT_SHADER_FILEPATH = "../Source/FragmentShader.glsl";
 
-const char* getFragmentShaderSource()
-{
-    return
-        "#version 330 core\n"
-        "in vec3 vertexColor;"
-        "out vec4 FragColor;"
-        "void main()"
-        "{"
-        "   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
-        "}";
+int compileShaderFromSource(string filepath, GLenum shaderType) {
+    // Read from file
+    ifstream sourceFile(filepath);
+    string shaderSource = "";
+    string sourceLine;
+    if (sourceFile.is_open()) {
+        while (getline(sourceFile, sourceLine)) {
+            shaderSource += sourceLine + "\n";
+        }
+        sourceFile.close();
+    }
+    else {
+        cout << "ERROR: Unable to open file.\n";
+        return -1;
+    }
+
+    // Create and compile shader
+    const GLchar* shaderSourcePointer = shaderSource.c_str();
+    int shader = glCreateShader(shaderType);
+    glShaderSource(shader, 1, &shaderSourcePointer, NULL);
+    glCompileShader(shader);
+
+    // Check for shader compile errors
+    int success;
+    char infoLog[512];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(shader, 512, NULL, infoLog);
+        std::cerr << "Error: Shader compilation failed.\n" << infoLog << std::endl;
+    }
+
+    return shader;
 }
 
 int compileAndLinkShaders()
 {
-    // compile and link shader program
-    // return shader program id
-    // ------------------------------------
+    int vertexShader = compileShaderFromSource(VERTEX_SHADER_FILEPATH, GL_VERTEX_SHADER);
+    int fragmentShader = compileShaderFromSource(FRAGMENT_SHADER_FILEPATH, GL_FRAGMENT_SHADER);
 
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertexShaderSource = getVertexShaderSource();
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // fragment shader
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fragmentShaderSource = getFragmentShaderSource();
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // link shaders
+    // Link shaders
     int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
-    // check for linking errors
+    // Check for linking errors
+    int success;
+    char infoLog[512];
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
@@ -471,4 +594,3 @@ bool initContext() {     // Initialize GLFW and OpenGL version
     }
     return true;
 }
-*/

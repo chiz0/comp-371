@@ -7,12 +7,13 @@
 // Zhang, Chi (29783539)
 // 
 // Based on Labs Framework created by Nicolas Bergeron
-
+/*
 #include <iostream>
 #include <list>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 
 #define GLEW_STATIC 1   // This allows linking with Static Library on Windows, without DLL
@@ -594,3 +595,4 @@ bool initContext() {     // Initialize GLFW and OpenGL version
     }
     return true;
 }
+*/
