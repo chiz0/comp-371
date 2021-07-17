@@ -1,7 +1,7 @@
 //
 // Structure based on COMP 371 Labs Framework created by Nicolas Bergeron on 20/06/2019.
 //
-
+/*
 #include <iostream>
 #include <list>
 #include <algorithm>
@@ -471,3 +471,4 @@ bool initContext() {     // Initialize GLFW and OpenGL version
     }
     return true;
 }
+*/

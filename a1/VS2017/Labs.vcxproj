@@ -110,12 +110,15 @@
     <None Include="..\Assets\Shaders\SolidColor.vertexshader" />
     <None Include="..\Assets\Shaders\Texture.fragmentshader" />
     <None Include="..\Assets\Shaders\Texture.vertexshader" />
+    <None Include="..\Source\FragmentShader.glsl" />
+    <None Include="..\Source\VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Assets\Textures\BillboardTest.bmp" />
     <Image Include="..\Assets\Textures\Particle.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\a1.cpp" />
     <ClCompile Include="..\Source\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
