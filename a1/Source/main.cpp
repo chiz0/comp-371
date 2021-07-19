@@ -30,14 +30,16 @@ using namespace glm;
 using namespace std;
 
 ////////////////////// CONSTANTS //////////////////////
-const int WALL_SIZE = 8;                        // How many unit cubes in nxn should the wall be
-const float WALL_THICKNESS = 0.1f;              // How thick is the wall
-const int WALL_DISTANCE = 10 / WALL_THICKNESS;  // How far from the model should its wall be
-const int MODEL_COUNT = 4;                      // How many models are present in the world
-const float STAGE_WIDTH = 20.0f;                // How far in either direction each model will be placed
-const float SCALE_RATE = 0.2f;                  // The rate at which models grow and shrink
-const float ROTATE_RATE = 20;                   // The rate at which models rotate
-const float TRANSLATE_RATE = 2.0f;              // The rate at which models move left, right, up, and down
+const int WALL_SIZE = 8;                            // How many unit cubes in nxn should the wall be
+const float WALL_THICKNESS = 0.1f;                  // How thick is the wall
+const int WALL_DISTANCE = 10 / WALL_THICKNESS;      // How far from the model should its wall be
+const int MODEL_COUNT = 4;                          // How many models are present in the world
+const float STAGE_WIDTH = 20.0f;                    // How far in either direction each model will be placed
+const float SCALE_RATE = 0.2f;                      // The rate at which models grow and shrink
+const float ROTATE_RATE = 20;                       // The rate at which models rotate
+const float TRANSLATE_RATE = 2.0f;                  // The rate at which models move left, right, up, and down
+const float CAMERA_JUMP_SPEED = 8.0f;               // The speed at which a camera moves from model to model.
+const vec3 CAMERA_OFFSET = vec3(-2.0f, 2.0f, 10.0f);// The default position of the camera relative to a model
 
 /////////////////////// MODELS ///////////////////////
 
@@ -108,7 +110,7 @@ public:
                             vec3(
                                 i - WALL_SIZE / 2 - originX,    // Wall segment x
                                 j - WALL_SIZE / 2 - originY,    // Wall segment y
-                                originZ + WALL_DISTANCE         // Wall segment z
+                                originZ - WALL_DISTANCE         // Wall segment z
                             ), vao, shaderProgram, vec3(1.0f, 1.0f, WALL_THICKNESS)));
                     }
                 }
@@ -158,21 +160,9 @@ int main(int argc, char* argv[])
     // We can set the shader once, since we have only one
     glUseProgram(shaderProgram);
 
-    // Scale and translation
-    const float scaleRate = 0.5f;
-    const float minScale = 0.3f;
-    const float moveRate = 0.5f;
-    vec3 userTranslate = vec3(0.0f, 0.0f, 0.0f);
-
-    // Camera parameters for view transform
-    float camPosX = -2.0f; float camPosY = 1.0f; float camPosZ = 5.0f;
-    vec3 cameraPosition(camPosX, camPosY, camPosZ);
-    vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
-    vec3 cameraUp(0.0f, 1.0f, 0.0f);
-
     // Other camera parameters
-    float cameraSpeed = 1.0f;
-    float cameraFastSpeed = 2 * cameraSpeed;
+    const float cameraSpeed = 1.0f;
+    const float cameraFastSpeed = 2 * cameraSpeed;
     float cameraHorizontalAngle = 90.0f;
     float cameraVerticalAngle = 0.0f;
 
@@ -183,15 +173,6 @@ int main(int argc, char* argv[])
 
     GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
     glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
-
-    // Set initial view matrix
-    mat4 viewMatrix = lookAt(cameraPosition,  // eye
-        cameraPosition + cameraLookAt,  // center
-        cameraUp); // up
-
-    GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
-    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
 
     // Define and upload geometry to the GPU here ...
     int vao = createVertexArrayObject();
@@ -264,6 +245,28 @@ int main(int argc, char* argv[])
 
     int focusedShape = 0;               // The shape currently being viewed and manipulated
 
+    const vector<vec3> cameraPositions{
+        CAMERA_OFFSET + shapes[0].mPosition,
+        CAMERA_OFFSET + shapes[1].mPosition,
+        CAMERA_OFFSET + shapes[2].mPosition,
+        CAMERA_OFFSET + shapes[3].mPosition
+    };
+
+
+    // Camera parameters for view transform
+    vec3 cameraPosition = cameraPositions[0];
+    vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
+    vec3 cameraUp(0.0f, 1.0f, 0.0f);
+    vec3 cameraDestination = cameraPosition;
+
+    // Set initial view matrix
+    mat4 viewMatrix = lookAt(cameraPosition,  // eye
+        cameraPosition + cameraLookAt,  // center
+        cameraUp); // up
+
+    GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+    glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -330,9 +333,8 @@ int main(int argc, char* argv[])
         lastMousePosY = mousePosY;
 
         const float cameraAngularSpeed = 60.0f;
-        temp++;
 
-        //Lock the camera rotation to be only when the middle and right button are pressed
+        // Lock the camera rotation to be only when the middle and right button are pressed
         if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
             cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
         }
@@ -341,102 +343,15 @@ int main(int argc, char* argv[])
         }
 
         if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-            cameraPosition.z -= currentCameraSpeed * dt;
-        }
-
-        if (lastMouseLeftState == GLFW_RELEASE && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS
-            && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS
-            && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-
-            if (temp % 100 == 0) {
-                double tdx = dx;
-                double tdy = dy;
-
-                if (dx < 0) {
-                    tdx *= -1;
-                }
-                if (dy < 0) {
-                    tdy *= -1;
-                }
-                if (tdx > tdy) {
-                    if (dx < 0) {
-                        if (!rightD) {
-                            leftD = true;
-                            rightD = false;
-                            upD = false;
-                            downD = false;
-                        }
-                        else {
-                            rightD = false;
-                            leftD = false;
-                            upD = false;
-                            downD = false;
-                        }
-                    }
-                    else if (dx > 0) {
-                        if (!leftD) {
-                            rightD = true;
-                            leftD = false;
-                            upD = false;
-                            downD = false;
-                        }
-                        else {
-                            leftD = false;
-                            rightD = false;
-                            upD = false;
-                            downD = false;
-                        }
-                    }
-                }
-                else {
-                    if (dy < 0) {
-                        if (!downD) {
-                            upD = true;
-                            rightD = false;
-                            leftD = false;
-                            downD = false;
-                        }
-                        else {
-                            downD = false;
-                            rightD = false;
-                            leftD = false;
-                            upD = false;
-                        }
-                    }
-                    else if (dy > 0) {
-                        if (!upD) {
-                            downD = true;
-                            rightD = false;
-                            leftD = false;
-                            upD = false;
-                        }
-                        else {
-                            upD = false;
-                            rightD = false;
-                            leftD = false;
-                            downD = false;
-                        }
-                    }
-                }
+            if (dy < 0) {
+                cameraPosition += currentCameraSpeed * cameraLookAt;
             }
-            //Checking if it keeps going in the direction   
-            if (leftD) {
-                cameraPosition.x -= currentCameraSpeed * dt;
-            }
-            if (rightD) {
-                cameraPosition.x += currentCameraSpeed * dt;
-            }
-            if (upD) {
-                cameraPosition.y += currentCameraSpeed * dt;
-            }
-            if (downD) {
-                cameraPosition.y -= currentCameraSpeed * dt;
+            if (dy > 0) {
+                cameraPosition -= currentCameraSpeed * cameraLookAt;
             }
         }
 
-
-
-        //Change orientation with the arrow keys
+        // Change orientation with the arrow keys
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
             cameraHorizontalAngle += cameraAngularSpeed * dt;
         }
@@ -451,8 +366,6 @@ int main(int argc, char* argv[])
         }
         //Go Back to initial position and orientation
         if (glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) {
-            //initial position
-            cameraPosition.x = camPosX; camPosY = 1.0f; cameraPosition.z = camPosZ;
             cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
             cameraUp.x = 0.0f; cameraUp.y = 1.0f; cameraUp.z = 0.0f;
 
@@ -483,18 +396,22 @@ int main(int argc, char* argv[])
         if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
         {
             focusedShape = 0;
+            cameraDestination = cameraPositions[0];
         }
         if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
         {
             focusedShape = 1;
+            cameraDestination = cameraPositions[1];
         }
         if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
         {
             focusedShape = 2;
+            cameraDestination = cameraPositions[2];
         }
         if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
         {
             focusedShape = 3;
+            cameraDestination = cameraPositions[3];
         }
 
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Rz
@@ -551,10 +468,10 @@ int main(int argc, char* argv[])
             renderingMode = GL_POINTS;
         }
 
-        // TODO 6
-        // Set the view matrix for first and third person cameras
-        // - In first person, camera lookat is set like below
-        // - In third person, camera position is on a sphere looking towards center
+        // Slide the camera towards its destination
+        vec3 cameraDelta = cameraDestination - cameraPosition;
+        cameraPosition += cameraDelta * CAMERA_JUMP_SPEED * dt;
+
         mat4 viewMatrix = mat4(1.0);
 
         glm::vec3 position = cameraPosition;
