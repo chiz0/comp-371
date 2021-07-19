@@ -1,6 +1,6 @@
 ﻿  main.cpp
-D:\Documents\University\Summer 2021\Final Team Project\comp-371\a1\Source\main.cpp(89,25): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Documents\University\Summer 2021\Final Team Project\comp-371\a1\Source\main.cpp(111,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-D:\Documents\University\Summer 2021\Final Team Project\comp-371\a1\Source\main.cpp(194,66): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-D:\Documents\University\Summer 2021\Final Team Project\comp-371\a1\Source\main.cpp(197,64): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\University\Summer 2021\Final Team Project\comp-371\a1\Source\main.cpp(88,25): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Documents\University\Summer 2021\Final Team Project\comp-371\a1\Source\main.cpp(105,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\Documents\University\Summer 2021\Final Team Project\comp-371\a1\Source\main.cpp(187,66): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\University\Summer 2021\Final Team Project\comp-371\a1\Source\main.cpp(190,64): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
   Labs.vcxproj -> D:\Documents\University\Summer 2021\Final Team Project\comp-371\a1\Bin\Labs-Debug.exe

@@ -54,8 +54,7 @@ int main(int argc, char* argv[])
     vec3 userTranslate = vec3(0.0f, 0.0f, 0.0f);
 
     // Camera parameters for view transform
-    float camPosX = -2.0f; float camPosY = 1.0f; float camPosZ = 5.0f;
-    vec3 cameraPosition(camPosX, camPosY, camPosZ);
+    vec3 cameraPosition(-2.0f,1.0f , 5.0f);
     vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
@@ -98,11 +97,6 @@ int main(int argc, char* argv[])
     // @TODO 1 - Enable Depth Test
     glEnable(GL_DEPTH_TEST);
 
-    //int to keep track of the time
-    int temp = 0;
-
-    //see if the camera is to keep going in a certain direction
-    bool leftD = false, rightD = false, upD = false, downD = false;
 
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
@@ -187,7 +181,6 @@ int main(int argc, char* argv[])
         lastMousePosY = mousePosY;
 
         const float cameraAngularSpeed = 60.0f;
-        temp++;
 
         //Lock the camera rotation to be only when the middle and right button are pressed
         if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
@@ -197,99 +190,23 @@ int main(int argc, char* argv[])
             cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
         }
 
+
+        
         if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-            cameraPosition.z -= currentCameraSpeed * dt;
+            if (dy < 0) {
+                
+                cameraPosition += currentCameraSpeed * cameraLookAt;
+            }
+
+            if (dy > 0) {
+                cameraPosition -= currentCameraSpeed * cameraLookAt;
+            }
+
+            
         }
 
-        if (lastMouseLeftState == GLFW_RELEASE && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS
-            && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS 
-            && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-
-            if (temp % 100 == 0) {
-                double tdx = dx;
-                double tdy = dy;
-
-                if (dx < 0) {
-                    tdx *= -1;
-                }
-                if (dy < 0) {
-                    tdy *= -1;
-                }
-                if (tdx > tdy) {
-                    if (dx < 0) {
-                        if (!rightD) {
-                            leftD = true;
-                            rightD = false;
-                            upD = false;
-                            downD = false;
-                        }
-                        else {
-                            rightD = false;
-                            leftD = false;
-                            upD = false;
-                            downD = false;
-                        }
-                    }
-                    else if (dx > 0) {
-                        if (!leftD) {
-                            rightD = true;
-                            leftD = false;
-                            upD = false;
-                            downD = false;
-                        }
-                        else {
-                            leftD = false;
-                            rightD = false;
-                            upD = false;
-                            downD = false;
-                        }
-                    }
-                }
-                else {
-                    if (dy < 0) {
-                        if (!downD) {
-                            upD = true;
-                            rightD = false;
-                            leftD = false;
-                            downD = false;
-                        }
-                        else {
-                            downD = false;
-                            rightD = false;
-                            leftD = false;
-                            upD = false;
-                        }
-                    }
-                    else if (dy > 0) {
-                        if (!upD) {
-                            downD = true;
-                            rightD = false;
-                            leftD = false;
-                            upD = false;
-                        }
-                        else {
-                            upD = false;
-                            rightD = false;
-                            leftD = false;
-                            downD = false;
-                        }
-                    }
-                }
-            }
-            //Checking if it keeps going in the direction   
-            if (leftD) {
-                cameraPosition.x -= currentCameraSpeed * dt;
-            }
-            if (rightD) {
-                cameraPosition.x += currentCameraSpeed * dt;
-            }
-            if (upD) {
-                cameraPosition.y += currentCameraSpeed * dt;
-            }
-            if (downD) {
-                cameraPosition.y -= currentCameraSpeed * dt;
-            }
-        }
+        
+        
 
 
 
@@ -308,8 +225,7 @@ int main(int argc, char* argv[])
         }
         //Go Back to initial position and orientation
         if (glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) {
-            //initial position
-            cameraPosition.x = camPosX; camPosY = 1.0f; cameraPosition.z = camPosZ;
+     
             cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
             cameraUp.x = 0.0f; cameraUp.y = 1.0f; cameraUp.z = 0.0f;
 
