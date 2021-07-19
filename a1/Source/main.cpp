@@ -161,7 +161,8 @@ int main(int argc, char* argv[])
     vec3 userTranslate = vec3(0.0f, 0.0f, 0.0f);
 
     // Camera parameters for view transform
-    vec3 cameraPosition(-20.0f, 1.0f, -5.0f);
+    float camPosX = -2.0f; float camPosY = 1.0f; float camPosZ = 5.0f;
+    vec3 cameraPosition(camPosX, camPosY, camPosZ);
     vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
@@ -193,6 +194,7 @@ int main(int argc, char* argv[])
 
     // For frame time
     float lastFrameTime = glfwGetTime();
+    int lastMouseLeftState = GLFW_RELEASE;
     double lastMousePosX, lastMousePosY;
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
@@ -205,6 +207,11 @@ int main(int argc, char* argv[])
 
     GLenum renderingMode = GL_TRIANGLES;
 
+    //int to keep track of the time
+    int temp = 0;
+
+    //see if the camera is to keep going in a certain direction
+    bool leftD = false, rightD = false, upD = false, downD = false;
 
     // Test shape
     struct coordinates coord1 = { 0, 0, 0 };
@@ -304,10 +311,137 @@ int main(int argc, char* argv[])
         lastMousePosX = mousePosX;
         lastMousePosY = mousePosY;
 
-        // Convert to spherical coordinates
         const float cameraAngularSpeed = 60.0f;
-        cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
-        cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+        temp++;
+
+        //Lock the camera rotation to be only when the middle and right button are pressed
+        if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+            cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
+        }
+        if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
+            cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+        }
+
+        if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+            cameraPosition.z -= currentCameraSpeed * dt;
+        }
+
+        if (lastMouseLeftState == GLFW_RELEASE && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS
+            && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS
+            && !glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+
+            if (temp % 100 == 0) {
+                double tdx = dx;
+                double tdy = dy;
+
+                if (dx < 0) {
+                    tdx *= -1;
+                }
+                if (dy < 0) {
+                    tdy *= -1;
+                }
+                if (tdx > tdy) {
+                    if (dx < 0) {
+                        if (!rightD) {
+                            leftD = true;
+                            rightD = false;
+                            upD = false;
+                            downD = false;
+                        }
+                        else {
+                            rightD = false;
+                            leftD = false;
+                            upD = false;
+                            downD = false;
+                        }
+                    }
+                    else if (dx > 0) {
+                        if (!leftD) {
+                            rightD = true;
+                            leftD = false;
+                            upD = false;
+                            downD = false;
+                        }
+                        else {
+                            leftD = false;
+                            rightD = false;
+                            upD = false;
+                            downD = false;
+                        }
+                    }
+                }
+                else {
+                    if (dy < 0) {
+                        if (!downD) {
+                            upD = true;
+                            rightD = false;
+                            leftD = false;
+                            downD = false;
+                        }
+                        else {
+                            downD = false;
+                            rightD = false;
+                            leftD = false;
+                            upD = false;
+                        }
+                    }
+                    else if (dy > 0) {
+                        if (!upD) {
+                            downD = true;
+                            rightD = false;
+                            leftD = false;
+                            upD = false;
+                        }
+                        else {
+                            upD = false;
+                            rightD = false;
+                            leftD = false;
+                            downD = false;
+                        }
+                    }
+                }
+            }
+            //Checking if it keeps going in the direction   
+            if (leftD) {
+                cameraPosition.x -= currentCameraSpeed * dt;
+            }
+            if (rightD) {
+                cameraPosition.x += currentCameraSpeed * dt;
+            }
+            if (upD) {
+                cameraPosition.y += currentCameraSpeed * dt;
+            }
+            if (downD) {
+                cameraPosition.y -= currentCameraSpeed * dt;
+            }
+        }
+
+
+
+        //Change orientation with the arrow keys
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            cameraHorizontalAngle += cameraAngularSpeed * dt;
+        }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            cameraHorizontalAngle -= cameraAngularSpeed * dt;
+        }
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+            cameraVerticalAngle += cameraAngularSpeed * dt;
+        }
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+            cameraVerticalAngle -= cameraAngularSpeed * dt;
+        }
+        //Go Back to initial position and orientation
+        if (glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) {
+            //initial position
+            cameraPosition.x = camPosX; camPosY = 1.0f; cameraPosition.z = camPosZ;
+            cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
+            cameraUp.x = 0.0f; cameraUp.y = 1.0f; cameraUp.z = 0.0f;
+
+            //initial orientation
+            cameraHorizontalAngle = 90.0f;
+            cameraVerticalAngle = 0.0f;
+        }
 
         // Clamp vertical angle to [-85, 85] degrees
         cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
