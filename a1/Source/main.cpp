@@ -30,9 +30,14 @@ using namespace glm;
 using namespace std;
 
 ////////////////////// CONSTANTS //////////////////////
-const int WALL_SIZE = 8;
-const float WALL_THICKNESS = 0.1f;
-const int WALL_DISTANCE = 10 / WALL_THICKNESS;
+const int WALL_SIZE = 8;                        // How many unit cubes in nxn should the wall be
+const float WALL_THICKNESS = 0.1f;              // How thick is the wall
+const int WALL_DISTANCE = 10 / WALL_THICKNESS;  // How far from the model should its wall be
+const int MODEL_COUNT = 4;                      // How many models are present in the world
+const float STAGE_WIDTH = 20.0f;                // How far in either direction each model will be placed
+const float SCALE_RATE = 0.2f;                  // The rate at which models grow and shrink
+const float ROTATE_RATE = 20;                   // The rate at which models rotate
+const float TRANSLATE_RATE = 2.0f;              // The rate at which models move left, right, up, and down
 
 /////////////////////// MODELS ///////////////////////
 
@@ -157,7 +162,6 @@ int main(int argc, char* argv[])
     const float scaleRate = 0.5f;
     const float minScale = 0.3f;
     const float moveRate = 0.5f;
-    float userScale = 1.0f;
     vec3 userTranslate = vec3(0.0f, 0.0f, 0.0f);
 
     // Camera parameters for view transform
@@ -213,17 +217,52 @@ int main(int argc, char* argv[])
     //see if the camera is to keep going in a certain direction
     bool leftD = false, rightD = false, upD = false, downD = false;
 
-    // Test shape
-    struct coordinates coord1 = { 0, 0, 0 };
-    struct coordinates coord2 = { 0, 1, 0 };
-    struct coordinates coord3 = { 0, -1, 0 };
-    struct coordinates coord4 = { 1, 0, 0 };
-    struct coordinates coord5 = { 0, 0, 1 };
-    struct coordinates coord6 = { 0, 0, 2 };
-    struct coordinates coord7 = { 0, 10, 0 };
-    vector<struct coordinates> vect{ coord1, coord2, coord3, coord4, coord5, coord6, coord7 };
+    // Track models
+    vector<Shape> shapes;               // Set of all shapes in the world
 
-    Shape myShape(vec3(0.0f, 0.0f, 0.0f), vect, vao, shaderProgram, true);
+    ///////// DESIGN MODELS HERE /////////
+    vector<struct coordinates> shape1 { 
+        { 0, 0, 0 }, 
+        { 0, 1, 0 }, 
+        { 0, -1, 0 }, 
+        { 1, 0, 0 }, 
+        { 0, 0, 1 }, 
+        { 0, 0, 2 } 
+    };
+
+    vector<struct coordinates> shape2 {
+        { 0, 0, 0 },
+        { 0, 1, 0 },
+        { 0, -1, 0 },
+        { 1, 0, 0 },
+        { 0, 0, 1 },
+        { 0, 0, 2 }
+    };
+
+    vector<struct coordinates> shape3 {
+        { 0, 0, 0 },
+        { 0, 1, 0 },
+        { 0, -1, 0 },
+        { 1, 0, 0 },
+        { 0, 0, 1 },
+        { 0, 0, 2 }
+    };
+
+    vector<struct coordinates> shape4 {
+        { 0, 0, 0 },
+        { 0, 1, 0 },
+        { 0, -1, 0 },
+        { 1, 0, 0 },
+        { 0, 0, 1 },
+        { 0, 0, 2 }
+    };
+
+    shapes.push_back(Shape(vec3(STAGE_WIDTH, 0.0f, STAGE_WIDTH), shape1, vao, shaderProgram, true));
+    shapes.push_back(Shape(vec3(-STAGE_WIDTH, 0.0f, STAGE_WIDTH), shape2, vao, shaderProgram, true));
+    shapes.push_back(Shape(vec3(STAGE_WIDTH, 0.0f, -STAGE_WIDTH), shape3, vao, shaderProgram, true));
+    shapes.push_back(Shape(vec3(-STAGE_WIDTH, 0.0f, -STAGE_WIDTH), shape4, vao, shaderProgram, true));
+
+    int focusedShape = 0;               // The shape currently being viewed and manipulated
 
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
@@ -254,28 +293,12 @@ int main(int argc, char* argv[])
             glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
             glDrawArrays(renderingMode, 0, 36);
         }
-        /*
-        // Draw a single cube
-        mat4 cubeMatrix = translate(mat4(1.0f), userTranslate) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * userScale);
-        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &cubeMatrix[0][0]);
-        glDrawArrays(renderingMode, 0, 36);
-
-        // Draw a wall in a 9x9 grid
-        for (int i = -4; i <= 4; i++) {
-            for (int j = -4; j <= 4; j++) {
-                if (i == 0 && j == 0) {     // This can easily be modified to handle a 2D projection
-                    continue;
-                }
-                mat4 wallMatrix = translate(mat4(1.0f), vec3(1.0f * i, 1.0f * j, -10.0f) + userTranslate) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 0.1f) * userScale);
-                glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &wallMatrix[0][0]);
-                glDrawArrays(renderingMode, 0, 36);
-            }
-        }*/
 
 
         // Draw shape and test transformations
-        myShape.Draw(renderingMode);
-
+        for(Shape shape : shapes) {
+            shape.Draw(renderingMode);
+        }
 
         glBindVertexArray(0);
 
@@ -286,11 +309,6 @@ int main(int argc, char* argv[])
         // Handle inputs
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-
-        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-            userScale += scaleRate * dt;
-        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS && userScale > minScale)
-            userScale -= scaleRate * dt;
 
         // This was solution for Lab02 - Moving camera exercise
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
@@ -461,45 +479,62 @@ int main(int argc, char* argv[])
         vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
         glm::normalize(cameraSideVector);
 
+        // Select shapes via 1-4 keys
+        if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+        {
+            focusedShape = 0;
+        }
+        if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+        {
+            focusedShape = 1;
+        }
+        if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+        {
+            focusedShape = 2;
+        }
+        if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+        {
+            focusedShape = 3;
+        }
 
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Rz
         {
-            myShape.mOrientation.z += 20 * dt;
+            shapes[focusedShape].mOrientation.z += ROTATE_RATE * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) // R-z
         {
-            myShape.mOrientation.z -= 20 * dt;
+            shapes[focusedShape].mOrientation.z -= ROTATE_RATE * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) // Ry
         {
-            myShape.mOrientation.y += 20 * dt;
+            shapes[focusedShape].mOrientation.y += ROTATE_RATE * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) // R-y
         {
-            myShape.mOrientation.y -= 20 * dt;
+            shapes[focusedShape].mOrientation.y -= ROTATE_RATE * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) // grow object
         {
-            myShape.mScale += 0.2f * dt;
+            shapes[focusedShape].mScale += SCALE_RATE * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) // shrink object
         {
-            myShape.mScale -= 0.2f * dt;
+            shapes[focusedShape].mScale -= SCALE_RATE * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) // move object forward
         {
-            myShape.mPosition.z += 2 * dt;
+            shapes[focusedShape].mPosition.z += TRANSLATE_RATE * dt;
         }
 
         if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) // move object backward
         {
-            myShape.mPosition.z -= 2 * dt;
+            shapes[focusedShape].mPosition.z -= TRANSLATE_RATE * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) // move camera down
         {
@@ -612,7 +647,7 @@ int createVertexArrayObject()
     const vec3 orange6 = vec3(0.996f, 0.58f, 0.255f);
 
     vec3 vertexArray[] = {  // position,                            color
-        vec3(-0.5f,-0.5f,-0.5f), orange1, //left - red
+        vec3(-0.5f,-0.5f,-0.5f), orange1, //left
         vec3(-0.5f,-0.5f, 0.5f), orange1,
         vec3(-0.5f, 0.5f, 0.5f), orange1,
 
@@ -620,7 +655,7 @@ int createVertexArrayObject()
         vec3(-0.5f, 0.5f, 0.5f), orange1,
         vec3(-0.5f, 0.5f,-0.5f), orange1,
 
-        vec3(0.5f, 0.5f,-0.5f), orange2, // far - blue
+        vec3(0.5f, 0.5f,-0.5f), orange2, // far
         vec3(-0.5f,-0.5f,-0.5f), orange2,
         vec3(-0.5f, 0.5f,-0.5f), orange2,
 
@@ -628,7 +663,7 @@ int createVertexArrayObject()
         vec3(0.5f,-0.5f,-0.5f), orange2,
         vec3(-0.5f,-0.5f,-0.5f), orange2,
 
-        vec3(0.5f,-0.5f, 0.5f), orange3, // bottom - turquoise
+        vec3(0.5f,-0.5f, 0.5f), orange3, // bottom
         vec3(-0.5f,-0.5f,-0.5f), orange3,
         vec3(0.5f,-0.5f,-0.5f), orange3,
 
@@ -636,7 +671,7 @@ int createVertexArrayObject()
         vec3(-0.5f,-0.5f, 0.5f), orange3,
         vec3(-0.5f,-0.5f,-0.5f), orange3,
 
-        vec3(-0.5f, 0.5f, 0.5f), orange4, // near - green
+        vec3(-0.5f, 0.5f, 0.5f), orange4, // near
         vec3(-0.5f,-0.5f, 0.5f), orange4,
         vec3(0.5f,-0.5f, 0.5f), orange4,
 
@@ -644,7 +679,7 @@ int createVertexArrayObject()
         vec3(-0.5f, 0.5f, 0.5f), orange4,
         vec3(0.5f,-0.5f, 0.5f), orange4,
 
-        vec3(0.5f, 0.5f, 0.5f), orange5, // right - purple
+        vec3(0.5f, 0.5f, 0.5f), orange5, // right
         vec3(0.5f,-0.5f,-0.5f), orange5,
         vec3(0.5f, 0.5f,-0.5f), orange5,
 
@@ -652,7 +687,7 @@ int createVertexArrayObject()
         vec3(0.5f, 0.5f, 0.5f), orange5,
         vec3(0.5f,-0.5f, 0.5f), orange5,
 
-        vec3(0.5f, 0.5f, 0.5f), orange6, // top - yellow
+        vec3(0.5f, 0.5f, 0.5f), orange6, // top
         vec3(0.5f, 0.5f,-0.5f), orange6,
         vec3(-0.5f, 0.5f,-0.5f), orange6,
 

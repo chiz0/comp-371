@@ -7,5 +7,6 @@
 *.obj
 *.lastbuildstate
 *.ipch
+*.log
 a1/VS2017/.vs/Labs/v16/Browse.VC.db
 a1/VS2017/.vs/Labs/v16/Browse.VC.opendb
