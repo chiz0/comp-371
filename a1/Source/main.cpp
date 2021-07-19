@@ -38,7 +38,8 @@ const float STAGE_WIDTH = 20.0f;                    // How far in either directi
 const float SCALE_RATE = 0.2f;                      // The rate at which models grow and shrink
 const float ROTATE_RATE = 20;                       // The rate at which models rotate
 const float TRANSLATE_RATE = 2.0f;                  // The rate at which models move left, right, up, and down
-const float CAMERA_JUMP_SPEED = 8.0f;               // The speed at which a camera moves from model to model.
+const float CAMERA_JUMP_SPEED = 8.0f;               // The speed at which a camera moves from model to model
+const float CAMERA_SPEED = 0.75f;                   // Speed of camera zooming
 const vec3 CAMERA_OFFSET = vec3(-2.0f, 2.0f, 10.0f);// The default position of the camera relative to a model
 
 /////////////////////// MODELS ///////////////////////
@@ -161,8 +162,6 @@ int main(int argc, char* argv[])
     glUseProgram(shaderProgram);
 
     // Other camera parameters
-    const float cameraSpeed = 1.0f;
-    const float cameraFastSpeed = 2 * cameraSpeed;
     float cameraHorizontalAngle = 90.0f;
     float cameraVerticalAngle = 0.0f;
 
@@ -316,7 +315,7 @@ int main(int argc, char* argv[])
 
         // This was solution for Lab02 - Moving camera exercise
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-        float currentCameraSpeed = (fastCam) ? cameraFastSpeed : cameraSpeed;
+        float currentCameraSpeed = (fastCam) ? CAMERA_SPEED * 2 : CAMERA_SPEED;
 
 
         // @TODO 4 - Calculate mouse motion dx and dy
