@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
     // Other camera parameters
-    float cameraSpeed = 1.0f;
+    float cameraSpeed = 0.75f;
     float cameraFastSpeed = 2 * cameraSpeed;
     float cameraHorizontalAngle = 90.0f;
     float cameraVerticalAngle = 0.0f;
@@ -206,26 +206,11 @@ int main(int argc, char* argv[])
         }
 
         
-        
-
-
-
-        //Change orientation with the arrow keys
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-            cameraHorizontalAngle += cameraAngularSpeed * dt;
-        }
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-            cameraHorizontalAngle -= cameraAngularSpeed * dt;
-        }
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-            cameraVerticalAngle += cameraAngularSpeed * dt;
-        }
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-            cameraVerticalAngle -= cameraAngularSpeed * dt;
-        }
         //Go Back to initial position and orientation
         if (glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) {
-     
+            
+
+            cameraPosition.x = -2.0f; cameraPosition.y = 1.0f; cameraPosition.z = 5.0f;
             cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
             cameraUp.x = 0.0f; cameraUp.y = 1.0f; cameraUp.z = 0.0f;
 
