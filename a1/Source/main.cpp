@@ -244,6 +244,7 @@ int main(int argc, char* argv[])
     shapes.push_back(Shape(vec3(-STAGE_WIDTH, 0.0f, -STAGE_WIDTH), shape4, vao, shaderProgram, true));
 
     int focusedShape = 0;               // The shape currently being viewed and manipulated
+    bool moveCameraToDestination = false;
 
     const vector<vec3> cameraPositions{
         CAMERA_OFFSET + shapes[0].mPosition,
@@ -372,6 +373,9 @@ int main(int argc, char* argv[])
             //initial orientation
             cameraHorizontalAngle = 90.0f;
             cameraVerticalAngle = 0.0f;
+
+            cameraDestination = cameraPositions[focusedShape];
+            moveCameraToDestination = true;
         }
 
         // Clamp vertical angle to [-85, 85] degrees
@@ -397,21 +401,25 @@ int main(int argc, char* argv[])
         {
             focusedShape = 0;
             cameraDestination = cameraPositions[0];
+            moveCameraToDestination = true;
         }
         if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
         {
             focusedShape = 1;
             cameraDestination = cameraPositions[1];
+            moveCameraToDestination = true;
         }
         if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
         {
             focusedShape = 2;
             cameraDestination = cameraPositions[2];
+            moveCameraToDestination = true;
         }
         if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
         {
             focusedShape = 3;
             cameraDestination = cameraPositions[3];
+            moveCameraToDestination = true;
         }
 
         if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Rz
@@ -453,24 +461,31 @@ int main(int argc, char* argv[])
         {
             shapes[focusedShape].mPosition.z -= TRANSLATE_RATE * dt;
         }
-        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) // move camera down
+        if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) // Set triangle rendering mode
         {
             renderingMode = GL_TRIANGLES;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) // move camera down
+        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) // Set line rendering mode
         {
             renderingMode = GL_LINE_LOOP;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // move camera down
+        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // Set point rendering mode
         {
             renderingMode = GL_POINTS;
         }
 
-        // Slide the camera towards its destination
-        vec3 cameraDelta = cameraDestination - cameraPosition;
-        cameraPosition += cameraDelta * CAMERA_JUMP_SPEED * dt;
+        if (moveCameraToDestination) {
+            // Slide the camera towards its destination
+            vec3 cameraDelta = cameraDestination - cameraPosition;
+            if (abs(cameraDelta.x) < 0.1 && abs(cameraDelta.y) < 0.1 && abs(cameraDelta.z) < 0.1) {
+                // We have arrived at the destination
+                cameraPosition = cameraDestination;
+                moveCameraToDestination = false;
+            }
+            cameraPosition += cameraDelta * CAMERA_JUMP_SPEED * dt;
+        }
 
         mat4 viewMatrix = mat4(1.0);
 
