@@ -1,6 +1,12 @@
-//
-// Structure based on COMP 371 Labs Framework created by Nicolas Bergeron on 20/06/2019.
-//
+// COMP 371 Assignment 1
+// Spiral Staircase (Section DD Team 3)
+// 
+// Badele, Theodor (40129466)
+// Fourneaux, Alexander (40022711)
+// Reda, Antonio (40155615)
+// Zhang, Chi (29783539)
+// 
+// Based on Labs Framework created by Nicolas Bergeron
 
 #include <iostream>
 #include <list>
@@ -207,7 +213,8 @@ int main(int argc, char* argv[])
     struct coordinates coord4 = { 1, 0, 0 };
     struct coordinates coord5 = { 0, 0, 1 };
     struct coordinates coord6 = { 0, 0, 2 };
-    vector<struct coordinates> vect{ coord1, coord2, coord3, coord4, coord5, coord6 };
+    struct coordinates coord7 = { 0, 10, 0 };
+    vector<struct coordinates> vect{ coord1, coord2, coord3, coord4, coord5, coord6, coord7 };
 
     Shape myShape(vec3(0.0f, 0.0f, 0.0f), vect, vao, shaderProgram, true);
 
