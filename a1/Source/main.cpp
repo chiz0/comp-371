@@ -30,11 +30,11 @@ using namespace glm;
 using namespace std;
 
 ////////////////////// CONSTANTS //////////////////////
-const int WALL_SIZE = 8;                            // How many unit cubes in nxn should the wall be
+const int WALL_SIZE = 12;                            // How many unit cubes in nxn should the wall be
 const float WALL_THICKNESS = 0.1f;                  // How thick is the wall
 const int WALL_DISTANCE = 10 / WALL_THICKNESS;      // How far from the model should its wall be
 const int MODEL_COUNT = 4;                          // How many models are present in the world
-const float STAGE_WIDTH = 20.0f;                    // How far in either direction each model will be placed
+const float STAGE_WIDTH = 50.0f;                    // How far in either direction each model will be placed
 const float SCALE_RATE = 0.2f;                      // The rate at which models grow and shrink
 const float ROTATE_RATE = 20;                       // The rate at which models rotate
 const float TRANSLATE_RATE = 2.0f;                  // The rate at which models move left, right, up, and down
@@ -51,16 +51,17 @@ public:
     {
         mWorldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
     }
-    
+
     void Draw(GLenum renderingMode) {
         glBindVertexArray(mvao);
-        mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), mScale * mScaleVector);
+        mat4 worldMatrix = mAnchor * translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), mScale * mScaleVector);
         glUniformMatrix4fv(mWorldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
         glDrawArrays(renderingMode, 0, 36);
     }
 
     // Properties
     GLuint mWorldMatrixLocation;
+    mat4 mAnchor = mat4(1.0f);
     vec3 mPosition;
     vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
     vec3 mScaleVector = vec3(1.0f, 1.0f, 1.0f);
@@ -92,7 +93,7 @@ public:
         int originZ = description.front().z;
         for (auto it = begin(description); it != end(description); ++it) {
             if (it->x + WALL_SIZE / 2 >= 0 && it->x < WALL_SIZE / 2
-                && it->y + WALL_SIZE / 2 >= 0 && it->y  < WALL_SIZE / 2) 
+                && it->y + WALL_SIZE / 2 >= 0 && it->y < WALL_SIZE / 2)
             {
                 projection[it->x + WALL_SIZE / 2][it->y + WALL_SIZE / 2] = true;
             }
@@ -120,11 +121,10 @@ public:
     }
 
     void Draw(GLenum renderingMode) {
-        glBindVertexArray(mvao);
         for (auto it = begin(voxels); it != end(voxels); ++it) {
-            mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), it->mScaleVector * mScale) * translate(mat4(1.0f), it->mPosition);
-            glUniformMatrix4fv(mWorldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-            glDrawArrays(renderingMode, 0, 36);
+            mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), it->mScaleVector * mScale);
+            it->mAnchor = worldMatrix;
+            it->Draw(renderingMode);
         }
     }
 
@@ -143,6 +143,7 @@ public:
 int compileAndLinkShaders();
 
 int createVertexArrayObject();
+int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
 
 bool initContext();
 
@@ -186,7 +187,7 @@ int main(int argc, char* argv[])
     // Enable Backface culling
     glEnable(GL_CULL_FACE);
 
-    // @TODO 1 - Enable Depth Test
+    // Enable Depth Test
     glEnable(GL_DEPTH_TEST);
 
     GLenum renderingMode = GL_TRIANGLES;
@@ -201,16 +202,71 @@ int main(int argc, char* argv[])
     vector<Shape> shapes;               // Set of all shapes in the world
 
     ///////// DESIGN MODELS HERE /////////
-    vector<struct coordinates> shape1 { 
-        { 0, 0, 0 }, 
-        { 0, 1, 0 }, 
-        { 0, -1, 0 }, 
-        { 1, 0, 0 }, 
-        { 0, 0, 1 }, 
-        { 0, 0, 2 } 
+    // TODO: Add model coordinate descriptions
+    // Chi shape
+    vector<struct coordinates> chiShape{
+        { 0, 0, 0 },
+        { 0, 0, 1 },
+        { 0, 0, -1 },
+        { 0, 0, 2 },
+        { 0, 0, -2 },
+        { 0, 0, 3 },
+        { 0, 0, -3 },
+        { 1, 0, 0 },
+        { 1, 0, 1 },
+        { 1, 0, -1 },
+        { 1, 0, 2 },
+        { 1, 0, -2 },
+        { -1, 0, 0 },
+        { -1, 0, 1 },
+        { -1, 0, -1 },
+        { -1, 0, 2 },
+        { -1, 0, -2 },
+        { 2, 0, 0 },
+        { 2, 0, 1 },
+        { 2, 0, -1 },
+        { -2, 0, 0 },
+        { -2, 0, 1 },
+        { -2, 0, -1 },
+        { 3, 0, 0 },
+        { -3, 0, 0 },
+        { 0, 1, 0 },
+        { 0, 1, 1 },
+        { 0, 1, -1 },
+        { 0, 1, 2 },
+        { 0, 1, -2 },
+        { 1, 1, 0 },
+        { 1, 1, 1 },
+        { 1, 1, -1 },
+        { -1, 1, 0 },
+        { -1, 1, 1 },
+        { -1, 1, -1 },
+        { 2, 1, 0 },
+        { -2, 1, 0 },
+        { 0, 2, 0 },
+        { 0, 2, 1 },
+        { 0, 2, -1 },
+        { 1, 2, 0 },
+        { -1, 2, 0 },
+        { 0, 3, 0 }
     };
 
-    vector<struct coordinates> shape2 {
+    vector<struct coordinates> alexShape{
+        { 1, 0, 0 },
+        { 1, -1, 0 },
+        { 1, -1, -1 },
+        { 0, -2, -1 },
+        { 1, -2, -1 },
+        { 1, 0, 1 },
+        { 0, 2, 1 },
+        { 0, 1, 1 },
+        { -1, 3, 1 },
+        { -1, 2, 1 },
+        { -1, 3, 0 },
+        { 1, 1, 1 }
+    };
+
+    vector<struct coordinates> shape3{
         { 0, 0, 0 },
         { 0, 1, 0 },
         { 0, -1, 0 },
@@ -219,7 +275,7 @@ int main(int argc, char* argv[])
         { 0, 0, 2 }
     };
 
-    vector<struct coordinates> shape3 {
+    vector<struct coordinates> shape4{
         { 0, 0, 0 },
         { 0, 1, 0 },
         { 0, -1, 0 },
@@ -228,19 +284,19 @@ int main(int argc, char* argv[])
         { 0, 0, 2 }
     };
 
-    vector<struct coordinates> shape4 {
-        { 0, 0, 0 },
-        { 0, 1, 0 },
-        { 0, -1, 0 },
-        { 1, 0, 0 },
-        { 0, 0, 1 },
-        { 0, 0, 2 }
-    };
+    // TODO: Add model colours
+    // I suggest choosing a light colour (i.e. higher values) for the first value (front and back colour). It makes the line flicker less visible on the wall during movement.
+    // Chi colour
+    int chiColour = createVertexArrayObjectColoured(vec3(0.429f, 0.808f, 0.922f), vec3(0.248f, 0.511f, 0.804f), vec3(0.292f, 0.584f, 0.929f));
+    // Alex colour
+    int alexColour = createVertexArrayObjectColoured(vec3(0.984f, 0.761f, 0.016f), vec3(0.898f, 0.22f, 0), vec3(0.871f, 0.318f, 0.22f));
+    // int colour3
+    // int colour4
 
-    shapes.push_back(Shape(vec3(STAGE_WIDTH, 0.0f, STAGE_WIDTH), shape1, vao, shaderProgram, true));
-    shapes.push_back(Shape(vec3(-STAGE_WIDTH, 0.0f, STAGE_WIDTH), shape2, vao, shaderProgram, true));
-    shapes.push_back(Shape(vec3(STAGE_WIDTH, 0.0f, -STAGE_WIDTH), shape3, vao, shaderProgram, true));
-    shapes.push_back(Shape(vec3(-STAGE_WIDTH, 0.0f, -STAGE_WIDTH), shape4, vao, shaderProgram, true));
+    shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, shaderProgram, true));
+    shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, shaderProgram, true));
+    shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), shape3, vao, shaderProgram, true));
+    shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), shape4, vao, shaderProgram, true));
 
     int focusedShape = 0;               // The shape currently being viewed and manipulated
     bool moveCameraToDestination = false;
@@ -254,8 +310,8 @@ int main(int argc, char* argv[])
 
 
     // Camera parameters for view transform
-    vec3 cameraPosition = cameraPositions[0];
-    vec3 cameraLookAt(0.0f, 0.0f, -1.0f);
+    vec3 cameraPosition = vec3(0.0f, 1.0f, 20.0f);
+    vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
     vec3 cameraDestination = cameraPosition;
 
@@ -267,6 +323,12 @@ int main(int argc, char* argv[])
     GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
+    // Grid and coordinate axis colours
+    int groundColour = createVertexArrayObjectColoured(vec3(1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f));
+    int xLineColour = createVertexArrayObjectColoured(vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f));
+    int yLineColour = createVertexArrayObjectColoured(vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+    int zLineColour = createVertexArrayObjectColoured(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f));
+
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -276,30 +338,41 @@ int main(int argc, char* argv[])
 
         // Each frame, reset color of each pixel to glClearColor
 
-        // @TODO 1 - Clear Depth Buffer Bit as well
+        // Clear Depth Buffer Bit
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-        // Draw geometry
-        glBindVertexArray(vao);
-        //glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
         // Draw ground
+
+        glBindVertexArray(groundColour);
+
         GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-        for (int i = -100; i <= 100; i++) {
-            mat4 gridMatrix = translate(mat4(1.0f), vec3(0, -10.0f, i)) * scale(mat4(1.0f), vec3(200.0f, 0.02f, 0.02f));
+        for (int i = -50; i <= 50; i++) {
+            mat4 gridMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, i)) * scale(mat4(1.0f), vec3(100.0f, 0.02f, 0.02f));
             glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
             glDrawArrays(renderingMode, 0, 36);
         }
-        for (int i = -100; i <= 100; i++) {
-            mat4 gridMatrix = translate(mat4(1.0f), vec3(i, -10.0f, 0)) * scale(mat4(1.0f), vec3(0.02f, 0.02f, 200.0f));
+        for (int i = -50; i <= 50; i++) {
+            mat4 gridMatrix = translate(mat4(1.0f), vec3(i, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(0.02f, 0.02f, 100.0f));
             glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
             glDrawArrays(renderingMode, 0, 36);
         }
 
+        // Draw coordinate axes
+        glBindVertexArray(xLineColour);
+        mat4 xLine = translate(mat4(1.0f), vec3(2.5f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(5.0f, 0.1f, 0.1f));
+        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &xLine[0][0]);
+        glDrawArrays(renderingMode, 0, 36);
+        glBindVertexArray(yLineColour);
+        mat4 yLine = translate(mat4(1.0f), vec3(0.0f, 2.6f, 0.0f)) * scale(mat4(1.0f), vec3(0.1f, 5.0f, 0.1f));
+        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &yLine[0][0]);
+        glDrawArrays(renderingMode, 0, 36);
+        glBindVertexArray(zLineColour);
+        mat4 zLine = translate(mat4(1.0f), vec3(0.0f, 0.1f, 2.5f)) * scale(mat4(1.0f), vec3(0.1f, 0.1f, 5.0f));
+        glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &zLine[0][0]);
+        glDrawArrays(renderingMode, 0, 36);
 
-        // Draw shape and test transformations
-        for(Shape shape : shapes) {
+        // Draw shape
+        for (Shape shape : shapes) {
             shape.Draw(renderingMode);
         }
 
@@ -318,11 +391,6 @@ int main(int argc, char* argv[])
         float currentCameraSpeed = (fastCam) ? CAMERA_SPEED * 2 : CAMERA_SPEED;
 
 
-        // @TODO 4 - Calculate mouse motion dx and dy
-        //         - Update camera horizontal and vertical angle
-
-
-        // Please understand the code when you un-comment it!
         double mousePosX, mousePosY;
         glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
@@ -343,11 +411,13 @@ int main(int argc, char* argv[])
         }
 
         if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-            if (dy < 0) {
-                cameraPosition += currentCameraSpeed * cameraLookAt;
-            }
-            if (dy > 0) {
-                cameraPosition -= currentCameraSpeed * cameraLookAt;
+            if (!moveCameraToDestination) {
+                if (dy < 0) {
+                    cameraPosition += currentCameraSpeed * cameraLookAt;
+                }
+                if (dy > 0) {
+                    cameraPosition -= currentCameraSpeed * cameraLookAt;
+                }
             }
         }
 
@@ -421,45 +491,65 @@ int main(int argc, char* argv[])
             moveCameraToDestination = true;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Rz
-        {
-            shapes[focusedShape].mOrientation.z += ROTATE_RATE * dt;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) // R-z
-        {
-            shapes[focusedShape].mOrientation.z -= ROTATE_RATE * dt;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) // Ry
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Ry
         {
             shapes[focusedShape].mOrientation.y += ROTATE_RATE * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) // R-y
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) // R-y
         {
             shapes[focusedShape].mOrientation.y -= ROTATE_RATE * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) // grow object
+        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) // Rz
+        {
+            shapes[focusedShape].mOrientation.z += ROTATE_RATE * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) // R-z
+        {
+            shapes[focusedShape].mOrientation.z -= ROTATE_RATE * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) // Rx
+        {
+            shapes[focusedShape].mOrientation.x += ROTATE_RATE * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) // R-x
+        {
+            shapes[focusedShape].mOrientation.x -= ROTATE_RATE * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) // grow object
         {
             shapes[focusedShape].mScale += SCALE_RATE * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) // shrink object
+        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) // shrink object
         {
             shapes[focusedShape].mScale -= SCALE_RATE * dt;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) // move object forward
-        {
-            shapes[focusedShape].mPosition.z += TRANSLATE_RATE * dt;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) // move object backward
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move object forward
         {
             shapes[focusedShape].mPosition.z -= TRANSLATE_RATE * dt;
         }
+
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move object backward
+        {
+            shapes[focusedShape].mPosition.z += TRANSLATE_RATE * dt;
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move object left
+        {
+            shapes[focusedShape].mPosition.x -= TRANSLATE_RATE * dt;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move object right
+        {
+            shapes[focusedShape].mPosition.x += TRANSLATE_RATE * dt;
+        }
+
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) // Set triangle rendering mode
         {
             renderingMode = GL_TRIANGLES;
@@ -484,6 +574,12 @@ int main(int argc, char* argv[])
                 moveCameraToDestination = false;
             }
             cameraPosition += cameraDelta * CAMERA_JUMP_SPEED * dt;
+
+            // Reset camera orientation
+            cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
+            cameraUp.x = 0.0f; cameraUp.y = 1.0f; cameraUp.z = 0.0f;
+            cameraHorizontalAngle = 90.0f;
+            cameraVerticalAngle = 0.0f;
         }
 
         mat4 viewMatrix = mat4(1.0);
@@ -570,63 +666,55 @@ int compileAndLinkShaders()
 int createVertexArrayObject()
 {
     // Cube model
-    const vec3 orange1 = vec3(0.984f, 0.761f, 0.016f);
-    const vec3 orange2 = vec3(0.898f, 0.22f, 0);
-    const vec3 orange3 = vec3(0.6f, 0.6f, 0.6f);
-    const vec3 orange4 = vec3(0.871f, 0.318f, 0.22f);
-    const vec3 orange5 = vec3(0.996f, 0.824f, 0.463f);
-    const vec3 orange6 = vec3(0.996f, 0.58f, 0.255f);
-
     vec3 vertexArray[] = {  // position,                            color
-        vec3(-0.5f,-0.5f,-0.5f), orange1, //left
-        vec3(-0.5f,-0.5f, 0.5f), orange1,
-        vec3(-0.5f, 0.5f, 0.5f), orange1,
+        vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
+        vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-        vec3(-0.5f,-0.5f,-0.5f), orange1,
-        vec3(-0.5f, 0.5f, 0.5f), orange1,
-        vec3(-0.5f, 0.5f,-0.5f), orange1,
+        vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+        vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-        vec3(0.5f, 0.5f,-0.5f), orange2, // far
-        vec3(-0.5f,-0.5f,-0.5f), orange2,
-        vec3(-0.5f, 0.5f,-0.5f), orange2,
+        vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
+        vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+        vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-        vec3(0.5f, 0.5f,-0.5f), orange2,
-        vec3(0.5f,-0.5f,-0.5f), orange2,
-        vec3(-0.5f,-0.5f,-0.5f), orange2,
+        vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+        vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+        vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-        vec3(0.5f,-0.5f, 0.5f), orange3, // bottom
-        vec3(-0.5f,-0.5f,-0.5f), orange3,
-        vec3(0.5f,-0.5f,-0.5f), orange3,
+        vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
+        vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+        vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-        vec3(0.5f,-0.5f, 0.5f), orange3,
-        vec3(-0.5f,-0.5f, 0.5f), orange3,
-        vec3(-0.5f,-0.5f,-0.5f), orange3,
+        vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+        vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+        vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
 
-        vec3(-0.5f, 0.5f, 0.5f), orange4, // near
-        vec3(-0.5f,-0.5f, 0.5f), orange4,
-        vec3(0.5f,-0.5f, 0.5f), orange4,
+        vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
+        vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+        vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
 
-        vec3(0.5f, 0.5f, 0.5f), orange4,
-        vec3(-0.5f, 0.5f, 0.5f), orange4,
-        vec3(0.5f,-0.5f, 0.5f), orange4,
+        vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+        vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+        vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
 
-        vec3(0.5f, 0.5f, 0.5f), orange5, // right
-        vec3(0.5f,-0.5f,-0.5f), orange5,
-        vec3(0.5f, 0.5f,-0.5f), orange5,
+        vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
+        vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+        vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-        vec3(0.5f,-0.5f,-0.5f), orange5,
-        vec3(0.5f, 0.5f, 0.5f), orange5,
-        vec3(0.5f,-0.5f, 0.5f), orange5,
+        vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+        vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+        vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
 
-        vec3(0.5f, 0.5f, 0.5f), orange6, // top
-        vec3(0.5f, 0.5f,-0.5f), orange6,
-        vec3(-0.5f, 0.5f,-0.5f), orange6,
+        vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
+        vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+        vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
 
-        vec3(0.5f, 0.5f, 0.5f), orange6,
-        vec3(-0.5f, 0.5f,-0.5f), orange6,
-        vec3(-0.5f, 0.5f, 0.5f), orange6
+        vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
+        vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+        vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
     };
-
 
     // Create a vertex array
     GLuint vertexArrayObject;
@@ -665,6 +753,139 @@ int createVertexArrayObject()
     return vertexArrayObject;
 }
 
+int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour)
+{
+    // Cube model
+    vec3 vertexArray[] = {
+        vec3(-0.5f,-0.5f,-0.5f),
+        vec3(-0.5f,-0.5f, 0.5f),
+        vec3(-0.5f, 0.5f, 0.5f),
+        vec3(-0.5f,-0.5f,-0.5f),
+        vec3(-0.5f, 0.5f, 0.5f),
+        vec3(-0.5f, 0.5f,-0.5f),
+
+        vec3(0.5f, 0.5f,-0.5f),
+        vec3(-0.5f,-0.5f,-0.5f),
+        vec3(-0.5f, 0.5f,-0.5f),
+        vec3(0.5f, 0.5f,-0.5f),
+        vec3(0.5f,-0.5f,-0.5f),
+        vec3(-0.5f,-0.5f,-0.5f),
+
+        vec3(0.5f,-0.5f, 0.5f),
+        vec3(-0.5f,-0.5f,-0.5f),
+        vec3(0.5f,-0.5f,-0.5f),
+        vec3(0.5f,-0.5f, 0.5f),
+        vec3(-0.5f,-0.5f, 0.5f),
+        vec3(-0.5f,-0.5f,-0.5f),
+
+        vec3(-0.5f, 0.5f, 0.5f),
+        vec3(-0.5f,-0.5f, 0.5f),
+        vec3(0.5f,-0.5f, 0.5f),
+        vec3(0.5f, 0.5f, 0.5f),
+        vec3(-0.5f, 0.5f, 0.5f),
+        vec3(0.5f,-0.5f, 0.5f),
+
+        vec3(0.5f, 0.5f, 0.5f),
+        vec3(0.5f,-0.5f,-0.5f),
+        vec3(0.5f, 0.5f,-0.5f),
+        vec3(0.5f,-0.5f,-0.5f),
+        vec3(0.5f, 0.5f, 0.5f),
+        vec3(0.5f,-0.5f, 0.5f),
+
+        vec3(0.5f, 0.5f, 0.5f),
+        vec3(0.5f, 0.5f,-0.5f),
+        vec3(-0.5f, 0.5f,-0.5f),
+        vec3(0.5f, 0.5f, 0.5f),
+        vec3(-0.5f, 0.5f,-0.5f),
+        vec3(-0.5f, 0.5f, 0.5f)
+    };
+
+    // Colours
+    vec3 colourVertexArray[] = {
+        leftRightColour,
+        leftRightColour,
+        leftRightColour,
+        leftRightColour,
+        leftRightColour,
+        leftRightColour,
+
+        frontBackColour,
+        frontBackColour,
+        frontBackColour,
+        frontBackColour,
+        frontBackColour,
+        frontBackColour,
+
+        topBottomColour,
+        topBottomColour,
+        topBottomColour,
+        topBottomColour,
+        topBottomColour,
+        topBottomColour,
+
+        frontBackColour,
+        frontBackColour,
+        frontBackColour,
+        frontBackColour,
+        frontBackColour,
+        frontBackColour,
+
+        leftRightColour,
+        leftRightColour,
+        leftRightColour,
+        leftRightColour,
+        leftRightColour,
+        leftRightColour,
+
+        topBottomColour,
+        topBottomColour,
+        topBottomColour,
+        topBottomColour,
+        topBottomColour,
+        topBottomColour
+    };
+
+    // Create a vertex array
+    GLuint vertexArrayObject;
+    glGenVertexArrays(1, &vertexArrayObject);
+    glBindVertexArray(vertexArrayObject);
+
+
+    // Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+    GLuint vertexBufferObject;
+    glGenBuffers(1, &vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+        3,                   // size
+        GL_FLOAT,            // type
+        GL_FALSE,            // normalized?
+        sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
+        (void*)0             // array buffer offset
+    );
+    glEnableVertexAttribArray(0);
+
+    GLuint colourVertexBufferObject;
+    glGenBuffers(1, &colourVertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, colourVertexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colourVertexArray), colourVertexArray, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(vec3),
+        (void*)0      // color is offseted a vec3 (comes after position)
+    );
+    glEnableVertexAttribArray(1);
+
+    //glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBindVertexArray(0);
+
+    return vertexArrayObject;
+}
+
 bool initContext() {     // Initialize GLFW and OpenGL version
     glfwInit();
 
@@ -680,7 +901,7 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 #endif
 
     // Create Window and rendering context using GLFW, resolution is 800x600
-    window = glfwCreateWindow(800, 600, "Comp371 - Lab 03", NULL, NULL);
+    window = glfwCreateWindow(1024, 768, "COMP 371 - Assignment 1", NULL, NULL);
     if (window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -689,9 +910,9 @@ bool initContext() {     // Initialize GLFW and OpenGL version
     }
     glfwMakeContextCurrent(window);
 
-    // @TODO 3 - Disable mouse cursor
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
+    // The next line disables the mouse cursor
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // 
     // Initialize GLEW
     glewExperimental = true; // Needed for core profile
     if (glewInit() != GLEW_OK) {
