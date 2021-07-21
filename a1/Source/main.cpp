@@ -288,6 +288,7 @@ int main(int argc, char* argv[])
 	// Other OpenGL states to set once before the Game Loop
 	// Enable Backface culling
 	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	// Enable Depth Test
 	glEnable(GL_DEPTH_TEST);
