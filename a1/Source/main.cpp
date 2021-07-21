@@ -266,7 +266,7 @@ int main(int argc, char* argv[])
         { 1, 1, 1 }
     };
 
-    vector<struct coordinates> shape3{
+    vector<struct coordinates> theoShape{
         { 0, 0, 0 },
         { 0, 1, 0 },
         { 0, -1, 0 },
@@ -278,7 +278,7 @@ int main(int argc, char* argv[])
         { 2, 2, 0 },
         { 0, -2, 0 },
         { 0, -2, -1 },
-        { 0, -2, 1 },
+        { 0, -2, 1 }
     };
 
     vector<struct coordinates> shape4{
@@ -301,7 +301,7 @@ int main(int argc, char* argv[])
 
     shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, shaderProgram, true));
     shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, shaderProgram, true));
-    shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), shape3, vao, shaderProgram, true));
+    shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, vao, shaderProgram, true));
     shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), shape4, vao, shaderProgram, true));
 
     int focusedShape = 0;               // The shape currently being viewed and manipulated
