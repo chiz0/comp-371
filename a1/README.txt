@@ -58,7 +58,7 @@ Rx:     KEY_C
 R-x:    KEY_V
 
 Scaling
------
+-------
 Grow Object:    KEY_U
 Shrink Object:  KEY_J
 
@@ -68,6 +68,10 @@ Forward:    KEY_W
 Backward:   KEY_S
 Left:       KEY_A
 Right:      KEY_D
+
+Reset
+-----
+Reset Shape position, scale and orientation: KEY_SPACE
 
 Rendering
 ---------
