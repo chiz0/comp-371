@@ -18,10 +18,18 @@ Zoom-In:     MOUSE_BUTTON_LEFT + (Mouse-Movement Sliding Up)
 Zoom-Out:    MOUSE_BUTTON_LEFT + (Mouse-Movement Sliding Down)
 
 Pan-Right:   MOUSE_BUTTON_RIGHT + (Mouse-Movement Sliding Right)
-Pan-Left:   MOUSE_BUTTON_RIGHT + (Mouse-Movement Sliding Left)
+Pan-Left:    MOUSE_BUTTON_RIGHT + (Mouse-Movement Sliding Left)
 
-Tilt-Up:   MOUSE_BUTTON_Middle + (Mouse-Movement Sliding Up)
+Tilt-Up:     MOUSE_BUTTON_Middle + (Mouse-Movement Sliding Up)
 Tilt-Down:   MOUSE_BUTTON_Middle + (Mouse-Movement Sliding Down)
+
+First person:                KEY_N
+Third person around origin:  KEY_N
+
+Going Up in 3rd person around origin:       KEY_UP
+Going Down in 3rd person around origin:     KEY_DOWN
+Going Left in 3rd person around origin:     KEY_LEFT
+Going Right in 3rd person around origin:    KEY_RIGHT
 
 
 

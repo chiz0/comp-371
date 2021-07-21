@@ -490,19 +490,19 @@ int main(int argc, char* argv[])
         // Change orientation with the arrow keys
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
             cameraFirstPerson = false;
-            cameraHorizontalAngle += CAMERA_ANGULAR_SPEED * dt;
+            cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
             cameraFirstPerson = false;
-            cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
+            cameraHorizontalAngle += CAMERA_ANGULAR_SPEED * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
             cameraFirstPerson = false;
-            cameraVerticalAngle += CAMERA_ANGULAR_SPEED * dt;
+            cameraVerticalAngle -= CAMERA_ANGULAR_SPEED * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
             cameraFirstPerson = false;
-            cameraVerticalAngle -= CAMERA_ANGULAR_SPEED * dt;
+            cameraVerticalAngle += CAMERA_ANGULAR_SPEED * dt;
         }
 
         //Go Back to initial position and orientation
