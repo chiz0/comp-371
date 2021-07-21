@@ -24,6 +24,7 @@
 //  - Created support for multiple shapes in one world
 //  - Enabled cycling between shapes, with controls and camera movement
 //  - Managed the clean merging of code
+//	- Reset shape to originial position
 //
 //  Antonio
 //	- Implemented the arrow key camera (third person)
@@ -111,7 +112,7 @@ struct coordinates
 class Shape {
 public:
 	// Functions
-	Shape(vec3 position, vector<coordinates> description, int vao, int shaderProgram, bool hasWall) : mPosition(position), mvao(vao), mshaderProgram(shaderProgram), voxelCount(description.size())
+	Shape(vec3 position, vector<coordinates> description, int vao, int shaderProgram, bool hasWall) : mPosition(position), mvao(vao), mshaderProgram(shaderProgram), voxelCount(description.size()), defaultPosition(position)
 	{
 		mWorldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 		for (int i = 0; i < WALL_SIZE; i++) {
@@ -215,6 +216,12 @@ public:
 		}
 	}
 
+	void ResetPosition() {
+		mPosition = defaultPosition;
+		mOrientation = defaultOrientation;
+		mScale = defaultScale;
+	}
+
 	// Properties
 	bool showWall = true;
 	int voxelCount = 0;
@@ -228,6 +235,9 @@ public:
 	float mScale = 1.0f;
 	int mvao;
 	int mshaderProgram;
+	vec3 defaultOrientation = vec3(0.0f, 0.0f, 0.0f);
+	vec3 defaultPosition;
+	float defaultScale = 1.0f;
 };
 
 /////////////////////// MAIN ///////////////////////
@@ -380,42 +390,41 @@ int main(int argc, char* argv[])
 	};
 
 	vector<struct coordinates> antoShape{
-			{ 0, 0, 0 },
-			{ 0, 0, -1 },
-			{ 0, 0, -2 },
+		{ 0, 0, 0 },
+		{ 0, 0, -1 },
+		{ 0, 0, -2 },
 
-			{ 1, 0, 0 },
-			{ 1, 0, -1 },
-			{ 1, 0, -2 },
+		{ 1, 0, 0 },
+		{ 1, 0, -1 },
+		{ 1, 0, -2 },
 
-			{ 1, 1, 0 },
-			{ 1, 1, -1 },
-			{ 1, 1, -2 },
+		{ 1, 1, 0 },
+		{ 1, 1, -1 },
+		{ 1, 1, -2 },
 
-			{ 1, -1, 0 },
-			{ 1, -1, -1 },
-			{ 1, -1, -2 },
+		{ 1, -1, 0 },
+		{ 1, -1, -1 },
+		{ 1, -1, -2 },
 
-			{ -1, 0, 0 },
-			{ -1, 0, -1 },
-			{ -1, 0, -2 },
+		{ -1, 0, 0 },
+		{ -1, 0, -1 },
+		{ -1, 0, -2 },
 
-			{ -1, 1, -1 },
-			{ -1, 1, -2 },
-			{ -1, 1, 0 },
+		{ -1, 1, -1 },
+		{ -1, 1, -2 },
+		{ -1, 1, 0 },
 
-			{ -1, -1, 0 },
-			{ -1, -1, -1 },
-			{ -1, -1, -2 },
+		{ -1, -1, 0 },
+		{ -1, -1, -1 },
+		{ -1, -1, -2 },
 
-			{ 0, -2, -1 },
-			{ 0, -2, 0 },
-			{ 0, -2, -2 },
+		{ 0, -2, -1 },
+		{ 0, -2, 0 },
+		{ 0, -2, -2 },
 
-			{ 0, 2, 0 },
-			{ 0, 2, -1 },
-			{ 0, 2, -2 },
-
+		{ 0, 2, 0 },
+		{ 0, 2, -1 },
+		{ 0, 2, -2 }
 	};
 
 	// Colour of the shapes
@@ -731,9 +740,14 @@ int main(int argc, char* argv[])
 		}
 
 		// Reshuffle shape
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) // move object left
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
 			shapes[focusedShape].Reshuffle();
+		}
+		// Reset shape position and orientation
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		{
+			shapes[focusedShape].ResetPosition();
 		}
 
 		if (moveCameraToDestination) {
@@ -1097,8 +1111,8 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 #endif
 
-	// Create Window and rendering context using GLFW, resolution is 800x600
-	window = glfwCreateWindow(1024, 768, "COMP 371 - Assignment 1", NULL, NULL);
+	// Create Window and rendering context using GLFW, resolution is 1024x768
+	window = glfwCreateWindow(1024, 768, "COMP 371 - Assignment 1 by Spiral Staircase", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cerr << "Failed to create GLFW window" << std::endl;
