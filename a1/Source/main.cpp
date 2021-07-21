@@ -15,6 +15,7 @@
 //  - Implemented First person camera movement
 //  - Made the README after teammates implementation
 //  - Added the reset to initial position
+//  - Merged Some of the code
 // 
 //  Alexander
 //  - Created basis unit cube and first-draft translation and scaling
