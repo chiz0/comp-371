@@ -689,24 +689,15 @@ int main(int argc, char* argv[])
 			shapes[focusedShape].mScale -= SCALE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) // move object forward
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move object forward
 		{
 			shapes[focusedShape].mPosition.z -= TRANSLATE_RATE * dt;
 		}
-		if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) // move object backward
+
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move object backward
 		{
 			shapes[focusedShape].mPosition.z += TRANSLATE_RATE * dt;
 		}
-
-		if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) // move object up
-		{
-			shapes[focusedShape].mPosition.y -= TRANSLATE_RATE * dt;
-		}
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move object down
-		{
-			shapes[focusedShape].mPosition.y += TRANSLATE_RATE * dt;
-		}
-
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move object left
 		{
 			shapes[focusedShape].mPosition.x -= TRANSLATE_RATE * dt;
