@@ -415,15 +415,16 @@ int main(int argc, char* argv[])
 
         // Draw shape
         for (Shape shape : shapes) {
+
+
             shape.Draw(renderingMode);
         }
         if (!cameraFirstPerson)
         {
             // In third person view, let's draw the spinning cube in world space, like any other models
-            //DRAW CUBEE                 
+            //DRAW CUBEE   
 
-            cameraLookAt.x = 0.0f; cameraLookAt.y = -5.0f; cameraLookAt.z = -1.0f;
-
+            
             mat4 spinningCubeWorldMatrix = translate(mat4(1.0f), cameraPosition) * rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(0.01f, 0.01f, 0.01f));
             glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &spinningCubeWorldMatrix[0][0]);
             glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -503,6 +504,7 @@ int main(int argc, char* argv[])
             cameraFirstPerson = false;
             cameraVerticalAngle -= CAMERA_ANGULAR_SPEED * dt;
         }
+
         //Go Back to initial position and orientation
         if (glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) {
             cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
@@ -661,23 +663,23 @@ int main(int argc, char* argv[])
             viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
         }
         else {
-            int newx = cameraPosition.x;
-            int newy = cameraPosition.y;
-            int newz = cameraPosition.z;
+            int newx ;
+            int newy ;
+            int newz ;
             if (cameraPosition.x < 0) {
-                newx = cameraPosition.x ;
+                newx = cameraPosition.x * -1;
             }
             else
                 newx = cameraPosition.x;
             if (cameraPosition.y < 0)
             {
-                newy = cameraPosition.y ;
+                newy = cameraPosition.y * -1;
             }
             else
                 newy = cameraPosition.y;
             if (cameraPosition.z < 0)
             {
-                newz = cameraPosition.z;
+                newz = cameraPosition.z * -1;
             }
             else
                 newz = cameraPosition.z;
