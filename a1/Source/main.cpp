@@ -518,21 +518,7 @@ int main(int argc, char* argv[])
 
 		// Draw shape
 		for (Shape shape : shapes) {
-
-
 			shape.Draw(renderingMode);
-		}
-		if (!cameraFirstPerson)
-		{
-			// In third person view, let's draw the spinning cube in world space, like any other models
-			//DRAW CUBEE   
-
-
-			mat4 spinningCubeWorldMatrix = translate(mat4(1.0f), cameraPosition) * rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(0.01f, 0.01f, 0.01f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &spinningCubeWorldMatrix[0][0]);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
 		}
 
 		glBindVertexArray(0);
@@ -558,9 +544,6 @@ int main(int argc, char* argv[])
 		{
 			cameraFirstPerson = false;
 		}
-
-
-
 
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
