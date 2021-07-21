@@ -11,7 +11,11 @@
 // CONTRIBUTIONS
 //
 //  Theodor
-//
+//  - Added camera pan and tilt 
+//  - Implemented First person camera movement
+//  - Made the README after teammates implementation
+//  - Added the reset to initial position
+// 
 //  Alexander
 //  - Created basis unit cube and first-draft translation and scaling
 //  - Drew the grid at the base of the world
@@ -325,12 +329,14 @@ int main(int argc, char* argv[])
     int chiColour = createVertexArrayObjectColoured(vec3(0.429f, 0.808f, 0.922f), vec3(0.248f, 0.511f, 0.804f), vec3(0.292f, 0.584f, 0.929f));
     // Alex colour
     int alexColour = createVertexArrayObjectColoured(vec3(0.984f, 0.761f, 0.016f), vec3(0.898f, 0.22f, 0), vec3(0.871f, 0.318f, 0.22f));
-    // int colour3
+    // Theo colour
+    int theoColour = createVertexArrayObjectColoured(vec3(1.0f, 0.15f, 0.0f), vec3(0.75f, 0.15f, 0.0f), vec3(0.75f, 0.15f, 0.15f));
+    
     // int colour4
 
     shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, shaderProgram, true));
     shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, shaderProgram, true));
-    shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, vao, shaderProgram, true));
+    shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, shaderProgram, true));
     shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), shape4, vao, shaderProgram, true));
 
     int focusedShape = 0;                   // The shape currently being viewed and manipulated
@@ -349,6 +355,7 @@ int main(int argc, char* argv[])
     vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
     vec3 cameraDestination = cameraPosition;
+    bool  cameraFirstPerson = true; // press 1 or 2 to toggle this variable
 
     // Set initial view matrix
     mat4 viewMatrix = lookAt(cameraPosition,  // eye
@@ -371,7 +378,7 @@ int main(int argc, char* argv[])
         float dt = glfwGetTime() - lastFrameTime;
         lastFrameTime += dt;
 
-        // Each frame, reset color of each pixel to glClearColor
+        
 
         // Clear Depth Buffer Bit
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -410,6 +417,19 @@ int main(int argc, char* argv[])
         for (Shape shape : shapes) {
             shape.Draw(renderingMode);
         }
+        if (!cameraFirstPerson)
+        {
+            // In third person view, let's draw the spinning cube in world space, like any other models
+            //DRAW CUBEE                 
+
+            cameraLookAt.x = 0.0f; cameraLookAt.y = -5.0f; cameraLookAt.z = -1.0f;
+
+            mat4 spinningCubeWorldMatrix = translate(mat4(1.0f), cameraPosition) * rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(0.01f, 0.01f, 0.01f));
+            glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &spinningCubeWorldMatrix[0][0]);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+        }
 
         glBindVertexArray(0);
 
@@ -424,6 +444,18 @@ int main(int argc, char* argv[])
         // If shift is held, double camera speed
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
         float currentCameraSpeed = (fastCam) ? CAMERA_SPEED * 2 : CAMERA_SPEED;
+
+        if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) // FPview
+        {
+            cameraFirstPerson = true;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) //TPview
+        {
+            cameraFirstPerson = false;
+        }
+
+        
 
 
         double mousePosX, mousePosY;
@@ -456,15 +488,19 @@ int main(int argc, char* argv[])
 
         // Change orientation with the arrow keys
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            cameraFirstPerson = false;
             cameraHorizontalAngle += CAMERA_ANGULAR_SPEED * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            cameraFirstPerson = false;
             cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+            cameraFirstPerson = false;
             cameraVerticalAngle += CAMERA_ANGULAR_SPEED * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+            cameraFirstPerson = false;
             cameraVerticalAngle -= CAMERA_ANGULAR_SPEED * dt;
         }
         //Go Back to initial position and orientation
@@ -615,11 +651,40 @@ int main(int argc, char* argv[])
             cameraVerticalAngle = 0.0f;
         }
 
+        //Antonio's part
         mat4 viewMatrix = mat4(1.0);
 
         glm::vec3 position = cameraPosition;
         viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
-
+        //if camera is third person, approximate the radius and give the world orientation perspective aimed at the origin {0,0,0}, Press N to normalize view to first person
+        if (cameraFirstPerson) {
+            viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
+        }
+        else {
+            int newx = cameraPosition.x;
+            int newy = cameraPosition.y;
+            int newz = cameraPosition.z;
+            if (cameraPosition.x < 0) {
+                newx = cameraPosition.x ;
+            }
+            else
+                newx = cameraPosition.x;
+            if (cameraPosition.y < 0)
+            {
+                newy = cameraPosition.y ;
+            }
+            else
+                newy = cameraPosition.y;
+            if (cameraPosition.z < 0)
+            {
+                newz = cameraPosition.z;
+            }
+            else
+                newz = cameraPosition.z;
+            float radius = sqrt(pow(newx, 2) + pow(newy, 2) + pow(newz, 2));
+            glm::vec3 position = vec3{ 0,1,0} - radius * cameraLookAt;
+            viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
+        }
         GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
         glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
@@ -916,7 +981,7 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
     return vertexArrayObject;
 }
 
-bool initContext() {     // Initialize GLFW and OpenGL version
+bool initContext()  {     // Initialize GLFW and OpenGL version
     glfwInit();
 
 #if defined(PLATFORM_OSX)
