@@ -449,7 +449,7 @@ int main(int argc, char* argv[])
             cameraHorizontalAngle = 90.0f;
             cameraVerticalAngle = 0.0f;
 
-            cameraDestination = cameraPositions[focusedShape];
+            cameraDestination = vec3(0.0f, 1.0f, 20.0f);
             moveCameraToDestination = true;
         }
 
