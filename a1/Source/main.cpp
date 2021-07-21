@@ -7,6 +7,24 @@
 // Zhang, Chi (29783539)
 // 
 // Based on Labs Framework created by Nicolas Bergeron
+//
+// CONTRIBUTIONS
+//
+//  Theodor
+//
+//  Alexander
+//  - Created basis unit cube and first-draft translation and scaling
+//  - Drew the grid at the base of the world
+//  - Generated walls programatically based on shapes
+//  - Created support for multiple shapes in one world
+//  - Enabled cycling between shapes, with controls and camera movement
+//  - Managed the clean merging of code
+//
+//  Antonio
+//
+//  Chi
+//
+//
 
 #include <iostream>
 #include <list>
@@ -30,7 +48,7 @@ using namespace glm;
 using namespace std;
 
 ////////////////////// CONSTANTS //////////////////////
-const int WALL_SIZE = 12;                            // How many unit cubes in nxn should the wall be
+const int WALL_SIZE = 12;                           // How many unit cubes in nxn should the wall be
 const float WALL_THICKNESS = 0.1f;                  // How thick is the wall
 const int WALL_DISTANCE = 10 / WALL_THICKNESS;      // How far from the model should its wall be
 const int MODEL_COUNT = 4;                          // How many models are present in the world
@@ -195,12 +213,6 @@ int main(int argc, char* argv[])
     glEnable(GL_DEPTH_TEST);
 
     GLenum renderingMode = GL_TRIANGLES;
-
-    //int to keep track of the time
-    int temp = 0;
-
-    //see if the camera is to keep going in a certain direction
-    bool leftD = false, rightD = false, upD = false, downD = false;
 
     // Track models
     vector<Shape> shapes;               // Set of all shapes in the world
@@ -409,7 +421,7 @@ int main(int argc, char* argv[])
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        // This was solution for Lab02 - Moving camera exercise
+        // If shift is held, double camera speed
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
         float currentCameraSpeed = (fastCam) ? CAMERA_SPEED * 2 : CAMERA_SPEED;
 
