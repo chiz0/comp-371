@@ -37,10 +37,10 @@ Going Right in 3rd person around origin:    KEY_RIGHT
 SHAPE SELECTION
 --------------------------------------------------------------------------------------------------------
 
-KEY_1:  Chi's Shape
-KEY_2:  Alex's Shape
-KEY_3:  Theo' Shape
-KEY_4:  Antonio's Shape
+Chi's shape:		KEY_1
+Alex's shape:		KEY_2
+Theo's shape:		KEY_3
+Antonio's shape:	KEY_4
 
 
 

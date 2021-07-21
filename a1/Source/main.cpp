@@ -13,9 +13,9 @@
 //  Theodor
 //  - Added camera pan and tilt 
 //  - Implemented First person camera movement
-//  - Made the README after teammates implementation
+//  - Made the README after teammates' implementation
 //  - Added the reset to initial position
-//  - Merged Some of the code
+//  - Merged some of the code
 // 
 //  Alexander
 //  - Created basis unit cube and first-draft translation and scaling
@@ -26,9 +26,14 @@
 //  - Managed the clean merging of code
 //
 //  Antonio
+//	- Implemented the arrow key camera (third person)
+//	- Changes the radius from the origin dynamically
+//	- Shape4 (brown shape)
 //
 //  Chi
-//
+//  - Voxel and Shape classes (except wall generation)
+//  - Added coordinate axes
+//  - Added external shader source loading
 //
 
 #include <iostream>
@@ -283,7 +288,6 @@ int main(int argc, char* argv[])
 	vector<Shape> shapes;               // Set of all shapes in the world
 
 	///////// DESIGN MODELS HERE /////////
-	// TODO: Add model coordinate descriptions
 	// Chi shape
 	vector<struct coordinates> chiShape{
 		{ 0, 0, 0 },
@@ -414,8 +418,7 @@ int main(int argc, char* argv[])
 
 	};
 
-	// TODO: Add model colours
-	// I suggest choosing a light colour (i.e. higher values) for the first value (front and back colour). It makes the line flicker less visible on the wall during movement.
+	// Colour of the shapes
 	// Chi colour
 	int chiColour = createVertexArrayObjectColoured(vec3(0.429f, 0.808f, 0.922f), vec3(0.248f, 0.511f, 0.804f), vec3(0.292f, 0.584f, 0.929f));
 	// Alex colour
@@ -424,8 +427,6 @@ int main(int argc, char* argv[])
 	int theoColour = createVertexArrayObjectColoured(vec3(1.0f, 0.15f, 0.0f), vec3(0.75f, 0.15f, 0.0f), vec3(0.75f, 0.15f, 0.15f));
 	// Anto colour
 	int antoColour = createVertexArrayObjectColoured(vec3(0.5f, 0.5f, 0.3f), vec3(0.7, 0.22f, 0), vec3(0.871f, 0.318f, 0.22f));
-
-	// int colour4
 
 	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, shaderProgram, true));
 	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, shaderProgram, true));
@@ -727,6 +728,12 @@ int main(int argc, char* argv[])
 		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // Set point rendering mode
 		{
 			renderingMode = GL_POINTS;
+		}
+
+		// Reshuffle shape
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) // move object left
+		{
+			shapes[focusedShape].Reshuffle();
 		}
 
 		if (moveCameraToDestination) {
