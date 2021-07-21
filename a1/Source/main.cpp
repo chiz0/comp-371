@@ -39,8 +39,12 @@ const float SCALE_RATE = 0.2f;                      // The rate at which models 
 const float ROTATE_RATE = 20;                       // The rate at which models rotate
 const float TRANSLATE_RATE = 2.0f;                  // The rate at which models move left, right, up, and down
 const float CAMERA_JUMP_SPEED = 8.0f;               // The speed at which a camera moves from model to model
+const float CAMERA_ANGULAR_SPEED = 60.0f;           // The speed at which the camera rotates
 const float CAMERA_SPEED = 0.75f;                   // Speed of camera zooming
 const vec3 CAMERA_OFFSET = vec3(-2.0f, 2.0f, 10.0f);// The default position of the camera relative to a model
+
+const string VERTEX_SHADER_FILEPATH = "../Source/VertexShader.glsl";
+const string FRAGMENT_SHADER_FILEPATH = "../Source/FragmentShader.glsl";
 
 /////////////////////// MODELS ///////////////////////
 
@@ -317,8 +321,8 @@ int main(int argc, char* argv[])
     shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, vao, shaderProgram, true));
     shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), shape4, vao, shaderProgram, true));
 
-    int focusedShape = 0;               // The shape currently being viewed and manipulated
-    bool moveCameraToDestination = false;
+    int focusedShape = 0;                   // The shape currently being viewed and manipulated
+    bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
 
     const vector<vec3> cameraPositions{
         CAMERA_OFFSET + shapes[0].mPosition,
@@ -419,14 +423,12 @@ int main(int argc, char* argv[])
         lastMousePosX = mousePosX;
         lastMousePosY = mousePosY;
 
-        const float cameraAngularSpeed = 60.0f;
-
         // Lock the camera rotation to be only when the middle and right button are pressed
         if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-            cameraHorizontalAngle -= dx * cameraAngularSpeed * dt;
+            cameraHorizontalAngle -= dx * CAMERA_ANGULAR_SPEED * dt;
         }
         if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
-            cameraVerticalAngle -= dy * cameraAngularSpeed * dt;
+            cameraVerticalAngle -= dy * CAMERA_ANGULAR_SPEED * dt;
         }
 
         if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
@@ -442,16 +444,16 @@ int main(int argc, char* argv[])
 
         // Change orientation with the arrow keys
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-            cameraHorizontalAngle += cameraAngularSpeed * dt;
+            cameraHorizontalAngle += CAMERA_ANGULAR_SPEED * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-            cameraHorizontalAngle -= cameraAngularSpeed * dt;
+            cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-            cameraVerticalAngle += cameraAngularSpeed * dt;
+            cameraVerticalAngle += CAMERA_ANGULAR_SPEED * dt;
         }
         if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-            cameraVerticalAngle -= cameraAngularSpeed * dt;
+            cameraVerticalAngle -= CAMERA_ANGULAR_SPEED * dt;
         }
         //Go Back to initial position and orientation
         if (glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) {
@@ -617,9 +619,6 @@ int main(int argc, char* argv[])
 
     return 0;
 }
-
-const string VERTEX_SHADER_FILEPATH = "../Source/VertexShader.glsl";
-const string FRAGMENT_SHADER_FILEPATH = "../Source/FragmentShader.glsl";
 
 int compileShaderFromSource(string filepath, GLenum shaderType) {
     // Read from file
