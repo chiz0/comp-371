@@ -1,0 +1,69 @@
+ COMP 371 Assignment 1
+ Spiral Staircase (Section DD Team 3)
+ 
+ Badele, Theodor (40129466)
+ Fourneaux, Alexander (40022711)
+ Reda, Antonio (40155615)
+ Zhang, Chi (29783539)
+
+--------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
+
+
+CAMERA CONTROLS
+--------------------------------------------------------------------------------------------------------
+
+Zoom-In:     MOUSE_BUTTON_LEFT + (Mouse-Movement Sliding Up)
+Zoom-Out:    MOUSE_BUTTON_LEFT + (Mouse-Movement Sliding Down)
+
+Pan-Right:   MOUSE_BUTTON_RIGHT + (Mouse-Movement Sliding Right)
+Pan-Left:   MOUSE_BUTTON_RIGHT + (Mouse-Movement Sliding Left)
+
+Tilt-Up:   MOUSE_BUTTON_Middle + (Mouse-Movement Sliding Up)
+Tilt-Down:   MOUSE_BUTTON_Middle + (Mouse-Movement Sliding Down)
+
+
+
+
+SHAPE SELECTION
+--------------------------------------------------------------------------------------------------------
+
+KEY_1:  Chi's Shape
+KEY_2:  Alex's Shape
+KEY_3:  Theo' Shape
+KEY_4:  Antonio's Shape
+
+
+
+
+SHAPE CONTROLS
+--------------------------------------------------------------------------------------------------------
+
+Rotation
+--------
+Ry:     KEY_Q
+R-y:    KEY_E
+Rz:     KEY_Z
+R-z:    KEY_X
+Rx:     KEY_C
+R-x:    KEY_V
+
+Scaling
+-----
+Grow Object:    KEY_U
+Shrink Object:  KEY_J
+
+Translation
+-----------
+Forward:    KEY_W
+Backward:   KEY_S
+Left:       KEY_A
+Right:      KEY_D
+
+Rendering
+---------
+Triangle Rendering Mode:    KEY_T
+Line Rendering Mode:        KEY_L
+Point Rendering Mode:       KEY_P
+
