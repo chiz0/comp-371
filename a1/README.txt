@@ -24,7 +24,7 @@ Tilt-Up:     MOUSE_BUTTON_Middle + (Mouse-Movement Sliding Up)
 Tilt-Down:   MOUSE_BUTTON_Middle + (Mouse-Movement Sliding Down)
 
 First person:                KEY_N
-Third person around origin:  KEY_N
+Third person around origin:  KEY_M
 
 Going Up in 3rd person around origin:       KEY_UP
 Going Down in 3rd person around origin:     KEY_DOWN
@@ -72,6 +72,10 @@ Right:      KEY_D
 Reset
 -----
 Reset Shape position, scale and orientation: KEY_SPACE
+
+Shuffle
+-------
+Randomise the currently selected shape: KEY_R
 
 Rendering
 ---------
