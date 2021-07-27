@@ -61,7 +61,7 @@ using namespace std;
 ////////////////////// CONSTANTS //////////////////////
 const int WALL_SIZE = 12;                           // How many unit cubes in nxn should the wall be
 const float WALL_THICKNESS = 0.1f;                  // How thick is the wall
-const int WALL_DISTANCE = 10 / WALL_THICKNESS;      // How far from the model should its wall be
+const int WALL_DISTANCE = 1 / WALL_THICKNESS;		// How far from the model should its wall be
 const int MODEL_COUNT = 4;                          // How many models are present in the world
 const float STAGE_WIDTH = 50.0f;                    // How far in either direction each model will be placed
 const float SCALE_RATE = 0.2f;                      // The rate at which models grow and shrink
@@ -153,14 +153,13 @@ public:
 	}
 
 	void Draw(GLenum renderingMode) {
+		mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
 		for (auto it = begin(voxels); it != end(voxels); ++it) {
-			mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), it->mScaleVector * mScale);
 			it->mAnchor = worldMatrix;
 			it->Draw(renderingMode);
 		}
 		if (showWall) {
 			for (auto it = begin(wallVoxels); it != end(wallVoxels); ++it) {
-				mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), it->mScaleVector * mScale);
 				it->mAnchor = worldMatrix;
 				it->Draw(renderingMode);
 			}
