@@ -75,6 +75,9 @@ const vec3 CAMERA_OFFSET = vec3(-2.0f, 2.0f, 10.0f);// The default position of t
 const string VERTEX_SHADER_FILEPATH = "../Source/VertexShader.glsl";
 const string FRAGMENT_SHADER_FILEPATH = "../Source/FragmentShader.glsl";
 
+const string TEXTURED_VERTEX_SHADER_FILEPATH = "../Source/TexturedVertexShaderSource.glsl";
+const string TEXTURED_FRAGMENT_SHADER_FILEPATH = "../Source/TexturedFragmentShaderSource.glsl";
+
 /////////////////////// MODELS ///////////////////////
 
 class Voxel {
@@ -240,8 +243,8 @@ public:
 };
 
 /////////////////////// MAIN ///////////////////////
-
-int compileAndLinkShaders();
+int compileShaderFromSource(string filepath, GLenum shaderType);
+int compileAndLinkShaders(int vertexShader, int fragmentShader);
 
 int createVertexArrayObject();
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
@@ -258,7 +261,14 @@ int main(int argc, char* argv[])
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Compile and link shaders here ...
-	int shaderProgram = compileAndLinkShaders();
+	int vertexShader = compileShaderFromSource(VERTEX_SHADER_FILEPATH, GL_VERTEX_SHADER);
+	int fragmentShader = compileShaderFromSource(FRAGMENT_SHADER_FILEPATH, GL_FRAGMENT_SHADER);
+	int shaderProgram = compileAndLinkShaders(vertexShader, fragmentShader);
+
+	int TexturedVertexShader = compileShaderFromSource(TEXTURED_VERTEX_SHADER_FILEPATH, GL_VERTEX_SHADER);
+	int TexturedFragmentShader = compileShaderFromSource(TEXTURED_FRAGMENT_SHADER_FILEPATH, GL_FRAGMENT_SHADER);
+	int TexturedShaderProgram = compileAndLinkShaders(TexturedVertexShader, TexturedFragmentShader);
+
 
 	// We can set the shader once, since we have only one
 	glUseProgram(shaderProgram);
@@ -831,10 +841,8 @@ int compileShaderFromSource(string filepath, GLenum shaderType) {
 	return shader;
 }
 
-int compileAndLinkShaders()
+int compileAndLinkShaders(int vertexShader, int fragmentShader)
 {
-	int vertexShader = compileShaderFromSource(VERTEX_SHADER_FILEPATH, GL_VERTEX_SHADER);
-	int fragmentShader = compileShaderFromSource(FRAGMENT_SHADER_FILEPATH, GL_FRAGMENT_SHADER);
 
 	// Link shaders
 	int shaderProgram = glCreateProgram();
