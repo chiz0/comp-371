@@ -573,8 +573,6 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		
-
 		// Change orientation with the arrow keys
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
