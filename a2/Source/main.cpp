@@ -233,7 +233,7 @@ int main(int argc, char* argv[])
 	// Chi colour
 	int chiColour = createVertexArrayObjectSingleColoured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.984f, 0.761f, 0.016f));
+	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.898f, 0.22f, 0.0f));
 	// Theo colour
 	int theoColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
@@ -260,6 +260,7 @@ int main(int argc, char* argv[])
 	vec3 cameraUp(0.0f, 1.0f, 0.0f);
 	vec3 cameraDestination = cameraPosition;
 	bool  cameraFirstPerson = true; // press 1 or 2 to toggle this variable
+	shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
 	// Set initial view matrix
 	mat4 viewMatrix = lookAt(cameraPosition,  // eye
@@ -275,6 +276,8 @@ int main(int argc, char* argv[])
 	shaderManager.setVec3("lightColour", 1.0f, 1.0f, 1.0f);
 	shaderManager.setFloat("ambientLight", LIGHT_AMBIENT_STRENGTH);
 	shaderManager.setFloat("diffuseLight", LIGHT_DIFFUSE_STRENGTH);
+	shaderManager.setFloat("specularLight", LIGHT_SPECULAR_STRENGTH);
+	shaderManager.setFloat("shininess", SHININESS);
 
 	// Grid and coordinate axis colours
 	int groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
@@ -288,6 +291,12 @@ int main(int argc, char* argv[])
 		// Frame time calculation
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
+
+		// DEBUG - MOVING LIGHT
+		// TODO: REMOVE BEFORE SUBMISSION
+		float moveY = cos(glfwGetTime());
+		float moveX = sin(glfwGetTime());
+		shaderManager.setVec3("lightPosition", lightPosition.x + moveX * 10.0f - 5.0f, lightPosition.y + moveY * 10.0f - 5.0f, lightPosition.z);
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -374,6 +383,7 @@ int main(int argc, char* argv[])
 				if (dy > 0) {
 					cameraPosition -= currentCameraSpeed * cameraLookAt;
 				}
+				shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 			}
 		}
 
@@ -562,6 +572,7 @@ int main(int argc, char* argv[])
 			cameraUp.x = 0.0f; cameraUp.y = 1.0f; cameraUp.z = 0.0f;
 			cameraHorizontalAngle = 90.0f;
 			cameraVerticalAngle = 0.0f;
+			shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 		}
 
 		//Antonio's part
@@ -597,8 +608,8 @@ int main(int argc, char* argv[])
 			float radius = sqrt(pow(newx, 2) + pow(newy, 2) + pow(newz, 2));
 			vec3 position = vec3{ 0,1,0 } -radius * cameraLookAt;
 			viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
+			shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 		}
-		GLuint viewMatrixLocation = shaderManager.getUniformLocation("viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 	}
@@ -607,96 +618,6 @@ int main(int argc, char* argv[])
 	glfwTerminate();
 
 	return 0;
-}
-
-int createVertexArrayObject()
-{
-	// Cube model
-	vec3 vertexArray[] = {  // position,                            color
-		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
-		vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-
-		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-
-		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
-		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-		vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-
-		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-
-		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
-		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-
-		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-
-		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
-		vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-
-		vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-
-		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
-		vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-
-		vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-
-		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
-		vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-
-		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
-	};
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
-		(void*)0             // array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		2 * sizeof(vec3),
-		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
-	);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBindVertexArray(0);
-
-	return vertexArrayObject;
 }
 
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour)
@@ -810,12 +731,12 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 		vec3(0.0f, 0.0f, -1.0f),
 		vec3(0.0f, 0.0f, -1.0f),
 
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
 
 		vec3(0.0f, -1.0f, 0.0f),
 		vec3(0.0f, -1.0f, 0.0f),
@@ -824,12 +745,12 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 		vec3(0.0f, -1.0f, 0.0f),
 		vec3(0.0f, -1.0f, 0.0f),
 
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
 
 		vec3(0.0f, 0.0f, 1.0f),
 		vec3(0.0f, 0.0f, 1.0f),
@@ -1003,15 +924,15 @@ int createVertexArrayObjectSingleColoured(vec3 colour)
 		colour
 	};
 
+	// left
+	// far
+	// bottom
+	// near
+	// right
+	// top
+
 	// Normals
 	vec3 normalArray[] = {
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-
 		vec3(-1.0f, 0.0f, 0.0f),
 		vec3(-1.0f, 0.0f, 0.0f),
 		vec3(-1.0f, 0.0f, 0.0f),
@@ -1019,6 +940,13 @@ int createVertexArrayObjectSingleColoured(vec3 colour)
 		vec3(-1.0f, 0.0f, 0.0f),
 		vec3(-1.0f, 0.0f, 0.0f),
 
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+
 		vec3(0.0f, -1.0f, 0.0f),
 		vec3(0.0f, -1.0f, 0.0f),
 		vec3(0.0f, -1.0f, 0.0f),
@@ -1026,19 +954,19 @@ int createVertexArrayObjectSingleColoured(vec3 colour)
 		vec3(0.0f, -1.0f, 0.0f),
 		vec3(0.0f, -1.0f, 0.0f),
 
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
 
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
 
 		vec3(0.0f, 1.0f, 0.0f),
 		vec3(0.0f, 1.0f, 0.0f),
