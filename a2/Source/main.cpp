@@ -11,30 +11,12 @@
 // CONTRIBUTIONS
 //
 //  Theodor
-//  - Added camera pan and tilt 
-//  - Implemented First person camera movement
-//  - Made the README after teammates' implementation
-//  - Added the reset to initial position
-//  - Merged some of the code
 // 
 //  Alexander
-//  - Created basis unit cube and first-draft translation and scaling
-//  - Drew the grid at the base of the world
-//  - Generated walls programatically based on shapes
-//  - Created support for multiple shapes in one world
-//  - Enabled cycling between shapes, with controls and camera movement
-//  - Managed the clean merging of code
-//	- Reset shape to originial position
 //
 //  Antonio
-//	- Implemented the arrow key camera (third person)
-//	- Changes the radius from the origin dynamically
-//	- Shape4 (brown shape)
 //
 //  Chi
-//  - Voxel and Shape classes (except wall generation)
-//  - Added coordinate axes
-//  - Added external shader source loading
 //
 
 #include <iostream>
