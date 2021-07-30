@@ -36,193 +36,13 @@
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
 
+#include "Constants.h"
+#include "Shape.h"
+#include "ShaderManager.h"
+#include "Coordinates.h"
 
 using namespace glm;
 using namespace std;
-
-////////////////////// CONSTANTS //////////////////////
-const int WALL_SIZE = 12;                           // How many unit cubes in nxn should the wall be
-const float WALL_THICKNESS = 0.1f;                  // How thick is the wall
-const int WALL_DISTANCE = 1 / WALL_THICKNESS;		// How far from the model should its wall be
-const int MODEL_COUNT = 4;                          // How many models are present in the world
-const float STAGE_WIDTH = 50.0f;                    // How far in either direction each model will be placed
-const float SCALE_RATE = 0.2f;                      // The rate at which models grow and shrink
-const float ROTATE_RATE = 20;                       // The rate at which models rotate
-const float TRANSLATE_RATE = 2.0f;                  // The rate at which models move left, right, up, and down
-const float CAMERA_JUMP_SPEED = 8.0f;               // The speed at which a camera moves from model to model
-const float CAMERA_ANGULAR_SPEED = 60.0f;           // The speed at which the camera rotates
-const float CAMERA_SPEED = 0.75f;                   // Speed of camera zooming
-const vec3 CAMERA_OFFSET = vec3(-2.0f, 2.0f, 10.0f);// The default position of the camera relative to a model
-const float LIGHT_AMBIENT_STRENGTH = 0.1f;			// Intensity of the ambient light
-const float LIGHT_DIFFUSE_STRENGTH = 0.6f;			// Intensity of the diffuse light
-const float LIGHT_SPECULAR_STRENGTH = 0.8f;			// Intensity of the specular light
-
-const string VERTEX_SHADER_FILEPATH = "../Source/VertexShader.glsl";
-const string FRAGMENT_SHADER_FILEPATH = "../Source/FragmentShader.glsl";
-
-/////////////////////// MODELS ///////////////////////
-
-class Voxel {
-public:
-	// Functions
-	Voxel(vec3 position, int vao, int shaderProgram, vec3 localScale = vec3(1.0f, 1.0f, 1.0f)) : mPosition(position), mvao(vao), mScaleVector(localScale)
-	{
-		mWorldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-	}
-
-	void Draw(GLenum renderingMode) {
-		glBindVertexArray(mvao);
-		mat4 worldMatrix = mAnchor * translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), mScale * mScaleVector);
-		glUniformMatrix4fv(mWorldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-		glDrawArrays(renderingMode, 0, 36);
-	}
-
-	// Properties
-	GLuint mWorldMatrixLocation;
-	mat4 mAnchor = mat4(1.0f);
-	vec3 mPosition;
-	vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
-	vec3 mScaleVector = vec3(1.0f, 1.0f, 1.0f);
-	float mScale = 1.0f;
-	int mvao;
-};
-
-struct coordinates
-{
-	int x;
-	int y;
-	int z;
-};
-
-class Shape {
-public:
-	// Functions
-	Shape(vec3 position, vector<coordinates> description, int vao, int shaderProgram, bool hasWall) : mPosition(position), mvao(vao), mshaderProgram(shaderProgram), voxelCount(description.size()), defaultPosition(position)
-	{
-		mWorldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-		for (int i = 0; i < WALL_SIZE; i++) {
-			for (int j = 0; j < WALL_SIZE; j++) {
-				projection[i][j] = false;
-			}
-		}
-		int originX = description.front().x;
-		int originY = description.front().y;
-		int originZ = description.front().z;
-		for (auto it = begin(description); it != end(description); ++it) {
-			struct coordinates remappedCoordinates = { it->x - originX, it->y - originY, it->z - originZ };
-			mDescription.push_back(remappedCoordinates);
-			voxels.push_back(Voxel(vec3(remappedCoordinates.x, remappedCoordinates.y, remappedCoordinates.z), vao, shaderProgram));
-			if (remappedCoordinates.x + WALL_SIZE / 2 >= 0 && remappedCoordinates.x < WALL_SIZE / 2
-				&& remappedCoordinates.y + WALL_SIZE / 2 >= 0 && remappedCoordinates.y < WALL_SIZE / 2)
-			{
-				projection[remappedCoordinates.x + WALL_SIZE / 2][remappedCoordinates.y + WALL_SIZE / 2] = true;
-			}
-		}
-
-		if (hasWall) {
-			// Create wall voxels
-			for (int i = 0; i < WALL_SIZE; i++) {
-				for (int j = 0; j < WALL_SIZE; j++) {
-					if (projection[i][j] == false) {    // If the projection does not cover this area, create a wall section here
-						coordinates placedWall = {  };
-						wallVoxels.push_back(Voxel(
-							vec3(
-								i - WALL_SIZE / 2 - originX,    // Wall segment x
-								j - WALL_SIZE / 2 - originY,    // Wall segment y
-								originZ - WALL_DISTANCE         // Wall segment z
-							), vao, shaderProgram, vec3(1.0f, 1.0f, WALL_THICKNESS)));
-					}
-				}
-			}
-		}
-	}
-
-	void Draw(GLenum renderingMode) {
-		mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
-		for (auto it = begin(voxels); it != end(voxels); ++it) {
-			it->mAnchor = worldMatrix;
-			it->Draw(renderingMode);
-		}
-		if (showWall) {
-			for (auto it = begin(wallVoxels); it != end(wallVoxels); ++it) {
-				it->mAnchor = worldMatrix;
-				it->Draw(renderingMode);
-			}
-		}
-	}
-
-	void Reshuffle() {
-		vector<struct coordinates> newCoordinates;
-		int minX = -WALL_SIZE + 1;
-		int maxX = WALL_SIZE - 1;
-		int minY = -WALL_SIZE + 1;
-		int maxY = WALL_SIZE - 1;
-		int minZ = -WALL_DISTANCE + 1;
-		int maxZ = voxelCount;
-
-		vector<vector<vector<bool>>> map(maxX - minX + 1, vector<vector<bool> >(maxY - minY + 1, vector <bool>(maxZ - minZ + 1, false)));
-		vector<coordinates> candidates;
-
-		candidates.push_back({ 0, 0, 0 });
-
-		for (int i = 0; i < voxelCount; i++) {
-			int randomIndex = rand() % candidates.size();
-			coordinates added = candidates[randomIndex];
-			candidates.erase(candidates.begin() + randomIndex);
-			newCoordinates.push_back(added);
-			map[added.x - minX][added.y - minY][added.z - minZ] = true;
-			if (added.x + 1 <= maxX && !map[added.x + 1 - minX][added.y - minY][added.z - minZ] && projection[added.x + 1 + WALL_SIZE / 2][added.y + WALL_SIZE / 2]) {
-				candidates.push_back({ added.x + 1, added.y, added.z });
-			}
-			if (added.x - 1 >= minX && !map[added.x - 1 - minX][added.y - minY][added.z - minZ] && projection[added.x - 1 + WALL_SIZE / 2][added.y + WALL_SIZE / 2]) {
-				candidates.push_back({ added.x - 1, added.y, added.z });
-			}
-			if (added.y + 1 <= maxY && !map[added.x - minX][added.y + 1 - minY][added.z - minZ] && projection[added.x + WALL_SIZE / 2][added.y + 1 + WALL_SIZE / 2]) {
-				candidates.push_back({ added.x, added.y + 1, added.z });
-			}
-			if (added.y - 1 >= minY && !map[added.x - minX][added.y - 1 - minY][added.z - minZ] && projection[added.x + WALL_SIZE / 2][added.y - 1 + WALL_SIZE / 2]) {
-				candidates.push_back({ added.x, added.y - 1, added.z });
-			}
-			if (added.z + 1 <= maxZ && !map[added.x - minX][added.y - minY][added.z + 1 - minZ]) {
-				candidates.push_back({ added.x, added.y, added.z + 1 });
-			}
-			if (added.z - 1 >= minZ && !map[added.x - minX][added.y - minY][added.z - 1 - minZ]) {
-				candidates.push_back({ added.x, added.y, added.z - 1 });
-			}
-		}
-
-		mDescription.clear();
-		voxels.clear();
-
-		for (auto it = begin(newCoordinates); it != end(newCoordinates); ++it) {
-			mDescription.push_back(*it);
-			voxels.push_back(Voxel(vec3(it->x, it->y, it->z), mvao, mshaderProgram));
-		}
-	}
-
-	void ResetPosition() {
-		mPosition = defaultPosition;
-		mOrientation = defaultOrientation;
-		mScale = defaultScale;
-	}
-
-	// Properties
-	bool showWall = true;
-	int voxelCount = 0;
-	GLuint mWorldMatrixLocation;
-	bool projection[WALL_SIZE][WALL_SIZE];
-	vector<struct coordinates> mDescription;
-	vector<Voxel> voxels;
-	vector<Voxel> wallVoxels;
-	vec3 mPosition;
-	vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
-	float mScale = 1.0f;
-	int mvao;
-	int mshaderProgram;
-	vec3 defaultOrientation = vec3(0.0f, 0.0f, 0.0f);
-	vec3 defaultPosition;
-	float defaultScale = 1.0f;
-};
 
 /////////////////////// MAIN ///////////////////////
 
@@ -437,7 +257,6 @@ int main(int argc, char* argv[])
 		CAMERA_OFFSET + shapes[3].mPosition
 	};
 
-
 	// Camera parameters for view transform
 	vec3 cameraPosition = vec3(0.0f, 1.0f, 20.0f);
 	vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
@@ -452,6 +271,9 @@ int main(int argc, char* argv[])
 
 	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+
+	// Position light source
+	vec3 lightPosition = LIGHT_OFFSET;
 
 	// Grid and coordinate axis colours
 	int groundColour = createVertexArrayObjectColoured(vec3(1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f));
@@ -935,6 +757,16 @@ int createVertexArrayObject()
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour)
 {
 	// Cube model
+
+	// All arrays are in the following face order:
+	// left
+	// far
+	// bottom
+	// near
+	// right
+	// top
+
+	// Verticies
 	vec3 vertexArray[] = {
 		vec3(-0.5f,-0.5f,-0.5f),
 		vec3(-0.5f,-0.5f, 0.5f),
@@ -1024,6 +856,51 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 		topBottomColour
 	};
 
+	// Normals
+	vec3 normalArray[] = {
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f)
+	};
+
 	// Create a vertex array
 	GLuint vertexArrayObject;
 	glGenVertexArrays(1, &vertexArrayObject);
@@ -1036,12 +913,12 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
-		3,                   // size
-		GL_FLOAT,            // type
-		GL_FALSE,            // normalized?
-		sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
-		(void*)0             // array buffer offset
+	glVertexAttribPointer(0,    // attribute 0 matches aPos in Vertex Shader
+		3,						// size
+		GL_FLOAT,				// type
+		GL_FALSE,				// normalized?
+		sizeof(vec3),			// stride
+		(void*)0				// array buffer offset
 	);
 	glEnableVertexAttribArray(0);
 
@@ -1050,16 +927,30 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 	glBindBuffer(GL_ARRAY_BUFFER, colourVertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(colourVertexArray), colourVertexArray, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+	glVertexAttribPointer(1,	// attribute 1 matches aColor in Vertex Shader
 		3,
 		GL_FLOAT,
 		GL_FALSE,
 		sizeof(vec3),
-		(void*)0      // color is offseted a vec3 (comes after position)
+		(void*)0
 	);
 	glEnableVertexAttribArray(1);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+
+	GLuint normalBufferObject;
+	glGenBuffers(1, &normalBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(normalArray), normalArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(2,	// attribute 2 matches aNormal in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(vec3),
+		(void*)0
+	);
+	glEnableVertexAttribArray(2);
+
 	glBindVertexArray(0);
 
 	return vertexArrayObject;
