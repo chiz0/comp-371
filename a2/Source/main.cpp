@@ -7,6 +7,7 @@
 // Zhang, Chi (29783539)
 // 
 // Based on Labs Framework created by Nicolas Bergeron
+// Lighting implemented via a guide on https://learnopengl.com
 //
 // CONTRIBUTIONS
 //
@@ -46,8 +47,8 @@ using namespace std;
 
 /////////////////////// MAIN ///////////////////////
 
-int createVertexArrayObject();
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
+int createVertexArrayObjectSingleColoured(vec3 colour);
 
 bool initContext();
 
@@ -69,7 +70,7 @@ int main(int argc, char* argv[])
 	float cameraVerticalAngle = 0.0f;
 
 	// Set projection matrix for shader, this won't change
-	mat4 projectionMatrix = glm::perspective(70.0f,            // field of view in degrees
+	mat4 projectionMatrix = perspective(70.0f,            // field of view in degrees
 		800.0f / 600.0f,  // aspect ratio
 		0.01f, 100.0f);   // near and far (near > 0)
 
@@ -78,9 +79,6 @@ int main(int argc, char* argv[])
 
 	// Get the world matrix
 	GLuint worldMatrixLocation = shaderManager.getUniformLocation("worldMatrix");
-
-	// Define and upload geometry to the GPU here ...
-	int vao = createVertexArrayObject();
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -233,13 +231,13 @@ int main(int argc, char* argv[])
 
 	// Colour of the shapes
 	// Chi colour
-	int chiColour = createVertexArrayObjectColoured(vec3(0.429f, 0.808f, 0.922f), vec3(0.248f, 0.511f, 0.804f), vec3(0.292f, 0.584f, 0.929f));
+	int chiColour = createVertexArrayObjectSingleColoured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-	int alexColour = createVertexArrayObjectColoured(vec3(0.984f, 0.761f, 0.016f), vec3(0.898f, 0.22f, 0), vec3(0.871f, 0.318f, 0.22f));
+	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.984f, 0.761f, 0.016f));
 	// Theo colour
-	int theoColour = createVertexArrayObjectColoured(vec3(1.0f, 0.15f, 0.0f), vec3(0.75f, 0.15f, 0.0f), vec3(0.75f, 0.15f, 0.15f));
+	int theoColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
-	int antoColour = createVertexArrayObjectColoured(vec3(0.5f, 0.5f, 0.3f), vec3(0.7, 0.22f, 0), vec3(0.871f, 0.318f, 0.22f));
+	int antoColour = createVertexArrayObjectSingleColoured(vec3(0.5f, 0.5f, 0.3f));
 
 	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, true));
 	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, true));
@@ -271,14 +269,18 @@ int main(int argc, char* argv[])
 	GLuint viewMatrixLocation = shaderManager.getUniformLocation("viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
-	// Position light source
+	// Set up lighting
 	vec3 lightPosition = LIGHT_OFFSET;
+	shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+	shaderManager.setVec3("lightColour", 1.0f, 1.0f, 1.0f);
+	shaderManager.setFloat("ambientLight", LIGHT_AMBIENT_STRENGTH);
+	shaderManager.setFloat("diffuseLight", LIGHT_DIFFUSE_STRENGTH);
 
 	// Grid and coordinate axis colours
-	int groundColour = createVertexArrayObjectColoured(vec3(1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 0.0f));
-	int xLineColour = createVertexArrayObjectColoured(vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f));
-	int yLineColour = createVertexArrayObjectColoured(vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-	int zLineColour = createVertexArrayObjectColoured(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f));
+	int groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
+	int xLineColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.0f, 0.0f));
+	int yLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 1.0f, 0.0f));
+	int zLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 0.0f, 1.0f));
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
@@ -286,8 +288,6 @@ int main(int argc, char* argv[])
 		// Frame time calculation
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
-
-
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -405,6 +405,8 @@ int main(int argc, char* argv[])
 			cameraVerticalAngle = 0.0f;
 
 			cameraDestination = vec3(0.0f, 1.0f, 20.0f);
+			lightPosition = cameraDestination + LIGHT_OFFSET;
+			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
 			moveCameraToDestination = true;
 		}
 
@@ -423,33 +425,41 @@ int main(int argc, char* argv[])
 		float phi = radians(cameraVerticalAngle);
 
 		cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-		vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
-		glm::normalize(cameraSideVector);
+		vec3 cameraSideVector = cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
+		normalize(cameraSideVector);
 
 		// Select shapes via 1-4 keys
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 		{
 			focusedShape = 0;
 			cameraDestination = cameraPositions[0];
+			lightPosition = cameraDestination + LIGHT_OFFSET;
 			moveCameraToDestination = true;
+			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
 		}
 		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
 		{
 			focusedShape = 1;
 			cameraDestination = cameraPositions[1];
+			lightPosition = cameraDestination + LIGHT_OFFSET;
 			moveCameraToDestination = true;
+			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
 		}
 		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
 		{
 			focusedShape = 2;
 			cameraDestination = cameraPositions[2];
+			lightPosition = cameraDestination + LIGHT_OFFSET;
 			moveCameraToDestination = true;
+			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
 		}
 		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
 		{
 			focusedShape = 3;
 			cameraDestination = cameraPositions[3];
+			lightPosition = cameraDestination + LIGHT_OFFSET;
 			moveCameraToDestination = true;
+			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Ry
@@ -557,7 +567,7 @@ int main(int argc, char* argv[])
 		//Antonio's part
 		mat4 viewMatrix = mat4(1.0);
 
-		glm::vec3 position = cameraPosition;
+		vec3 position = cameraPosition;
 		viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
 		//if camera is third person, approximate the radius and give the world orientation perspective aimed at the origin {0,0,0}, Press N to normalize view to first person
 		if (cameraFirstPerson) {
@@ -585,7 +595,7 @@ int main(int argc, char* argv[])
 			else
 				newz = cameraPosition.z;
 			float radius = sqrt(pow(newx, 2) + pow(newy, 2) + pow(newz, 2));
-			glm::vec3 position = vec3{ 0,1,0 } -radius * cameraLookAt;
+			vec3 position = vec3{ 0,1,0 } -radius * cameraLookAt;
 			viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
 		}
 		GLuint viewMatrixLocation = shaderManager.getUniformLocation("viewMatrix");
@@ -891,6 +901,208 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 	return vertexArrayObject;
 }
 
+int createVertexArrayObjectSingleColoured(vec3 colour)
+{
+	// Cube model
+
+	// All arrays are in the following face order:
+	// left
+	// far
+	// bottom
+	// near
+	// right
+	// top
+
+	// Verticies
+	vec3 vertexArray[] = {
+		vec3(-0.5f,-0.5f,-0.5f),
+		vec3(-0.5f,-0.5f, 0.5f),
+		vec3(-0.5f, 0.5f, 0.5f),
+		vec3(-0.5f,-0.5f,-0.5f),
+		vec3(-0.5f, 0.5f, 0.5f),
+		vec3(-0.5f, 0.5f,-0.5f),
+
+		vec3(0.5f, 0.5f,-0.5f),
+		vec3(-0.5f,-0.5f,-0.5f),
+		vec3(-0.5f, 0.5f,-0.5f),
+		vec3(0.5f, 0.5f,-0.5f),
+		vec3(0.5f,-0.5f,-0.5f),
+		vec3(-0.5f,-0.5f,-0.5f),
+
+		vec3(0.5f,-0.5f, 0.5f),
+		vec3(-0.5f,-0.5f,-0.5f),
+		vec3(0.5f,-0.5f,-0.5f),
+		vec3(0.5f,-0.5f, 0.5f),
+		vec3(-0.5f,-0.5f, 0.5f),
+		vec3(-0.5f,-0.5f,-0.5f),
+
+		vec3(-0.5f, 0.5f, 0.5f),
+		vec3(-0.5f,-0.5f, 0.5f),
+		vec3(0.5f,-0.5f, 0.5f),
+		vec3(0.5f, 0.5f, 0.5f),
+		vec3(-0.5f, 0.5f, 0.5f),
+		vec3(0.5f,-0.5f, 0.5f),
+
+		vec3(0.5f, 0.5f, 0.5f),
+		vec3(0.5f,-0.5f,-0.5f),
+		vec3(0.5f, 0.5f,-0.5f),
+		vec3(0.5f,-0.5f,-0.5f),
+		vec3(0.5f, 0.5f, 0.5f),
+		vec3(0.5f,-0.5f, 0.5f),
+
+		vec3(0.5f, 0.5f, 0.5f),
+		vec3(0.5f, 0.5f,-0.5f),
+		vec3(-0.5f, 0.5f,-0.5f),
+		vec3(0.5f, 0.5f, 0.5f),
+		vec3(-0.5f, 0.5f,-0.5f),
+		vec3(-0.5f, 0.5f, 0.5f)
+	};
+
+	// Colours
+	vec3 colourVertexArray[] = {
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+
+		colour,
+		colour,
+		colour,
+		colour,
+		colour,
+		colour
+	};
+
+	// Normals
+	vec3 normalArray[] = {
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, -1.0f),
+
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f)
+	};
+
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,    // attribute 0 matches aPos in Vertex Shader
+		3,						// size
+		GL_FLOAT,				// type
+		GL_FALSE,				// normalized?
+		sizeof(vec3),			// stride
+		(void*)0				// array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+	GLuint colourVertexBufferObject;
+	glGenBuffers(1, &colourVertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, colourVertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colourVertexArray), colourVertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(1,	// attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(vec3),
+		(void*)0
+	);
+	glEnableVertexAttribArray(1);
+
+
+	GLuint normalBufferObject;
+	glGenBuffers(1, &normalBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(normalArray), normalArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(2,	// attribute 2 matches aNormal in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(vec3),
+		(void*)0
+	);
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(0);
+
+	return vertexArrayObject;
+}
+
 bool initContext() {     // Initialize GLFW and OpenGL version
 	glfwInit();
 
@@ -909,7 +1121,7 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 	window = glfwCreateWindow(1024, 768, "COMP 371 - Assignment 1 by Spiral Staircase", NULL, NULL);
 	if (window == NULL)
 	{
-		std::cerr << "Failed to create GLFW window" << std::endl;
+		cerr << "Failed to create GLFW window" << endl;
 		glfwTerminate();
 		return false;
 	}
@@ -921,7 +1133,7 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
 	if (glewInit() != GLEW_OK) {
-		std::cerr << "Failed to create GLEW" << std::endl;
+		cerr << "Failed to create GLEW" << endl;
 		glfwTerminate();
 		return false;
 	}
