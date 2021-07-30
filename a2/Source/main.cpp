@@ -229,6 +229,10 @@ int main(int argc, char* argv[])
 		{ 0, 2, -2 }
 	};
 
+	vector<struct coordinates> lightbulbShape{
+		{0, 0, 0}
+	};
+
 	// Colour of the shapes
 	// Chi colour
 	int chiColour = createVertexArrayObjectSingleColoured(vec3(0.429f, 0.808f, 0.922f));
@@ -238,11 +242,14 @@ int main(int argc, char* argv[])
 	int theoColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
 	int antoColour = createVertexArrayObjectSingleColoured(vec3(0.5f, 0.5f, 0.3f));
+	// Lightbulb colour
+	int lightbulbColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 1.0f));
 
 	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, true));
 	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, true));
 	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, true));
 	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, true));
+	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, worldMatrixLocation, false);
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
@@ -294,9 +301,9 @@ int main(int argc, char* argv[])
 
 		// DEBUG - MOVING LIGHT
 		// TODO: REMOVE BEFORE SUBMISSION
-		float moveY = cos(glfwGetTime());
-		float moveX = sin(glfwGetTime());
-		shaderManager.setVec3("lightPosition", lightPosition.x + moveX * 10.0f - 5.0f, lightPosition.y + moveY * 10.0f - 5.0f, lightPosition.z);
+		//float moveY = cos(glfwGetTime());
+		//float moveX = sin(glfwGetTime());
+		//shaderManager.setVec3("lightPosition", lightPosition.x + moveX * 10.0f - 5.0f, lightPosition.y + moveY * 10.0f - 5.0f, lightPosition.z);
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -333,6 +340,8 @@ int main(int argc, char* argv[])
 		for (Shape shape : shapes) {
 			shape.Draw(renderingMode);
 		}
+		lightbulb.mPosition = lightPosition;
+		lightbulb.Draw(renderingMode);
 
 		glBindVertexArray(0);
 
