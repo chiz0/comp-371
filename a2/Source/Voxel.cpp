@@ -1,9 +1,6 @@
 #include "Voxel.h"
 
-Voxel::Voxel(vec3 position, int vao, int shaderProgram, vec3 localScale) : mPosition(position), mvao(vao), mScaleVector(localScale)
-{
-	mWorldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-}
+Voxel::Voxel(vec3 position, int vao, GLuint worldMatrixLocation, vec3 localScale) : mPosition(position), mvao(vao), mWorldMatrixLocation(worldMatrixLocation), mScaleVector(localScale) {}
 
 void Voxel::Draw(GLenum renderingMode) {
 		glBindVertexArray(mvao);

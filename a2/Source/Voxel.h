@@ -13,13 +13,15 @@
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
 
+#include "ShaderManager.h"
+
 using namespace glm;
 
 class Voxel {
 public:
 	// Functions
-	Voxel(vec3 position, int vao, int shaderProgram, vec3 localScale = vec3(1.0f, 1.0f, 1.0f));	// Default constructor
-	void Draw(GLenum renderingMode);															// Draw voxel to world
+	Voxel(vec3 position, int vao, GLuint worldMatrixLocation, vec3 localScale = vec3(1.0f, 1.0f, 1.0f));	// Default constructor
+	void Draw(GLenum renderingMode);																		// Draw voxel to world
 
 	// Properties
 	GLuint mWorldMatrixLocation;

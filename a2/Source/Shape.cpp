@@ -1,6 +1,6 @@
 #include "Shape.h"
 
-Shape::Shape(vec3 position, vector<coordinates> description, int vao, int shaderProgram, bool hasWall) : mPosition(position), mvao(vao), mshaderProgram(shaderProgram), voxelCount(description.size()), defaultPosition(position), showWall(hasWall)
+Shape::Shape(vec3 position, vector<coordinates> description, int vao, GLuint worldMatrixLocation, bool hasWall) : mPosition(position), mvao(vao), mWorldMatrixLocation(worldMatrixLocation), voxelCount(description.size()), defaultPosition(position), showWall(hasWall)
 {
 	for (int i = 0; i < WALL_SIZE; i++) {
 		for (int j = 0; j < WALL_SIZE; j++) {
@@ -13,7 +13,7 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, int shader
 	for (auto it = begin(description); it != end(description); ++it) {
 		struct coordinates remappedCoordinates = { it->x - originX, it->y - originY, it->z - originZ };
 		mDescription.push_back(remappedCoordinates);
-		voxels.push_back(Voxel(vec3(remappedCoordinates.x, remappedCoordinates.y, remappedCoordinates.z), vao, shaderProgram));
+		voxels.push_back(Voxel(vec3(remappedCoordinates.x, remappedCoordinates.y, remappedCoordinates.z), vao, worldMatrixLocation));
 		if (remappedCoordinates.x + WALL_SIZE / 2 >= 0 && remappedCoordinates.x < WALL_SIZE / 2
 			&& remappedCoordinates.y + WALL_SIZE / 2 >= 0 && remappedCoordinates.y < WALL_SIZE / 2)
 		{
@@ -32,7 +32,7 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, int shader
 							i - WALL_SIZE / 2 - originX,    // Wall segment x
 							j - WALL_SIZE / 2 - originY,    // Wall segment y
 							originZ - WALL_DISTANCE         // Wall segment z
-						), vao, shaderProgram, vec3(1.0f, 1.0f, WALL_THICKNESS)));
+						), vao, worldMatrixLocation, vec3(1.0f, 1.0f, WALL_THICKNESS)));
 				}
 			}
 		}
@@ -98,7 +98,7 @@ void Shape::Reshuffle() {
 
 	for (auto it = begin(newCoordinates); it != end(newCoordinates); ++it) {
 		mDescription.push_back(*it);
-		voxels.push_back(Voxel(vec3(it->x, it->y, it->z), mvao, mshaderProgram));
+		voxels.push_back(Voxel(vec3(it->x, it->y, it->z), mvao, mWorldMatrixLocation));
 	}
 }
 

@@ -46,8 +46,6 @@ using namespace std;
 
 /////////////////////// MAIN ///////////////////////
 
-int compileAndLinkShaders();
-
 int createVertexArrayObject();
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
 
@@ -62,11 +60,9 @@ int main(int argc, char* argv[])
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	// Compile and link shaders here ...
-	int shaderProgram = compileAndLinkShaders();
-
 	// We can set the shader once, since we have only one
-	glUseProgram(shaderProgram);
+	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
+	shaderManager.use();
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
@@ -77,8 +73,11 @@ int main(int argc, char* argv[])
 		800.0f / 600.0f,  // aspect ratio
 		0.01f, 100.0f);   // near and far (near > 0)
 
-	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+	GLuint projectionMatrixLocation = shaderManager.getUniformLocation("projectionMatrix");
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+	// Get the world matrix
+	GLuint worldMatrixLocation = shaderManager.getUniformLocation("worldMatrix");
 
 	// Define and upload geometry to the GPU here ...
 	int vao = createVertexArrayObject();
@@ -242,10 +241,10 @@ int main(int argc, char* argv[])
 	// Anto colour
 	int antoColour = createVertexArrayObjectColoured(vec3(0.5f, 0.5f, 0.3f), vec3(0.7, 0.22f, 0), vec3(0.871f, 0.318f, 0.22f));
 
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, shaderProgram, true));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, shaderProgram, true));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, shaderProgram, true));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, shaderProgram, true));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, true));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, true));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, true));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, true));
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
@@ -269,7 +268,7 @@ int main(int argc, char* argv[])
 		cameraPosition + cameraLookAt,  // center
 		cameraUp); // up
 
-	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+	GLuint viewMatrixLocation = shaderManager.getUniformLocation("viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 	// Position light source
@@ -294,10 +293,8 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw ground
-
 		glBindVertexArray(groundColour);
 
-		GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
 		for (int i = -50; i <= 50; i++) {
 			mat4 gridMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, i)) * scale(mat4(1.0f), vec3(100.0f, 0.02f, 0.02f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
@@ -591,77 +588,15 @@ int main(int argc, char* argv[])
 			glm::vec3 position = vec3{ 0,1,0 } -radius * cameraLookAt;
 			viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
 		}
-		GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+		GLuint viewMatrixLocation = shaderManager.getUniformLocation("viewMatrix");
 		glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
 	}
-
 
 	// Shutdown GLFW
 	glfwTerminate();
 
 	return 0;
-}
-
-int compileShaderFromSource(string filepath, GLenum shaderType) {
-	// Read from file
-	ifstream sourceFile(filepath);
-	string shaderSource = "";
-	string sourceLine;
-	if (sourceFile.is_open()) {
-		while (getline(sourceFile, sourceLine)) {
-			shaderSource += sourceLine + "\n";
-		}
-		sourceFile.close();
-	}
-	else {
-		cout << "ERROR: Unable to open file.\n";
-		return -1;
-	}
-
-	// Create and compile shader
-	const GLchar* shaderSourcePointer = shaderSource.c_str();
-	int shader = glCreateShader(shaderType);
-	glShaderSource(shader, 1, &shaderSourcePointer, NULL);
-	glCompileShader(shader);
-
-	// Check for shader compile errors
-	int success;
-	char infoLog[512];
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(shader, 512, NULL, infoLog);
-		std::cerr << "Error: Shader compilation failed.\n" << infoLog << std::endl;
-	}
-
-	return shader;
-}
-
-int compileAndLinkShaders()
-{
-	int vertexShader = compileShaderFromSource(VERTEX_SHADER_FILEPATH, GL_VERTEX_SHADER);
-	int fragmentShader = compileShaderFromSource(FRAGMENT_SHADER_FILEPATH, GL_FRAGMENT_SHADER);
-
-	// Link shaders
-	int shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	// Check for linking errors
-	int success;
-	char infoLog[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	return shaderProgram;
 }
 
 int createVertexArrayObject()

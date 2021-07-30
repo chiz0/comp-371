@@ -19,8 +19,12 @@ public:
 
     // Methods
     ShaderManager(const char* vertexPath, const char* fragmentPath);    // Default constructor
-    void Use();                                                         // Activate the shader
-    void SetBool(const std::string& name, bool value) const;            // Pass a boolean value to the shader
-    void SetInt(const std::string& name, int value) const;              // Pass an int to the shader
-    void SetFloat(const std::string& name, float value) const;          // Pass a float to the shader
+    void use();                                                         // Activate the shader
+    void setBool(const string& name, bool value) const;                 // Pass a boolean value to the shader
+    void setInt(const string& name, int value) const;                   // Pass an int to the shader
+    void setFloat(const string& name, float value) const;               // Pass a float to the shader
+    GLuint getUniformLocation(const GLchar* key);
+
+private:
+    int CompileShaderFromSource(string filepath, GLenum shaderType);
 };

@@ -9,6 +9,7 @@
 
 #include "Constants.h"
 #include "Coordinates.h"
+#include "ShaderManager.h"
 #include "Voxel.h"
 
 using namespace glm;
@@ -17,7 +18,7 @@ using namespace std;
 class Shape {
 public:
 	// Functions
-	Shape(vec3 position, vector<coordinates> description, int vao, int shaderProgram, bool hasWall);
+	Shape(vec3 position, vector<coordinates> description, int vao, GLuint worldMatrixLocation, bool hasWall);
 	void Draw(GLenum renderingMode);
 	void Reshuffle();
 	void ResetPosition();
@@ -33,7 +34,7 @@ public:
 	vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
 	float mScale = 1.0f;
 	int mvao;
-	int mshaderProgram;
+	GLuint mWorldMatrixLocation;
 	vec3 defaultOrientation = vec3(0.0f, 0.0f, 0.0f);
 	vec3 defaultPosition;
 	float defaultScale = 1.0f;
