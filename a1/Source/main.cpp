@@ -343,7 +343,7 @@ int main(int argc, char* argv[])
 	GLuint brickTextureID = loadTexture("Textures/brick.jpg");
 	GLuint cementTextureID = loadTexture("Textures/cement.jpg");
 #else
-	GLuint brickTextureID = loadTexture("../Assets/Textures/brick.jpg");
+	
 	GLuint cementTextureID = loadTexture("../Assets/Textures/cement.jpg");
 #endif
 
@@ -605,13 +605,6 @@ int main(int argc, char* argv[])
 		glBindTexture(GL_TEXTURE_2D, cementTextureID);
 		glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
 
-
-
-
-		glActiveTexture(GL_TEXTURE1);
-		GLuint textureLocation2 = glGetUniformLocation(texturedShaderProgram, "textureSampler2");
-		glBindTexture(GL_TEXTURE_2D, brickTextureID);
-		glUniform1i(textureLocation, 1);
 
 
 
