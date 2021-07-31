@@ -632,148 +632,49 @@ int main(int argc, char* argv[])
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour)
 {
 	// Cube model
+	// Vertex, colour, normal
+	vec3 unitCube[] = {
+		vec3(-0.5f,-0.5f,-0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f), // left
+		vec3(-0.5f,-0.5f, 0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
 
-	// All arrays are in the following face order:
-	// left
-	// far
-	// bottom
-	// near
-	// right
-	// top
+		vec3(0.5f, 0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f), // far
+		vec3(-0.5f,-0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(-0.5f, 0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.5f, 0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.5f,-0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(-0.5f,-0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
 
-	// Verticies
-	vec3 vertexArray[] = {
-		vec3(-0.5f,-0.5f,-0.5f),
-		vec3(-0.5f,-0.5f, 0.5f),
-		vec3(-0.5f, 0.5f, 0.5f),
-		vec3(-0.5f,-0.5f,-0.5f),
-		vec3(-0.5f, 0.5f, 0.5f),
-		vec3(-0.5f, 0.5f,-0.5f),
+		vec3(0.5f,-0.5f, 0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f), // bottom
+		vec3(-0.5f,-0.5f,-0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.5f,-0.5f,-0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(-0.5f,-0.5f, 0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
 
-		vec3(0.5f, 0.5f,-0.5f),
-		vec3(-0.5f,-0.5f,-0.5f),
-		vec3(-0.5f, 0.5f,-0.5f),
-		vec3(0.5f, 0.5f,-0.5f),
-		vec3(0.5f,-0.5f,-0.5f),
-		vec3(-0.5f,-0.5f,-0.5f),
+		vec3(-0.5f, 0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f), // near
+		vec3(-0.5f,-0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f, 0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
 
-		vec3(0.5f,-0.5f, 0.5f),
-		vec3(-0.5f,-0.5f,-0.5f),
-		vec3(0.5f,-0.5f,-0.5f),
-		vec3(0.5f,-0.5f, 0.5f),
-		vec3(-0.5f,-0.5f, 0.5f),
-		vec3(-0.5f,-0.5f,-0.5f),
+		vec3(0.5f, 0.5f, 0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f), // right
+		vec3(0.5f,-0.5f,-0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f,-0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f,-0.5f,-0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f, 0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
 
-		vec3(-0.5f, 0.5f, 0.5f),
-		vec3(-0.5f,-0.5f, 0.5f),
-		vec3(0.5f,-0.5f, 0.5f),
-		vec3(0.5f, 0.5f, 0.5f),
-		vec3(-0.5f, 0.5f, 0.5f),
-		vec3(0.5f,-0.5f, 0.5f),
-
-		vec3(0.5f, 0.5f, 0.5f),
-		vec3(0.5f,-0.5f,-0.5f),
-		vec3(0.5f, 0.5f,-0.5f),
-		vec3(0.5f,-0.5f,-0.5f),
-		vec3(0.5f, 0.5f, 0.5f),
-		vec3(0.5f,-0.5f, 0.5f),
-
-		vec3(0.5f, 0.5f, 0.5f),
-		vec3(0.5f, 0.5f,-0.5f),
-		vec3(-0.5f, 0.5f,-0.5f),
-		vec3(0.5f, 0.5f, 0.5f),
-		vec3(-0.5f, 0.5f,-0.5f),
-		vec3(-0.5f, 0.5f, 0.5f)
-	};
-
-	// Colours
-	vec3 colourVertexArray[] = {
-		leftRightColour,
-		leftRightColour,
-		leftRightColour,
-		leftRightColour,
-		leftRightColour,
-		leftRightColour,
-
-		frontBackColour,
-		frontBackColour,
-		frontBackColour,
-		frontBackColour,
-		frontBackColour,
-		frontBackColour,
-
-		topBottomColour,
-		topBottomColour,
-		topBottomColour,
-		topBottomColour,
-		topBottomColour,
-		topBottomColour,
-
-		frontBackColour,
-		frontBackColour,
-		frontBackColour,
-		frontBackColour,
-		frontBackColour,
-		frontBackColour,
-
-		leftRightColour,
-		leftRightColour,
-		leftRightColour,
-		leftRightColour,
-		leftRightColour,
-		leftRightColour,
-
-		topBottomColour,
-		topBottomColour,
-		topBottomColour,
-		topBottomColour,
-		topBottomColour,
-		topBottomColour
-	};
-
-	// Normals
-	vec3 normalArray[] = {
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.0f, 0.0f, -1.0f),
-
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-		vec3(1.0f, 0.0f, 0.0f),
-
-		vec3(0.0f, -1.0f, 0.0f),
-		vec3(0.0f, -1.0f, 0.0f),
-		vec3(0.0f, -1.0f, 0.0f),
-		vec3(0.0f, -1.0f, 0.0f),
-		vec3(0.0f, -1.0f, 0.0f),
-		vec3(0.0f, -1.0f, 0.0f),
-
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-1.0f, 0.0f, 0.0f),
-
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.0f, 0.0f, 1.0f),
-
-		vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.0f, 1.0f, 0.0f)
+		vec3(0.5f, 0.5f, 0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f), // top
+		vec3(0.5f, 0.5f,-0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.5f, 0.5f, 0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f)
 	};
 
 	// Create a vertex array
@@ -781,48 +682,36 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 	glGenVertexArrays(1, &vertexArrayObject);
 	glBindVertexArray(vertexArrayObject);
 
-
 	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
 	GLuint vertexBufferObject;
 	glGenBuffers(1, &vertexBufferObject);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(unitCube), unitCube, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0,    // attribute 0 matches aPos in Vertex Shader
+	glVertexAttribPointer(0,    // Location 0 matches aPos in Vertex Shader
 		3,						// size
 		GL_FLOAT,				// type
 		GL_FALSE,				// normalized?
-		sizeof(vec3),			// stride
+		3 * sizeof(vec3),		// stride
 		(void*)0				// array buffer offset
 	);
 	glEnableVertexAttribArray(0);
 
-	GLuint colourVertexBufferObject;
-	glGenBuffers(1, &colourVertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, colourVertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(colourVertexArray), colourVertexArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(1,	// attribute 1 matches aColor in Vertex Shader
+	glVertexAttribPointer(1,	// Location 1 matches aColor in Vertex Shader
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(vec3),
-		(void*)0
+		3 * sizeof(vec3),
+		(void*)(sizeof(vec3))
 	);
 	glEnableVertexAttribArray(1);
 
-
-	GLuint normalBufferObject;
-	glGenBuffers(1, &normalBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, normalBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(normalArray), normalArray, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(2,	// attribute 2 matches aNormal in Vertex Shader
+	glVertexAttribPointer(2,	// Location 2 matches aNormal in Vertex Shader
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(vec3),
-		(void*)0
+		3 * sizeof(vec3),
+		(void*)(sizeof(vec3) * 2)
 	);
 	glEnableVertexAttribArray(2);
 
