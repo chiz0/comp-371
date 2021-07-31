@@ -41,10 +41,108 @@
 #include "ShaderManager.h"
 #include "Coordinates.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 using namespace glm;
 using namespace std;
 
-/////////////////////// MAIN ///////////////////////
+GLuint loadTexture(const char* filename);
+const char* getVertexShaderSource();
+
+const char* getFragmentShaderSource();
+
+const char* getTexturedVertexShaderSource();
+
+const char* getTexturedFragmentShaderSource();
+
+int compileAndLinkShaders(const char* vertexShaderSource, const char* fragmentShaderSource);
+
+struct TexturedColoredVertex
+{
+	TexturedColoredVertex(vec3 _position, vec3 _color, vec2 _uv)
+		: position(_position), color(_color), uv(_uv) {}
+
+	vec3 position;
+	vec3 color;
+	vec2 uv;
+};
+// Textured Cube model
+const TexturedColoredVertex texturedCubeVertexArray[] = {  // position,                            color
+	TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)), //left - red
+	TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 1.0f)),
+	TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
+
+	TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(0.0f, 0.0f)),
+	TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 1.0f)),
+	TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), vec2(1.0f, 0.0f)),
+
+	TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)), // far - blue
+	TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
+	TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)),
+
+	TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)),
+	TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(1.0f, 0.0f)),
+	TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
+
+	TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f)), // bottom - turquoise
+	TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)),
+	TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(1.0f, 0.0f)),
+
+	TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f)),
+	TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(0.0f, 1.0f)),
+	TexturedColoredVertex(vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f), vec2(0.0f, 0.0f)),
+
+	TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f)), // near - green
+	TexturedColoredVertex(vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+	TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
+
+	TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
+	TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f)),
+	TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
+
+	TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)), // right - purple
+	TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
+	TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(1.0f, 0.0f)),
+
+	TexturedColoredVertex(vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(0.0f, 0.0f)),
+	TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(1.0f, 1.0f)),
+	TexturedColoredVertex(vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), vec2(0.0f, 1.0f)),
+
+	TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)), // top - yellow
+	TexturedColoredVertex(vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 0.0f)),
+	TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+
+	TexturedColoredVertex(vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(1.0f, 1.0f)),
+	TexturedColoredVertex(vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 0.0f)),
+	TexturedColoredVertex(vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), vec2(0.0f, 1.0f))
+};
+
+int createTexturedCubeVertexArrayObject();
+
+void setProjectionMatrix(int shaderProgram, mat4 projectionMatrix)
+{
+	glUseProgram(shaderProgram);
+	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+}
+
+void setViewMatrix(int shaderProgram, mat4 viewMatrix)
+{
+	glUseProgram(shaderProgram);
+	GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+}
+
+void setWorldMatrix(int shaderProgram, mat4 worldMatrix)
+{
+	glUseProgram(shaderProgram);
+	GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+}
+
+
+
 
 int createVertexArrayObject();
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
@@ -52,14 +150,63 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 bool initContext();
 
 GLFWwindow* window = NULL;
+/////////////////////// MAIN ///////////////////////
 
 int main(int argc, char* argv[])
 {
+
+	// Initialize GLFW and OpenGL version
+	glfwInit();
+
+#if defined(PLATFORM_OSX)
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#else
+	// On windows, we set OpenGL version to 2.1, to support more hardware
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+#endif
+
+	// Create Window and rendering context using GLFW, resolution is 800x600
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Comp371 - Lab 03", NULL, NULL);
+	if (window == NULL)
+	{
+		std::cerr << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwMakeContextCurrent(window);
+
+	// Initialize GLEW
+	glewExperimental = true; // Needed for core profile
+	if (glewInit() != GLEW_OK) {
+		std::cerr << "Failed to create GLEW" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
+
+	// Load Textures
+#if defined(PLATFORM_OSX)
+	GLuint brickTextureID = loadTexture("Textures/brick.jpg");
+	GLuint cementTextureID = loadTexture("Textures/cement.jpg");
+#else
+	GLuint brickTextureID = loadTexture("../Assets/Textures/brick.jpg");
+	GLuint cementTextureID = loadTexture("../Assets/Textures/cement.jpg");
+#endif
+
+
 	if (!initContext()) return -1;
 
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+	// Compile and link shaders here ...
+	int colorShaderProgram = compileAndLinkShaders(getVertexShaderSource(), getFragmentShaderSource());
+	int texturedShaderProgram = compileAndLinkShaders(getTexturedVertexShaderSource(), getTexturedFragmentShaderSource());
+	
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
 	shaderManager.use();
@@ -78,9 +225,28 @@ int main(int argc, char* argv[])
 
 	// Get the world matrix
 	GLuint worldMatrixLocation = shaderManager.getUniformLocation("worldMatrix");
+	
+	// Camera parameters for view transform
+	vec3 cameraPosition = vec3(0.0f, 1.0f, 20.0f);
+	vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
+	vec3 cameraUp(0.0f, 1.0f, 0.0f);
+	vec3 cameraDestination = cameraPosition;
+	bool  cameraFirstPerson = true; // press 1 or 2 to toggle this variable
+
+	// Set initial view matrix
+	mat4 viewMatrix = lookAt(cameraPosition,  // eye
+		cameraPosition + cameraLookAt,  // center
+		cameraUp); // up
+
+	// Set View and Projection matrices on both shaders
+	setViewMatrix(colorShaderProgram, viewMatrix);
+	setViewMatrix(texturedShaderProgram, viewMatrix);
+
+	setProjectionMatrix(colorShaderProgram, projectionMatrix);
+	setProjectionMatrix(texturedShaderProgram, projectionMatrix);
 
 	// Define and upload geometry to the GPU here ...
-	int vao = createVertexArrayObject();
+	int texturedCubeVAO = createTexturedCubeVertexArrayObject();
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -97,6 +263,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 
 	GLenum renderingMode = GL_TRIANGLES;
+	glBindVertexArray(texturedCubeVAO);
 
 	// Track models
 	vector<Shape> shapes;               // Set of all shapes in the world
@@ -256,17 +423,7 @@ int main(int argc, char* argv[])
 		CAMERA_OFFSET + shapes[3].mPosition
 	};
 
-	// Camera parameters for view transform
-	vec3 cameraPosition = vec3(0.0f, 1.0f, 20.0f);
-	vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
-	vec3 cameraUp(0.0f, 1.0f, 0.0f);
-	vec3 cameraDestination = cameraPosition;
-	bool  cameraFirstPerson = true; // press 1 or 2 to toggle this variable
-
-	// Set initial view matrix
-	mat4 viewMatrix = lookAt(cameraPosition,  // eye
-		cameraPosition + cameraLookAt,  // center
-		cameraUp); // up
+	
 
 	GLuint viewMatrixLocation = shaderManager.getUniformLocation("viewMatrix");
 	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
@@ -287,21 +444,36 @@ int main(int argc, char* argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
+		// Each frame, reset color of each pixel to glClearColor
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Draw textured geometry
+		glUseProgram(texturedShaderProgram);
 
+		glActiveTexture(GL_TEXTURE0);
+		GLuint textureLocation = glGetUniformLocation(texturedShaderProgram, "textureSampler");
+		glBindTexture(GL_TEXTURE_2D, brickTextureID);
+		glUniform1i(textureLocation, 0);           // Set our Texture sampler to user Texture Unit 0
+		
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw ground
 		glBindVertexArray(groundColour);
-
+		mat4 groundWorldMatrix = translate(mat4(1.0f), vec3(0.0f, -0.01f, 0.0f)) * scale(mat4(1.0f), vec3(1000.0f, 0.02f, 1000.0f));
+		setWorldMatrix(texturedShaderProgram, groundWorldMatrix);
+		
 		for (int i = -50; i <= 50; i++) {
+			glBindTexture(GL_TEXTURE_2D, cementTextureID);
 			mat4 gridMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, i)) * scale(mat4(1.0f), vec3(100.0f, 0.02f, 0.02f));
+			setWorldMatrix(texturedShaderProgram, groundWorldMatrix);
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 		}
 		for (int i = -50; i <= 50; i++) {
+			glBindTexture(GL_TEXTURE_2D, cementTextureID);
 			mat4 gridMatrix = translate(mat4(1.0f), vec3(i, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(0.02f, 0.02f, 100.0f));
+			setWorldMatrix(texturedShaderProgram, groundWorldMatrix);
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 		}
@@ -598,77 +770,191 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
-int createVertexArrayObject()
+const char* getVertexShaderSource()
 {
-	// Cube model
-	vec3 vertexArray[] = {  // position,                            color
-		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
-		vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+	// For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
+	return
+		"#version 330 core\n"
+		"layout (location = 0) in vec3 aPos;"
+		"layout (location = 1) in vec3 aColor;"
+		""
+		"uniform mat4 worldMatrix;"
+		"uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
+		"uniform mat4 projectionMatrix = mat4(1.0);"
+		""
+		"out vec3 vertexColor;"
+		"void main()"
+		"{"
+		"   vertexColor = aColor;"
+		"   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+		"   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
+		"}";
+}
 
-		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+const char* getFragmentShaderSource()
+{
+	return
+		"#version 330 core\n"
+		"in vec3 vertexColor;"
+		"out vec4 FragColor;"
+		"void main()"
+		"{"
+		"   FragColor = vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
+		"}";
+}
 
-		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
-		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-		vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+const char* getTexturedVertexShaderSource()
+{
+	// For now, you use a string for your shader code, in the assignment, shaders will be stored in .glsl files
+	return
+		"#version 330 core\n"
+		"layout (location = 0) in vec3 aPos;"
+		"layout (location = 1) in vec3 aColor;"
+		"layout (location = 2) in vec2 aUV;"
+		""
+		"uniform mat4 worldMatrix;"
+		"uniform mat4 viewMatrix = mat4(1.0);"  // default value for view matrix (identity)
+		"uniform mat4 projectionMatrix = mat4(1.0);"
+		""
+		"out vec3 vertexColor;"
+		"out vec2 vertexUV;"
+		""
+		"void main()"
+		"{"
+		"   vertexColor = aColor;"
+		"   mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;"
+		"   gl_Position = modelViewProjection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
+		"   vertexUV = aUV;"
+		"}";
+}
 
-		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
-		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+const char* getTexturedFragmentShaderSource()
+{
+	return
+		"#version 330 core\n"
+		"in vec3 vertexColor;"
+		"in vec2 vertexUV;"
+		"uniform sampler2D textureSampler;"
+		""
+		"out vec4 FragColor;"
+		"void main()"
+		"{"
+		"   vec4 textureColor = texture( textureSampler, vertexUV );"
+		"   FragColor = textureColor * vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);"
+		"}";
+}
 
-		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
-		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+int compileAndLinkShaders(const char* vertexShaderSource, const char* fragmentShaderSource)
+{
+	// compile and link shader program
+	// return shader program id
+	// ------------------------------------
 
-		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+	// vertex shader
+	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(vertexShader);
 
-		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
-		vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+	// check for shader compile errors
+	int success;
+	char infoLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
 
-		vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+	// fragment shader
+	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(fragmentShader);
 
-		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
-		vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+	// check for shader compile errors
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+		std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
 
-		vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+	// link shaders
+	int shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
 
-		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
-		vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+	// check for linking errors
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+	}
 
-		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
-	};
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 
+	return shaderProgram;
+}
+
+GLuint loadTexture(const char* filename)
+{
+	// Step1 Create and bind textures
+	GLuint textureId = 0;
+	glGenTextures(1, &textureId);
+	assert(textureId != 0);
+
+
+	glBindTexture(GL_TEXTURE_2D, textureId);
+
+	// Step2 Set filter parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Step3 Load Textures with dimension data
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+	if (!data)
+	{
+		std::cerr << "Error::Texture could not load texture file:" << filename << std::endl;
+		return 0;
+	}
+
+	// Step4 Upload the texture to the PU
+	GLenum format = 0;
+	if (nrChannels == 1)
+		format = GL_RED;
+	else if (nrChannels == 3)
+		format = GL_RGB;
+	else if (nrChannels == 4)
+		format = GL_RGBA;
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height,
+		0, format, GL_UNSIGNED_BYTE, data);
+
+	// Step5 Free resources
+	stbi_image_free(data);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return textureId;
+}
+
+int createTexturedCubeVertexArrayObject()
+{
 	// Create a vertex array
 	GLuint vertexArrayObject;
 	glGenVertexArrays(1, &vertexArrayObject);
 	glBindVertexArray(vertexArrayObject);
 
-
 	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
 	GLuint vertexBufferObject;
 	glGenBuffers(1, &vertexBufferObject);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(texturedCubeVertexArray), texturedCubeVertexArray, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
 		3,                   // size
 		GL_FLOAT,            // type
 		GL_FALSE,            // normalized?
-		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
+		sizeof(TexturedColoredVertex), // stride - each vertex contain 2 vec3 (position, color)
 		(void*)0             // array buffer offset
 	);
 	glEnableVertexAttribArray(0);
@@ -678,13 +964,19 @@ int createVertexArrayObject()
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		2 * sizeof(vec3),
+		sizeof(TexturedColoredVertex),
 		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
 	);
 	glEnableVertexAttribArray(1);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBindVertexArray(0);
+	glVertexAttribPointer(2,                            // attribute 2 matches aUV in Vertex Shader
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(TexturedColoredVertex),
+		(void*)(2 * sizeof(vec3))      // uv is offseted by 2 vec3 (comes after position and color)
+	);
+	glEnableVertexAttribArray(2);
 
 	return vertexArrayObject;
 }
@@ -852,7 +1144,7 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 		3,						// size
 		GL_FLOAT,				// type
 		GL_FALSE,				// normalized?
-		sizeof(vec3),			// stride
+		sizeof(TexturedColoredVertex),			// stride
 		(void*)0				// array buffer offset
 	);
 	glEnableVertexAttribArray(0);
@@ -866,8 +1158,8 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(vec3),
-		(void*)0
+		sizeof(TexturedColoredVertex),
+		(void*)sizeof(vec3)
 	);
 	glEnableVertexAttribArray(1);
 
@@ -890,6 +1182,97 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 
 	return vertexArrayObject;
 }
+
+int createVertexArrayObject()
+{
+	// Cube model
+	vec3 vertexArray[] = {  // position,                            color
+		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f), //left - red
+		vec3(-0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+
+		vec3(-0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+
+		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f), // far - blue
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+
+		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, 1.0f),
+
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f), // bottom - turquoise
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+		vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 1.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 1.0f, 1.0f),
+
+		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // near - green
+		vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+
+		vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+
+		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f), // right - purple
+		vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+
+		vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 1.0f),
+
+		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f), // top - yellow
+		vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+
+		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(1.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(1.0f, 1.0f, 0.0f)
+	};
+
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
+		3,                   // size
+		GL_FLOAT,            // type
+		GL_FALSE,            // normalized?
+		2 * sizeof(vec3), // stride - each vertex contain 2 vec3 (position, color)
+		(void*)0             // array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+
+	glVertexAttribPointer(1,                            // attribute 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		2 * sizeof(vec3),
+		(void*)sizeof(vec3)      // color is offseted a vec3 (comes after position)
+	);
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBindVertexArray(0);
+
+	return vertexArrayObject;
+}
+
 
 bool initContext() {     // Initialize GLFW and OpenGL version
 	glfwInit();
