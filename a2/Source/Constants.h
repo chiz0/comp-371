@@ -7,7 +7,7 @@ using namespace std;
 
 constexpr int WALL_SIZE = 12;                           // How many unit cubes in nxn should the wall be
 constexpr float WALL_THICKNESS = 0.1f;                  // How thick is the wall
-constexpr int WALL_DISTANCE = 1 / WALL_THICKNESS;		// How far from the model should its wall be
+constexpr int WALL_DISTANCE = 10;						// How far from the model should its wall be
 constexpr int MODEL_COUNT = 4;                          // How many models are present in the world
 constexpr float STAGE_WIDTH = 50.0f;                    // How far in either direction each model will be placed
 constexpr float SCALE_RATE = 0.2f;                      // The rate at which models grow and shrink

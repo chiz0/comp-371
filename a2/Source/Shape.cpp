@@ -1,6 +1,6 @@
 #include "Shape.h"
 
-Shape::Shape(vec3 position, vector<coordinates> description, int vao, GLuint worldMatrixLocation, bool hasWall) : mPosition(position), mvao(vao), mWorldMatrixLocation(worldMatrixLocation), voxelCount(description.size()), defaultPosition(position), showWall(hasWall)
+Shape::Shape(vec3 position, vector<coordinates> description, int vao, GLuint worldMatrixLocation, bool hasWall, float scalarScale) : mPosition(position), mvao(vao), mWorldMatrixLocation(worldMatrixLocation), voxelCount(description.size()), defaultPosition(position), showWall(hasWall), mScale(scalarScale), defaultScale(scalarScale)
 {
 	for (int i = 0; i < WALL_SIZE; i++) {
 		for (int j = 0; j < WALL_SIZE; j++) {
