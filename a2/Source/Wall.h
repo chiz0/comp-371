@@ -11,25 +11,21 @@
 #include "Coordinates.h"
 #include "ShaderManager.h"
 #include "Voxel.h"
+#include "Shape.h"
 
 using namespace glm;
 using namespace std;
 
-class Shape {
+class Wall {
 public:
 	// Functions
-	Shape(vec3 position, vector<coordinates> description, int vao, GLuint worldMatrixLocation, bool hasWall, float scalarScale);
+	Wall(vec3 position, Shape* shape, int vao, GLuint worldMatrixLocation);
 	void Draw(GLenum renderingMode);
-	void Reshuffle();
 	void ResetPosition();
 
 	// Properties
-	bool showWall;
-	int voxelCount = 0;
-	bool projection[WALL_SIZE][WALL_SIZE];
 	vector<struct coordinates> mDescription;
 	vector<Voxel> voxels;
-	vector<Voxel> wallVoxels;
 	vec3 mPosition;
 	vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
 	float mScale = 1.0f;
