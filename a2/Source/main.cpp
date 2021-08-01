@@ -97,20 +97,8 @@ int main(int argc, char* argv[])
 
 
 
-	std::string shaderPathPrefix = "../Assets/Shaders/";
 
-	GLuint shaderScene = loadSHADER(shaderPathPrefix + "scene_vertex.glsl",
-		shaderPathPrefix + "scene_fragment.glsl");
-
-	GLuint shaderShadow = loadSHADER(shaderPathPrefix + "shadow_vertex.glsl",
-		shaderPathPrefix + "shadow_fragment.glsl");
-
-
-
-
-
-
-
+	
 	// Dimensions of the shadow texture, which should cover the viewport window
 	// size and shouldn't be oversized and waste resources
 	const unsigned int DEPTH_MAP_TEXTURE_SIZE = 1024;
@@ -140,25 +128,19 @@ int main(int argc, char* argv[])
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	// Variable storing index to framebuffer used for shadow mapping
-	GLuint depth_map_fbo;  // fbo: framebuffer object
+	GLuint depthMapFBO;  // fbo: framebuffer object
 	// Get the framebuffer
-	glGenFramebuffers(1, &depth_map_fbo);
-	// Bind the framebuffer so the next glFramebuffer calls affect it
-	glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
-	// Attach the depth map texture to the depth map framebuffer
-	// glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-	// depth_map_texture, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-		depth_map_texture, 0);
-	glDrawBuffer(GL_NONE);  // disable rendering colors, only write depth values
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_map_texture, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-
-
-
-
-
-
+	// Always check that our framebuffer is ok
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return false;
+	
 
 
 
@@ -395,6 +377,23 @@ int main(int argc, char* argv[])
 	shaderManager.setFloat("specularLight", LIGHT_SPECULAR_STRENGTH);
 	shaderManager.setFloat("shininess", SHININESS);
 
+
+
+
+	//Orthographic projection of light
+	float near_plane = 1.0f, far_plane = 7.5f;
+	mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	vec3 lightLookAt = glm::vec3(0.0f,0.0f,0.0f);
+	mat4 lightView = glm::lookAt(lightPosition,
+		lightLookAt,
+		glm::vec3(0.0f, 0.0f, 1.0f));
+
+	mat4 lightSpaceMatrix = lightProjection * lightView;
+
+
+
+
+
 	// Grid and coordinate axis colours
 	int groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
 	int xLineColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.0f, 0.0f));
@@ -411,31 +410,34 @@ int main(int argc, char* argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
+		
+		
+		
+		shaderManager.use();
+		glUniformMatrix4fv(lightSpaceMatrixLocation, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+		
+		
+		glViewport(0, 0, DEPTH_MAP_TEXTURE_SIZE, DEPTH_MAP_TEXTURE_SIZE);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		//ConfigureShaderAndMatrices();
+		//RenderScene();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		// light parameters
-		float Lphi = glfwGetTime() * 0.5f * 3.14f;
-		vec3 lightPosition = vec3(0.6f, 50.0f, 5.0f); // the location of the light in 3D space: fixed position
-		vec3(cosf(Lphi)* cosf(Lphi), sinf(Lphi),
-			-cosf(Lphi) * sinf(Lphi)) *
-			5.0f;  // variable position
+		// 2. then render scene as normal with shadow mapping (using depth map)
 
-		vec3 lightFocus(0, 0, -1);  // the point in 3D space the light "looks" at
-		vec3 lightDirection = normalize(lightFocus - lightPosition);
-
-		float lightNearPlane = 0.01f;
-		float lightFarPlane = 400.0f;
-
-		mat4 lightProjMatrix = //frustum(-1.0f, 1.0f, -1.0f, 1.0f, lightNearPlane, lightFarPlane);
-			perspective(50.0f, (float)DEPTH_MAP_TEXTURE_SIZE / (float)DEPTH_MAP_TEXTURE_SIZE, lightNearPlane, lightFarPlane);
-		mat4 lightViewMatrix = lookAt(lightPosition, lightFocus, vec3(0, 1, 0));
-
-
-		SetUniformMat4(shaderScene, "light_proj_view_matrix", lightProjMatrix* lightViewMatrix);
-		SetUniform1Value(shaderScene, "light_near_plane", lightNearPlane);
-		SetUniform1Value(shaderScene, "light_far_plane", lightFarPlane);
-		SetUniformVec3(shaderScene, "light_position", lightPosition);
-		SetUniformVec3(shaderScene, "light_direction", lightDirection);
-
+		glViewport(0, 0, WIDTH, SCR_HEIGHT);										//How to get width and height of window
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//ConfigureShaderAndMatrices();
+		glBindTexture(GL_TEXTURE_2D, depth_map_texture);
+		//RenderScene();
+		
+		
+		
+		
+		
+		
+		
 		// DEBUG - MOVING LIGHT
 		// TODO: REMOVE BEFORE SUBMISSION
 		//float moveY = cos(glfwGetTime());
@@ -474,61 +476,10 @@ int main(int argc, char* argv[])
 		glDrawArrays(renderingMode, 0, 36);
 
 
-		for (Shape shape : shapes) {
+		
 		
 
-			// Render shadow in 2 passes: 1- Render depth map, 2- Render scene
-			// 1- Render shadow map:
-			// a- use program for shadows
-			// b- resize window coordinates to fix depth map output size
-			// c- bind depth map framebuffer to output the depth values
-			{
-				// Use proper shader
-				glUseProgram(shaderShadow);
-				// Use proper image output size
-				glViewport(0, 0, DEPTH_MAP_TEXTURE_SIZE, DEPTH_MAP_TEXTURE_SIZE);
-				// Bind depth map texture as output framebuffer
-				glBindFramebuffer(GL_FRAMEBUFFER, depth_map_fbo);
-				// Clear depth data on the framebuffer
-				glClear(GL_DEPTH_BUFFER_BIT);
-				// Bind geometry
-				glBindVertexArray(shape.GetVAO());
-				// Draw geometry
-				//glDrawElements(GL_TRIANGLES, activeVertices, GL_UNSIGNED_INT, 0);
-				glDrawArrays(GL_TRIANGLES, 0, 36);
-				// Unbind geometry
-				glBindVertexArray(0);
-			}
-
-			// 2- Render scene: a- bind the default framebuffer and b- just render like
-			// what we do normally
-			{
-				// Use proper shader
-				glUseProgram(shaderScene);
-				// Use proper image output size
-				// Side note: we get the size from the framebuffer instead of using WIDTH
-				// and HEIGHT because of a bug with highDPI displays
-				int width, height;
-				glfwGetFramebufferSize(window, &width, &height);
-				glViewport(0, 0, width, height);
-				// Bind screen as output framebuffer
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				// Clear color and depth data on framebuffer
-				glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				// Bind depth map texture: not needed, by default it is active
-				// glActiveTexture(GL_TEXTURE0);
-				// Bind geometry
-				glBindVertexArray(shape.GetVAO());
-				// Draw geometry
-				//glDrawElements(GL_TRIANGLES, activeVertices, GL_UNSIGNED_INT, 0);
-				glDrawArrays(GL_TRIANGLES, 0, 36);
-				// Unbind geometry
-				glBindVertexArray(0);
-			}
-
-		}
-		/*
+		
 
 		// Draw shape
 		for (Shape shape : shapes) {
@@ -539,7 +490,7 @@ int main(int argc, char* argv[])
 
 		glBindVertexArray(0);
 
-		*/
+		
 
 		// End Frame
 		glfwSwapBuffers(window);
