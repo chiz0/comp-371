@@ -1,4 +1,4 @@
-// COMP 371 Assignment 1
+// COMP 371 Assignment 2
 // Spiral Staircase (Section DD Team 3)
 // 
 // Badele, Theodor (40129466)
@@ -41,11 +41,16 @@
 #include "Shape.h"
 #include "ShaderManager.h"
 #include "Coordinates.h"
+#include "ControlState.h"
+#include "Wall.h"
 
 using namespace glm;
 using namespace std;
 
 /////////////////////// MAIN ///////////////////////
+
+void windowSizeCallback(GLFWwindow* window, int width, int height);
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
 int createVertexArrayObjectSingleColoured(vec3 colour);
@@ -71,8 +76,10 @@ int main(int argc, char* argv[])
 
 	// Set projection matrix for shader, this won't change
 	mat4 projectionMatrix = perspective(70.0f,            // field of view in degrees
-		800.0f / 600.0f,  // aspect ratio
-		0.01f, 100.0f);   // near and far (near > 0)
+		1024.0f / 768.0f,  // aspect ratio
+		0.01f, 200.0f);   // near and far (near > 0)
+
+	glfwSetWindowSizeCallback(window, &windowSizeCallback);
 
 	GLuint projectionMatrixLocation = shaderManager.getUniformLocation("projectionMatrix");
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
@@ -98,6 +105,7 @@ int main(int argc, char* argv[])
 
 	// Track models
 	vector<Shape> shapes;               // Set of all shapes in the world
+	vector<Wall> walls;					// Set of all walls
 
 	///////// DESIGN MODELS HERE /////////
 	// Chi shape
@@ -245,14 +253,21 @@ int main(int argc, char* argv[])
 	// Lightbulb colour
 	int lightbulbColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 1.0f));
 
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, true));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, true));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, true));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, true));
-	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, worldMatrixLocation, false);
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, false, 1.0f));
+	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, worldMatrixLocation, false, 1.0f);
+
+	for (int i = 0; i < 4; i++) {
+		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), shapes[i].mvao, worldMatrixLocation));
+	}
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
+
+	ControlState controlState = { &shapes, &focusedShape };
+	glfwSetWindowUserPointer(window, &controlState);
 
 	const vector<vec3> cameraPositions{
 		CAMERA_OFFSET + shapes[0].mPosition,
@@ -291,6 +306,9 @@ int main(int argc, char* argv[])
 	int xLineColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.0f, 0.0f));
 	int yLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 1.0f, 0.0f));
 	int zLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 0.0f, 1.0f));
+
+	// Register keypress event callback
+	glfwSetKeyCallback(window, &keyCallback);
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
@@ -336,9 +354,12 @@ int main(int argc, char* argv[])
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &zLine[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
 
-		// Draw shape
+		// Draw shapes and walls
 		for (Shape shape : shapes) {
 			shape.Draw(renderingMode);
+		}
+		for (Wall wall : walls) {
+			wall.Draw(renderingMode);
 		}
 		lightbulb.mPosition = lightPosition;
 		lightbulb.Draw(renderingMode);
@@ -846,4 +867,30 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 		return false;
 	}
 	return true;
+}
+
+void windowSizeCallback(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
+
+	GLint shaderProgram = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &shaderProgram);
+
+	mat4 projectionMatrix = glm::perspective(70.0f,            // field of view in degrees
+		(float)width / (float)height,  // aspect ratio
+		0.01f, 200.0f);   // near and far (near > 0)
+
+	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+}
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+
+	ControlState controlState = *(ControlState*)glfwGetWindowUserPointer(window);
+
+	if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+		controlState.shapes->at(*(controlState.focusedShape)).mPosition.z -= TRANSLATE_RATE * 0.2;
+	}
+	if (key == GLFW_KEY_K && action == GLFW_PRESS) {
+		controlState.shapes->at(*(controlState.focusedShape)).mPosition.z += TRANSLATE_RATE * 0.2;
+	}
 }
