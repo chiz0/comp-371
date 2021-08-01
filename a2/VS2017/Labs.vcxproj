@@ -107,6 +107,7 @@
     <ClCompile Include="..\Source\ShaderManager.cpp" />
     <ClCompile Include="..\Source\Shape.cpp" />
     <ClCompile Include="..\Source\Voxel.cpp" />
+    <ClCompile Include="..\Source\Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Coordinates.h" />
@@ -114,6 +115,7 @@
     <ClInclude Include="..\Source\Shape.h" />
     <ClInclude Include="..\Source\Constants.h" />
     <ClInclude Include="..\Source\Voxel.h" />
+    <ClInclude Include="..\Source\Wall.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
