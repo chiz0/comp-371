@@ -348,15 +348,15 @@ int main(int argc, char* argv[])
 
 	// Colour of the shapes
 	// Chi colour
-	int chiColour = createVertexArrayObjectSingleColoured(vec3(0.429f, 0.808f, 0.922f));
+	int chiColour = createVertexArrayObjectTextured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-	int alexColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.58f, 0.25f));
+	int alexColour = createVertexArrayObjectTextured(vec3(1.0f, 0.58f, 0.25f));
 	// Theo colour
-	int theoColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.15f, 0.0f));
+	int theoColour = createVertexArrayObjectTextured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
-	int antoColour = createVertexArrayObjectSingleColoured(vec3(0.5f, 0.5f, 0.3f));
+	int antoColour = createVertexArrayObjectTextured(vec3(0.5f, 0.5f, 0.3f));
 	// Lightbulb colour
-	int lightbulbColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 1.0f));
+	int lightbulbColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
 	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 
@@ -465,6 +465,7 @@ int main(int argc, char* argv[])
 		glDrawArrays(renderingMode, 0, 36);
 
 		// Draw shapes and walls
+		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		for (Shape shape : shapes) {
 			shape.Draw(renderingMode);
 		}

@@ -108,6 +108,7 @@
     <ClCompile Include="..\Source\main.cpp" />
     <ClCompile Include="..\Source\ShaderManager.cpp" />
     <ClCompile Include="..\Source\Shape.cpp" />
+    <ClCompile Include="..\Source\ShapeAlex.cpp" />
     <ClCompile Include="..\Source\Voxel.cpp" />
     <ClCompile Include="..\Source\Wall.cpp" />
   </ItemGroup>
