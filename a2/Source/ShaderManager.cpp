@@ -81,6 +81,11 @@ void ShaderManager::setFloat(const string& name, float value) const
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
+void ShaderManager::setVec3(const string& name, float value1, float value2, float value3) const 
+{
+    glUniform3f(glGetUniformLocation(ID, name.c_str()), value1, value2, value3);
+}
+
 GLuint ShaderManager::getUniformLocation(const GLchar* key)
 {
     return glGetUniformLocation(ID, key);
