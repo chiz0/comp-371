@@ -29,6 +29,12 @@
     <None Include="..\Source\VertexShader.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="..\Source\TexturedFrag.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Source\TexturedVert.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\main.cpp">
