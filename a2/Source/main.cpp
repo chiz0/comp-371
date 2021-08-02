@@ -339,7 +339,7 @@ int main(int argc, char* argv[])
 		glBindVertexArray(tileColour);
 		for (int i = -50; i <= 50; i++) {
 			for (int j = -50; j <= 50; j++) {
-				mat4 tileMatrix = translate(mat4(1.0f), vec3(i, 0.0f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.02f, 1.0f));
+				mat4 tileMatrix = translate(mat4(1.0f), vec3(i, -0.1f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.01f, 1.0f));
 				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &tileMatrix[0][0]);
 				glDrawArrays(renderingMode, 0, 36);
 			}
