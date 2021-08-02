@@ -61,6 +61,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
 int createVertexArrayObjectSingleColoured(vec3 colour);
 int createVertexArrayObjectTextured(vec3 colour);
+int loadTexture(string name, char* path);
 
 bool initContext();
 
@@ -76,104 +77,11 @@ int main(int argc, char* argv[])
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
 	shaderManager.use();
-	//load the texture
-	unsigned int brickTexture;
-	glGenTextures(1, &brickTexture);
-	glBindTexture(GL_TEXTURE_2D, brickTexture);
-
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	int brickwidth, brickheight, bricknrChannels;
-
-
-	stbi_set_flip_vertically_on_load(true);
-	// load and generate the texture
-	unsigned char* brickdata = stbi_load("../Assets/Textures/brick.jpg", &brickwidth, &brickheight, &bricknrChannels, 0);
-	if (brickdata)
-	{
-		std::cout << "Brick Texture has been found" << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, brickwidth, brickheight, 0, GL_RGB, GL_UNSIGNED_BYTE, brickdata);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	//frees data
-	stbi_image_free(brickdata);
-
-	glUniform1i(glGetUniformLocation(shaderManager.ID, "brickTexture"), 0);
-	// END TEXTURE LOAD
-
-
-	int tilewidth, tileheight, tilenrChannels;
 
 	//load the texture
-	unsigned int tileTexture;
-	glGenTextures(1, &tileTexture);
-	glBindTexture(GL_TEXTURE_2D, tileTexture);
-
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	stbi_set_flip_vertically_on_load(true);
-	// load and generate the texture
-	unsigned char* tiledata = stbi_load("../Assets/Textures/tile.jpg", &tilewidth, &tileheight, &tilenrChannels, 0);
-	if (tiledata)
-	{
-		std::cout << "tile Texture has been found" << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tilewidth, tileheight, 0, GL_RGB, GL_UNSIGNED_BYTE, tiledata);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load tile texture " << std::endl;
-	}
-	//frees data
-	stbi_image_free(tiledata);
-
-	glUniform1i(glGetUniformLocation(shaderManager.ID, "tileTexture"), 0);
-	// END TEXTURE LOAD
-	int metalwidth, metalheight, metalnrChannels;
-	//load the texture
-	unsigned int metalTexture;
-	glGenTextures(1, &metalTexture);
-	glBindTexture(GL_TEXTURE_2D, brickTexture);
-
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	stbi_set_flip_vertically_on_load(true);
-	// load and generate the texture
-	unsigned char* metaldata = stbi_load("../Assets/Textures/metal.jpg", &metalwidth, &metalheight, &metalnrChannels, 0);
-	if (metaldata)
-	{
-		std::cout << "metal Texture has been found" << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, metalwidth, metalheight, 0, GL_RGB, GL_UNSIGNED_BYTE, metaldata);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load metal texture " << std::endl;
-	}
-	//frees data
-	stbi_image_free(metaldata);
-
-	glUniform1i(glGetUniformLocation(shaderManager.ID, "metalTexture"), 0);
-	// END TEXTURE LOAD
+	int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
+	int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
+	int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
@@ -465,7 +373,7 @@ int main(int argc, char* argv[])
 		glDrawArrays(renderingMode, 0, 36);
 
 		// Draw shapes and walls
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
+		glBindTexture(GL_TEXTURE_2D, metalTexture);
 		for (Shape shape : shapes) {
 			shape.Draw(renderingMode);
 		}
@@ -1112,6 +1020,38 @@ int createVertexArrayObjectTextured(vec3 colour)
 	glBindVertexArray(0);
 
 	return vertexArrayObject;
+}
+
+int loadTexture(string name, char* path) {
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+	// load and generate the texture
+	int width, height, nrChannels;
+	unsigned char* textureData = stbi_load(path, &width, &height, &nrChannels, 0);
+	if (textureData)
+	{
+		cout << "Texture has been found: " << name << endl;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		cout << "Failed to load texture: " << name << endl;
+	}
+	//frees data
+	stbi_image_free(textureData);
+
+	return texture;
 }
 
 bool initContext() {     // Initialize GLFW and OpenGL version
