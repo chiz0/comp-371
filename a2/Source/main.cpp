@@ -1,4 +1,4 @@
-// COMP 371 Assignment 1
+// COMP 371 Assignment 2
 // Spiral Staircase (Section DD Team 3)
 // 
 // Badele, Theodor (40129466)
@@ -37,73 +37,53 @@
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "Constants.h"
 #include "Shape.h"
 #include "ShaderManager.h"
 #include "Coordinates.h"
+#include "ControlState.h"
+#include "Wall.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 using namespace glm;
 using namespace std;
 
 /////////////////////// MAIN ///////////////////////
+
+void windowSizeCallback(GLFWwindow* window, int width, int height);
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
 int createVertexArrayObjectSingleColoured(vec3 colour);
 int createVertexArrayObjectTextured(vec3 colour);
 
 bool initContext();
-float texCoords[] = {
-	0.0f, 0.0f,  // lower-left corner  
-	1.0f, 0.0f,  // lower-right corner
-	0.0f, 1.0f,  // top-left corner
-	1.0f, 1.0f   // top-right corner
-};
 
 GLFWwindow* window = NULL;
 
 int main(int argc, char* argv[])
 {
-
 	if (!initContext()) return -1;
 
 	// Black background
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	
+	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
-	ShaderManager TexturedShader = ShaderManager("../Source/TexturedVert.glsl", "../Source/TexturedFrag.glsl");
-
 	shaderManager.use();
 
-	//////////////////////////////////////////////////////////
-	/*
-	unsigned int VBO, VAO, EBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	*/
-
-
-
+	//TODO Spin this off into its own class/function
 	//load the texture
-	unsigned int  brickTexture;
+	unsigned int brickTexture;
 	glGenTextures(1, &brickTexture);
 	glBindTexture(GL_TEXTURE_2D, brickTexture);
 
 	// set the texture wrapping/filtering options (on the currently bound texture object)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -125,11 +105,7 @@ int main(int argc, char* argv[])
 	stbi_image_free(data);
 
 	glUniform1i(glGetUniformLocation(shaderManager.ID, "brickTexture"), 0);
-	
-	//////////////////////////////////////////////////////////////////////////////
-
-	
-	
+	// END TEXTURE LOAD
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
@@ -137,8 +113,10 @@ int main(int argc, char* argv[])
 
 	// Set projection matrix for shader, this won't change
 	mat4 projectionMatrix = perspective(70.0f,            // field of view in degrees
-		800.0f / 600.0f,  // aspect ratio
-		0.01f, 100.0f);   // near and far (near > 0)
+		1024.0f / 768.0f,  // aspect ratio
+		0.01f, 200.0f);   // near and far (near > 0)
+
+	glfwSetWindowSizeCallback(window, &windowSizeCallback);
 
 	GLuint projectionMatrixLocation = shaderManager.getUniformLocation("projectionMatrix");
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
@@ -164,6 +142,7 @@ int main(int argc, char* argv[])
 
 	// Track models
 	vector<Shape> shapes;               // Set of all shapes in the world
+	vector<Wall> walls;					// Set of all walls
 
 	///////// DESIGN MODELS HERE /////////
 	// Chi shape
@@ -298,28 +277,35 @@ int main(int argc, char* argv[])
 	vector<struct coordinates> lightbulbShape{
 		{0, 0, 0}
 	};
-	TexturedShader.use();
-	glBindTexture(GL_TEXTURE_2D, brickTexture);
+
 	// Colour of the shapes
 	// Chi colour
-	int chiColour = createVertexArrayObjectTextured(vec3(0.429f, 0.808f, 0.922f));
+	int chiColour = createVertexArrayObjectSingleColoured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-	int alexColour = createVertexArrayObjectTextured(vec3(0.898f, 0.22f, 0.0f));
+	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.898f, 0.22f, 0.0f));
 	// Theo colour
 	int theoColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
 	int antoColour = createVertexArrayObjectSingleColoured(vec3(0.5f, 0.5f, 0.3f));
 	// Lightbulb colour
 	int lightbulbColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 1.0f));
+	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
 
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, true));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, true));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, true));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, true));
-	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, worldMatrixLocation, false);
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, false, 1.0f));
+	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, worldMatrixLocation, false, 1.0f);
+
+	for (int i = 0; i < 4; i++) {
+		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour, worldMatrixLocation));
+	}
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
+
+	ControlState controlState = { &shapes, &focusedShape };
+	glfwSetWindowUserPointer(window, &controlState);
 
 	const vector<vec3> cameraPositions{
 		CAMERA_OFFSET + shapes[0].mPosition,
@@ -352,12 +338,15 @@ int main(int argc, char* argv[])
 	shaderManager.setFloat("diffuseLight", LIGHT_DIFFUSE_STRENGTH);
 	shaderManager.setFloat("specularLight", LIGHT_SPECULAR_STRENGTH);
 	shaderManager.setFloat("shininess", SHININESS);
-	
+
 	// Grid and coordinate axis colours
 	int groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
 	int xLineColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.0f, 0.0f));
 	int yLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 1.0f, 0.0f));
 	int zLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 0.0f, 1.0f));
+
+	// Register keypress event callback
+	glfwSetKeyCallback(window, &keyCallback);
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
@@ -374,15 +363,10 @@ int main(int argc, char* argv[])
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//////////////////////////////////
 
-
-
-
-
-		///////////////////////////////////
 		// Draw ground
 		glBindVertexArray(groundColour);
+
 		for (int i = -50; i <= 50; i++) {
 			mat4 gridMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, i)) * scale(mat4(1.0f), vec3(100.0f, 0.02f, 0.02f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
@@ -395,26 +379,26 @@ int main(int argc, char* argv[])
 		}
 
 		// Draw coordinate axes
-		
 		glBindVertexArray(xLineColour);
-	
 		mat4 xLine = translate(mat4(1.0f), vec3(2.5f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(5.0f, 0.1f, 0.1f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &xLine[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
 		glBindVertexArray(yLineColour);
-		
 		mat4 yLine = translate(mat4(1.0f), vec3(0.0f, 2.6f, 0.0f)) * scale(mat4(1.0f), vec3(0.1f, 5.0f, 0.1f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &yLine[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
-		
 		glBindVertexArray(zLineColour);
 		mat4 zLine = translate(mat4(1.0f), vec3(0.0f, 0.1f, 2.5f)) * scale(mat4(1.0f), vec3(0.1f, 0.1f, 5.0f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &zLine[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
 
-		// Draw shape
+		// Draw shapes and walls
 		for (Shape shape : shapes) {
 			shape.Draw(renderingMode);
+		}
+		glBindTexture(GL_TEXTURE_2D, brickTexture);
+		for (Wall wall : walls) {
+			wall.Draw(renderingMode);
 		}
 		lightbulb.mPosition = lightPosition;
 		lightbulb.Draw(renderingMode);
@@ -773,7 +757,7 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 	);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1,	// Location 1 matches a Color in Vertex Shader
+	glVertexAttribPointer(1,	// Location 1 matches aColor in Vertex Shader
 		3,
 		GL_FLOAT,
 		GL_FALSE,
@@ -892,48 +876,92 @@ int createVertexArrayObjectTextured(vec3 colour)
 	// Cube model
 	// Vertex, colour, normal
 	vec3 unitCube[] = {
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),vec3(0.0f, 0.0f, 0.0f), // left
-		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),vec3(1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),vec3(1.0f, 1.0f, 0.0f),
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),vec3(0.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),vec3(1.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f), // left
+		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
 
-		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),vec3(0.0f, 1.0f, 0.0f), // far
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),vec3(1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),vec3(1.0f, 1.0f, 0.0f),
-		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),vec3(0.0f, 0.0f, 0.0f),
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f), // far
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
 
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f),vec3(1.0f, 1.0f, 0.0f), // bottom
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),vec3(0.0f, 0.0f, 0.0f),
-		vec3(0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f),vec3(1.0f, 1.0f, 0.0f),
-		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f),vec3(0.0f, 1.0f, 0.0f),
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),vec3(0.0f, 0.0f, 0.0f),
-		
-		 vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f), // near
-		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f),
-		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f), // bottom
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
 
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 1.0f), // right
-		vec3(0.5f,-0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f, 0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 1.0f, 1.0f),
-		vec3(0.5f,-0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f), // near
+		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
 
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f), vec3(1.0f, 0.0f, 1.0f), // top
-		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f), vec3(1.0f, 1.0f, 1.0f),
-		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f), vec3(1.0f, 0.0f, 1.0f),
-		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 1.0f, 1.0f),
-		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)
-};
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f), // right
+		vec3(0.5f,-0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f,-0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f), // top
+		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f)
+	};
+
+	vec2 uvMap[] = {
+		vec2(0.0f, 0.0f), // left
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+
+		vec2(0.0f, 1.0f), // far
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 0.0f),
+
+		vec2(1.0f, 1.0f), // bottom
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+
+		vec2(0.0f, 1.0f), // near
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(1.0f, 0.0f),
+
+		vec2(0.0f, 1.0f), // right
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(1.0f, 0.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+
+		vec2(1.0f, 0.0f), // top
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(1.0f, 0.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f)
+	};
 
 	// Create a vertex array
 	GLuint vertexArrayObject;
@@ -973,18 +1001,25 @@ int createVertexArrayObjectTextured(vec3 colour)
 	);
 	glEnableVertexAttribArray(2);
 
-	glVertexAttribPointer(3,	// Location 3 matches texture in Vertex Shader
+	GLuint uvMapVertexBufferObject;
+	glGenBuffers(1, &uvMapVertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, uvMapVertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uvMap), uvMap, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(3,    // attribute 3 matches aUV in Vertex Shader
 		2,
 		GL_FLOAT,
 		GL_FALSE,
-		3 * sizeof(vec3),
-		(void*)(sizeof(vec3) * 3)
+		sizeof(vec2),
+		(void*)0
 	);
 	glEnableVertexAttribArray(3);
+
 	glBindVertexArray(0);
 
 	return vertexArrayObject;
 }
+
 bool initContext() {     // Initialize GLFW and OpenGL version
 	glfwInit();
 
@@ -1000,7 +1035,7 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 #endif
 
 	// Create Window and rendering context using GLFW, resolution is 1024x768
-	window = glfwCreateWindow(1024, 768, "COMP 371 - Assignment 1 by Spiral Staircase", NULL, NULL);
+	window = glfwCreateWindow(1024, 768, "COMP 371 - Assignment 2 by Spiral Staircase", NULL, NULL);
 	if (window == NULL)
 	{
 		cerr << "Failed to create GLFW window" << endl;
@@ -1020,4 +1055,30 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 		return false;
 	}
 	return true;
+}
+
+void windowSizeCallback(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
+
+	GLint shaderProgram = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &shaderProgram);
+
+	mat4 projectionMatrix = glm::perspective(70.0f,            // field of view in degrees
+		(float)width / (float)height,  // aspect ratio
+		0.01f, 200.0f);   // near and far (near > 0)
+
+	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+}
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+
+	ControlState controlState = *(ControlState*)glfwGetWindowUserPointer(window);
+
+	if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+		controlState.shapes->at(*(controlState.focusedShape)).mPosition.z -= TRANSLATE_RATE * 0.2;
+	}
+	if (key == GLFW_KEY_K && action == GLFW_PRESS) {
+		controlState.shapes->at(*(controlState.focusedShape)).mPosition.z += TRANSLATE_RATE * 0.2;
+	}
 }
