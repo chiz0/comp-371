@@ -18,8 +18,8 @@ constexpr float CAMERA_ANGULAR_SPEED = 60.0f;           // The speed at which th
 constexpr float CAMERA_SPEED = 0.75f;                   // Speed of camera zooming
 constexpr vec3 CAMERA_OFFSET = vec3(-2.0f, 2.0f, 10.0f);// The default position of the camera relative to a model
 constexpr float LIGHT_AMBIENT_STRENGTH = 0.1f;			// Intensity of the ambient light
-constexpr float LIGHT_DIFFUSE_STRENGTH = 0.4f;			// Intensity of the diffuse light
-constexpr float LIGHT_SPECULAR_STRENGTH = 0.5f;			// Intensity of the specular light
+constexpr float LIGHT_DIFFUSE_STRENGTH = 0.5f;			// Intensity of the diffuse light
+constexpr float LIGHT_SPECULAR_STRENGTH = 0.7f;			// Intensity of the specular light
 constexpr float SHININESS = 4.0f;						// Shininess coefficient of specular light
 constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 30.0f, 0.0f);	// Where, relative to the focused object, to place the light source
 
