@@ -14,6 +14,9 @@
 //  Theodor
 // 
 //  Alexander
+//	- Point light and Lightbulb cube
+//	- Phong lighting
+//	- Breaking up code into helper classes
 //
 //  Antonio
 //
