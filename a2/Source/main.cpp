@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 	if (!initContext()) return -1;
 
 	// Black background
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 
 	GLenum renderingMode = GL_TRIANGLES;
-
+	glBindTexture(GL_TEXTURE_2D, metalTexture);
 	// Track models
 	vector<Shape> shapes;               // Set of all shapes in the world
 	vector<Wall> walls;					// Set of all walls
@@ -282,7 +282,7 @@ int main(int argc, char* argv[])
 	// Chi colour
 	int chiColour = createVertexArrayObjectSingleColoured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.898f, 0.22f, 0.0f));
+	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.698f, 0.42f, 0.0f));
 	// Theo colour
 	int theoColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
@@ -363,7 +363,16 @@ int main(int argc, char* argv[])
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		//Draw Tiles
+		glBindTexture(GL_TEXTURE_2D, tileTexture);
+		glBindVertexArray(tileColour);
+		for (int i = -50; i <= 50; i++) {
+			for (int j = -50; j <= 50; j++) {
+				mat4 tileMatrix = translate(mat4(1.0f), vec3(i, 0.0f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.02f, 1.0f));
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &tileMatrix[0][0]);
+				glDrawArrays(renderingMode, 0, 36);
+			}
+		}
 		// Draw ground
 		glBindVertexArray(groundColour);
 
