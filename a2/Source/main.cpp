@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 	if (!initContext()) return -1;
 
 	// Black background
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
@@ -87,14 +87,16 @@ int main(int argc, char* argv[])
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int width, height, nrChannels;
+	int brickwidth, brickheight, bricknrChannels;
+	
+
 	stbi_set_flip_vertically_on_load(true);
 	// load and generate the texture
-	unsigned char* data = stbi_load("../Assets/Textures/brick.jpg", &width, &height, &nrChannels, 0);
-	if (data)
+	unsigned char* brickdata = stbi_load("../Assets/Textures/brick.jpg", &brickwidth, &brickheight, &bricknrChannels, 0);
+	if (brickdata)
 	{
-		std::cout << "Texture has been found" << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		std::cout << "Brick Texture has been found" << std::endl;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, brickwidth, brickheight, 0, GL_RGB, GL_UNSIGNED_BYTE, brickdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else
@@ -102,9 +104,74 @@ int main(int argc, char* argv[])
 		std::cout << "Failed to load texture" << std::endl;
 	}
 	//frees data
-	stbi_image_free(data);
+	stbi_image_free(brickdata);
 
 	glUniform1i(glGetUniformLocation(shaderManager.ID, "brickTexture"), 0);
+	// END TEXTURE LOAD
+
+	
+	int tilewidth, tileheight, tilenrChannels;
+	
+	//load the texture
+	unsigned int tileTexture;
+	glGenTextures(1, &tileTexture);
+	glBindTexture(GL_TEXTURE_2D, tileTexture);
+
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+	// load and generate the texture
+	unsigned char* tiledata = stbi_load("../Assets/Textures/tile.jpg", &tilewidth, &tileheight, &tilenrChannels, 0);
+	if (tiledata)
+	{
+		std::cout << "tile Texture has been found" << std::endl;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tilewidth, tileheight, 0, GL_RGB, GL_UNSIGNED_BYTE, tiledata);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load tile texture " << std::endl;
+	}
+	//frees data
+	stbi_image_free(tiledata);
+
+	glUniform1i(glGetUniformLocation(shaderManager.ID, "tileTexture"), 0);
+	// END TEXTURE LOAD
+	int metalwidth, metalheight, metalnrChannels;
+	//load the texture
+	unsigned int metalTexture;
+	glGenTextures(1, &metalTexture);
+	glBindTexture(GL_TEXTURE_2D, brickTexture);
+
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+	// load and generate the texture
+	unsigned char* metaldata = stbi_load("../Assets/Textures/metal.jpg", &metalwidth, &metalheight, &metalnrChannels, 0);
+	if (metaldata)
+	{
+		std::cout << "metal Texture has been found" << std::endl;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, metalwidth, metalheight, 0, GL_RGB, GL_UNSIGNED_BYTE, metaldata);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load metal texture " << std::endl;
+	}
+	//frees data
+	stbi_image_free(metaldata);
+
+	glUniform1i(glGetUniformLocation(shaderManager.ID, "metalTexture"), 0);
 	// END TEXTURE LOAD
 
 	// Other camera parameters
@@ -139,7 +206,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 
 	GLenum renderingMode = GL_TRIANGLES;
-
+	glBindTexture(GL_TEXTURE_2D, metalTexture);
 	// Track models
 	vector<Shape> shapes;               // Set of all shapes in the world
 	vector<Wall> walls;					// Set of all walls
@@ -282,15 +349,17 @@ int main(int argc, char* argv[])
 	// Chi colour
 	int chiColour = createVertexArrayObjectSingleColoured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.898f, 0.22f, 0.0f));
+	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.698f, 0.42f, 0.0f));
 	// Theo colour
 	int theoColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
 	int antoColour = createVertexArrayObjectSingleColoured(vec3(0.5f, 0.5f, 0.3f));
 	// Lightbulb colour
 	int lightbulbColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 1.0f));
-	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
 
+	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
+	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	int metalColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, false, 1.0f));
 	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, false, 1.0f));
 	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, false, 1.0f));
@@ -344,6 +413,7 @@ int main(int argc, char* argv[])
 	int xLineColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.0f, 0.0f));
 	int yLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 1.0f, 0.0f));
 	int zLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 0.0f, 1.0f));
+	
 
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
@@ -363,7 +433,16 @@ int main(int argc, char* argv[])
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		//Draw Tiles
+		glBindTexture(GL_TEXTURE_2D, tileTexture);
+		glBindVertexArray(tileColour);
+		for (int i = -50; i <= 50; i++) {
+			for (int j = -50; j <= 50; j++) {
+				mat4 tileMatrix = translate(mat4(1.0f), vec3(i, 0.0f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.02f, 1.0f));
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &tileMatrix[0][0]);
+				glDrawArrays(renderingMode, 0, 36);
+			}
+		}
 		// Draw ground
 		glBindVertexArray(groundColour);
 
@@ -873,6 +952,7 @@ int createVertexArrayObjectSingleColoured(vec3 colour)
 
 int createVertexArrayObjectTextured(vec3 colour)
 {
+
 	// Cube model
 	// Vertex, colour, normal
 	vec3 unitCube[] = {
