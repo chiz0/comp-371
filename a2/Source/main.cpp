@@ -688,6 +688,27 @@ int main(int argc, char* argv[])
 			renderingMode = GL_POINTS;
 		}
 
+		// Projection Transform
+		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+		{
+			glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),  // field of view in degrees
+				800.0f / 600.0f,      // aspect ratio
+				0.01f, 100.0f);       // near and far (near > 0)
+
+			GLuint projectionMatrixLocation = shaderManager.getUniformLocation( "projectionMatrix");
+			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+		{
+			glm::mat4 projectionMatrix = glm::ortho(-4.0f, 4.0f,    // left/right
+				-3.0f, 3.0f,    // bottom/top
+				-100.0f, 100.0f);  // near/far (near == 0 is ok for ortho)
+
+			GLuint projectionMatrixLocation = shaderManager.getUniformLocation("projectionMatrix");
+			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+		}
+
 		// Reshuffle shape
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
