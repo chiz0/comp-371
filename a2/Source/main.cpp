@@ -17,6 +17,7 @@
 //	- Point light and Lightbulb cube
 //	- Phong lighting
 //	- Breaking up code into helper classes
+//	- Glow effect on shapes
 //
 //  Antonio
 //
