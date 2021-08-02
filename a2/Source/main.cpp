@@ -425,8 +425,11 @@ int main(int argc, char* argv[])
 		for (Wall wall : walls) {
 			wall.Draw(renderingMode);
 		}
+		glBindTexture(GL_TEXTURE_2D, metalTexture);
 		lightbulb.mPosition = lightPosition;
+		shaderManager.setBool("ignoreLighting", true);
 		lightbulb.Draw(renderingMode);
+		shaderManager.setBool("ignoreLighting", false);
 
 		glBindVertexArray(0);
 
