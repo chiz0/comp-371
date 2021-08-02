@@ -1,6 +1,6 @@
 #include "Shape.h"
 
-Shape::Shape(vec3 position, vector<coordinates> description, int vao, GLuint worldMatrixLocation, bool hasWall) : mPosition(position), mvao(vao), mWorldMatrixLocation(worldMatrixLocation), voxelCount(description.size()), defaultPosition(position), showWall(hasWall)
+Shape::Shape(vec3 position, vector<coordinates> description, int vao, bool hasWall) : mPosition(position), mvao(vao), voxelCount(description.size()), defaultPosition(position), showWall(hasWall)
 {
 	for (int i = 0; i < WALL_SIZE; i++) {
 		for (int j = 0; j < WALL_SIZE; j++) {
@@ -13,7 +13,7 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, GLuint wor
 	for (auto it = begin(description); it != end(description); ++it) {
 		struct coordinates remappedCoordinates = { it->x - originX, it->y - originY, it->z - originZ };
 		mDescription.push_back(remappedCoordinates);
-		voxels.push_back(Voxel(vec3(remappedCoordinates.x, remappedCoordinates.y, remappedCoordinates.z), vao, worldMatrixLocation));
+		voxels.push_back(Voxel(vec3(remappedCoordinates.x, remappedCoordinates.y, remappedCoordinates.z), vao));
 		if (remappedCoordinates.x + WALL_SIZE / 2 >= 0 && remappedCoordinates.x < WALL_SIZE / 2
 			&& remappedCoordinates.y + WALL_SIZE / 2 >= 0 && remappedCoordinates.y < WALL_SIZE / 2)
 		{
@@ -32,23 +32,23 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, GLuint wor
 							i - WALL_SIZE / 2 - originX,    // Wall segment x
 							j - WALL_SIZE / 2 - originY,    // Wall segment y
 							originZ - WALL_DISTANCE         // Wall segment z
-						), vao, worldMatrixLocation, vec3(1.0f, 1.0f, WALL_THICKNESS)));
+						), vao, vec3(1.0f, 1.0f, WALL_THICKNESS)));
 				}
 			}
 		}
 	}
 }
 
-void Shape::Draw(GLenum renderingMode) {
-	mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
+void Shape::Draw(GLenum renderingMode, GLuint worldMatrixLocation) {
+	mat4 worldMatrix = GetModelMatrix();
 	for (auto it = begin(voxels); it != end(voxels); ++it) {
 		it->mAnchor = worldMatrix;
-		it->Draw(renderingMode);
+		it->Draw(renderingMode, worldMatrixLocation);
 	}
 	if (showWall) {
 		for (auto it = begin(wallVoxels); it != end(wallVoxels); ++it) {
 			it->mAnchor = worldMatrix;
-			it->Draw(renderingMode);
+			it->Draw(renderingMode, worldMatrixLocation);
 		}
 	}
 }
@@ -98,7 +98,7 @@ void Shape::Reshuffle() {
 
 	for (auto it = begin(newCoordinates); it != end(newCoordinates); ++it) {
 		mDescription.push_back(*it);
-		voxels.push_back(Voxel(vec3(it->x, it->y, it->z), mvao, mWorldMatrixLocation));
+		voxels.push_back(Voxel(vec3(it->x, it->y, it->z), mvao));
 	}
 }
 
@@ -106,4 +106,8 @@ void Shape::ResetPosition() {
 	mPosition = defaultPosition;
 	mOrientation = defaultOrientation;
 	mScale = defaultScale;
+}
+
+mat4 Shape::GetModelMatrix() {
+	return translate(mat4(1.0f), mPosition)* rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f))* rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f))* rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f))* scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
 }

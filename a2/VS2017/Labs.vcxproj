@@ -99,6 +99,8 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\Source\DepthFragmentShader.glsl" />
+    <None Include="..\Source\DepthVertexShader.glsl" />
     <None Include="..\Source\FragmentShader.glsl" />
     <None Include="..\Source\VertexShader.glsl" />
   </ItemGroup>

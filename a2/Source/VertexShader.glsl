@@ -7,15 +7,18 @@ layout (location = 2) in vec3 aNormal;
 uniform mat4 worldMatrix;
 uniform mat4 viewMatrix = mat4(1.0);  // default value for view matrix (identity)
 uniform mat4 projectionMatrix = mat4(1.0);
+uniform mat4 lightSpaceMatrix;
 
 out vec3 vertexColor;
 out vec3 Normal;
 out vec3 FragPos;
+out vec4 FragPositionLightSpace;
 
 void main() {
 	vertexColor = aColor;
 	mat4 modelViewProjection = projectionMatrix * viewMatrix * worldMatrix;
 	gl_Position = modelViewProjection * vec4(aPos, 1.0);
 	FragPos = vec3(worldMatrix * vec4(aPos, 1.0));
+	FragPositionLightSpace = vec4(FragPos, 1.0f) * lightSpaceMatrix;
 	Normal = mat3(transpose(inverse(worldMatrix))) * aNormal;
 }

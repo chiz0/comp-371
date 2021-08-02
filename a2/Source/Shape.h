@@ -18,10 +18,11 @@ using namespace std;
 class Shape {
 public:
 	// Functions
-	Shape(vec3 position, vector<coordinates> description, int vao, GLuint worldMatrixLocation, bool hasWall);
-	void Draw(GLenum renderingMode);
+	Shape(vec3 position, vector<coordinates> description, int vao, bool hasWall);
+	void Draw(GLenum renderingMode, GLuint worldMatrixLocation);
 	void Reshuffle();
 	void ResetPosition();
+	mat4 GetModelMatrix();
 
 	// Properties
 	bool showWall;

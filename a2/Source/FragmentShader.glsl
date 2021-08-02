@@ -11,6 +11,7 @@ uniform float shininess;
 in vec3 vertexColor;
 in vec3 Normal;
 in vec3 FragPos;
+in vec4 FragPositionLightSpace;
 
 out vec4 FragColor;
 

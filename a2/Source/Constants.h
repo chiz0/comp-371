@@ -22,6 +22,9 @@ constexpr float LIGHT_DIFFUSE_STRENGTH = 0.4f;			// Intensity of the diffuse lig
 constexpr float LIGHT_SPECULAR_STRENGTH = 0.5f;			// Intensity of the specular light
 constexpr float SHININESS = 4.0f;						// Shininess coefficient of specular light
 constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 30.0f, 0.0f);	// Where, relative to the focused object, to place the light source
+constexpr unsigned int DEPTH_MAP_TEXTURE_SIZE = 1024;	// Shadow texture size
 
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/VertexShader.glsl";
 constexpr char FRAGMENT_SHADER_FILEPATH[] = "../Source/FragmentShader.glsl";
+constexpr char DEPTH_VERTEX_SHADER_FILEPATH[] = "../Source/DepthVertexShader.glsl";
+constexpr char DEPTH_FRAGMENT_SHADER_FILEPATH[] = "../Source/DepthFragmentShader.glsl";

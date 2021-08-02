@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
 
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
-	shaderManager.use();
+	ShaderManager depthShaderManager = ShaderManager(DEPTH_VERTEX_SHADER_FILEPATH, DEPTH_FRAGMENT_SHADER_FILEPATH);
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
 	// Get the world matrix
+	GLuint depthWorldMatrixLocation = depthShaderManager.getUniformLocation("worldMatrix");
 	GLuint worldMatrixLocation = shaderManager.getUniformLocation("worldMatrix");
 
 	// For frame time
@@ -98,6 +99,25 @@ int main(int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 
 	GLenum renderingMode = GL_TRIANGLES;
+
+	// Frame buffer setup
+	depthShaderManager.use();
+	GLuint depthMapTexture;
+	glGenTextures(1, &depthMapTexture);
+	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, DEPTH_MAP_TEXTURE_SIZE, DEPTH_MAP_TEXTURE_SIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	GLuint fbo;
+	glGenFramebuffers(1, &fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
+	//glDrawBuffer(GL_NONE);
+
+	shaderManager.use();
 
 	// Track models
 	vector<Shape> shapes;               // Set of all shapes in the world
@@ -248,11 +268,11 @@ int main(int argc, char* argv[])
 	// Lightbulb colour
 	int lightbulbColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 1.0f));
 
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, true));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, true));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, true));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, true));
-	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, worldMatrixLocation, false);
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, true));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, true));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, true));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, true));
+	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, false);
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
@@ -302,12 +322,6 @@ int main(int argc, char* argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
-		// DEBUG - MOVING LIGHT
-		// TODO: REMOVE BEFORE SUBMISSION
-		//float moveY = cos(glfwGetTime());
-		//float moveX = sin(glfwGetTime());
-		//shaderManager.setVec3("lightPosition", lightPosition.x + moveX * 10.0f - 5.0f, lightPosition.y + moveY * 10.0f - 5.0f, lightPosition.z);
-
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -339,12 +353,39 @@ int main(int argc, char* argv[])
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &zLine[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
 
+
+
 		// Draw shape
 		for (Shape shape : shapes) {
-			shape.Draw(renderingMode);
+			mat4 lightProjectionMatrix = ortho(-STAGE_WIDTH, STAGE_WIDTH, -STAGE_WIDTH, STAGE_WIDTH, 0.01f, 400.0f);
+			mat4 lightViewMatrix = lookAt(lightPosition, cameraPosition, vec3(0, 1, 0));
+
+			shaderManager.setMat4("lightSpaceMatrix", lightViewMatrix * lightProjectionMatrix);
+			//shaderManager.setMat4("viewMatrix", viewMatrix);
+
+			mat4 modelMatrix = shape.GetModelMatrix();
+			shaderManager.setMat4("worldMatrix", modelMatrix);
+			depthShaderManager.setMat4("lightSpaceMatrix", modelMatrix * lightViewMatrix * lightProjectionMatrix);
+
+
+			depthShaderManager.use();
+			glViewport(0, 0, DEPTH_MAP_TEXTURE_SIZE, DEPTH_MAP_TEXTURE_SIZE);
+			//glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			
+			shape.Draw(renderingMode, worldMatrixLocation);
+
+			shaderManager.use();
+
+			int width, height;
+			glfwGetFramebufferSize(window, &width, &height);
+			glViewport(0, 0, width, height);
+			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			shape.Draw(renderingMode, worldMatrixLocation);
 		}
 		lightbulb.mPosition = lightPosition;
-		lightbulb.Draw(renderingMode);
+		lightbulb.Draw(renderingMode, worldMatrixLocation);
 
 		glBindVertexArray(0);
 
