@@ -82,6 +82,7 @@ int main(int argc, char* argv[])
 	int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
 	int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
 	int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
+	int fireTexture = loadTexture("fireTexture", TEXTURE_PATH_FIRE);
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
@@ -170,18 +171,56 @@ int main(int argc, char* argv[])
 	};
 
 	vector<struct coordinates> alexShape{
-		{ 1, 0, 0 },
+		{ 0, 0, 0 },
+		{ 0, 0, 1 },
+
+		{ 0, -1, 0 },
+		{ 0, -1, 1 },
+
 		{ 1, -1, 0 },
-		{ 1, -1, -1 },
-		{ 0, -2, -1 },
-		{ 1, -2, -1 },
-		{ 1, 0, 1 },
-		{ 0, 2, 1 },
-		{ 0, 1, 1 },
-		{ -1, 3, 1 },
-		{ -1, 2, 1 },
-		{ -1, 3, 0 },
-		{ 1, 1, 1 }
+		{ 1, -1, 1 },
+
+		{ 2, -1, 0 },
+		{ 2, -1, 1 },
+
+		{ 1, -2, 1 },
+		{ 2, -2, 1 },
+
+		{ 1, -2, 2 },
+		{ 2, -2, 2 },
+
+		{ 1, -3, 2 },
+		{ 2, -3, 2 },
+
+		{ 1, -3, 3 },
+		{ 2, -3, 3 },
+
+		{ -1, 0, 0 },
+		{ -1, 0, 1 },
+
+		{ -1, 1, 0 },
+		{ -1, 1, 1 },
+
+		{ -2, 1, 0 },
+		{ -2, 1, 1 },
+
+		{ -2, 2, 0 },
+		{ -2, 2, 1 },
+
+		{ -3, 2, 0 },
+		{ -3, 2, 1 },
+
+		{ -2, 2, 2 },
+		{ -3, 2, 2 },
+
+		{ -2, 3, 2 },
+		{ -3, 3, 2 },
+
+		{ -2, 3, 3 },
+		{ -3, 3, 3 },
+
+		{ -2, 4, 3 },
+		{ -3, 4, 3 },
 	};
 
 	vector<struct coordinates> theoShape{
@@ -267,12 +306,13 @@ int main(int argc, char* argv[])
 	int lightbulbColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
 	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, false, 1.0f));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, false, 1.0f));
-	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, worldMatrixLocation, false, 1.0f);
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, glowColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, worldMatrixLocation, false, 1.0f));
+	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, glowColour, worldMatrixLocation, false, 1.0f);
 
 	for (int i = 0; i < 4; i++) {
 		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour, worldMatrixLocation));
@@ -373,9 +413,13 @@ int main(int argc, char* argv[])
 		glDrawArrays(renderingMode, 0, 36);
 
 		// Draw shapes and walls
-		glBindTexture(GL_TEXTURE_2D, metalTexture);
 		for (Shape shape : shapes) {
+			glBindTexture(GL_TEXTURE_2D, metalTexture);
 			shape.Draw(renderingMode);
+			glBindTexture(GL_TEXTURE_2D, fireTexture);
+			shaderManager.setBool("ignoreLighting", true);
+			shape.DrawGlow();
+			shaderManager.setBool("ignoreLighting", false);
 		}
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		for (Wall wall : walls) {
