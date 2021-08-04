@@ -119,6 +119,7 @@
     <ClInclude Include="..\Source\Constants.h" />
     <ClInclude Include="..\Source\Voxel.h" />
     <ClInclude Include="..\Source\Wall.h" />
+    <ClInclude Include="texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
