@@ -322,8 +322,8 @@ int main(int argc, char* argv[])
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
-
-	ControlState controlState = { &shapes, &focusedShape };
+	bool showTexture=true;
+	ControlState controlState = { &shapes, &focusedShape, &showTexture };
 	glfwSetWindowUserPointer(window, &controlState);
 
 	const vector<vec3> cameraPositions{
@@ -364,8 +364,6 @@ int main(int argc, char* argv[])
 	int yLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 1.0f, 0.0f));
 	int zLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 0.0f, 1.0f));
 
-
-	bool texToggle = true;
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
 	
@@ -374,7 +372,7 @@ int main(int argc, char* argv[])
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
 	{
-		shaderManager.setBool("texToggle", false);
+		shaderManager.setBool("texToggle", showTexture);
 		// Frame time calculation
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
@@ -382,12 +380,8 @@ int main(int argc, char* argv[])
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//Draw Tiles
-		if (texToggle==true)
-		{
-			shaderManager.setBool("texToggle", true);
-			glBindTexture(GL_TEXTURE_2D, tileTexture);
-			glBindVertexArray(tileColour);
-		}
+		glBindVertexArray(tileColour);
+		glBindTexture(GL_TEXTURE_2D, tileTexture);
 		for (int i = -50; i <= 50; i++) {
 			for (int j = -50; j <= 50; j++) {
 				mat4 tileMatrix = translate(mat4(1.0f), vec3(i, -0.1f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.01f, 1.0f));
@@ -425,35 +419,20 @@ int main(int argc, char* argv[])
 
 		// Draw shapes and walls
 		for (Shape shape : shapes) {
-			if (texToggle == true)
-			{
-				shaderManager.setBool("texToggle", true);
-				glBindTexture(GL_TEXTURE_2D, metalTexture);
-			}
+			glBindTexture(GL_TEXTURE_2D, metalTexture);
 			shape.Draw(renderingMode);
-			if (texToggle == true)
-			{
-				shaderManager.setBool("texToggle", true);
-				glBindTexture(GL_TEXTURE_2D, fireTexture);
-			}
+			glBindTexture(GL_TEXTURE_2D, fireTexture);
 			shaderManager.setBool("ignoreLighting", true);
 			
 			shape.DrawGlow(renderingMode);
 			shaderManager.setBool("ignoreLighting", false);
 		}
-		if (texToggle == true)
-		{
-			shaderManager.setBool("texToggle", true);
-			glBindTexture(GL_TEXTURE_2D, brickTexture);
-		}
+		glBindTexture(GL_TEXTURE_2D, brickTexture);
+
 		for (Wall wall : walls) {
 			wall.Draw(renderingMode);
 		}
-		if (texToggle == true)
-		{
-			shaderManager.setBool("texToggle", true);
-			glBindTexture(GL_TEXTURE_2D, metalTexture);
-		}
+		glBindTexture(GL_TEXTURE_2D, metalTexture);
 		lightbulb.mPosition = lightPosition;
 		shaderManager.setBool("ignoreLighting", true);
 		lightbulb.Draw(renderingMode);
@@ -482,23 +461,7 @@ int main(int argc, char* argv[])
 		{
 			cameraFirstPerson = false;
 		}
-		//Texture toggle
-		int n = 0;
-		if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-
-			if (texToggle == false)
-			{
-				texToggle = true;
-				n = 1;
-			}
-			if (texToggle == true && n == 0)
-			{
-				texToggle = false;
-
-			}
-
-
-		}
+		
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
@@ -615,32 +578,32 @@ int main(int argc, char* argv[])
 			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Ry
+		if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) // Ry
 		{
 			shapes[focusedShape].mOrientation.y += ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) // R-y
+		if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) // R-y
 		{
 			shapes[focusedShape].mOrientation.y -= ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) // Rz
+		if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS) // Rz
 		{
 			shapes[focusedShape].mOrientation.z += ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) // R-z
+		if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) // R-z
 		{
 			shapes[focusedShape].mOrientation.z -= ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) // Rx
+		if (glfwGetKey(window, GLFW_KEY_APOSTROPHE) == GLFW_PRESS) // Rx
 		{
 			shapes[focusedShape].mOrientation.x += ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) // R-x
+		if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_PRESS) // R-x
 		{
 			shapes[focusedShape].mOrientation.x -= ROTATE_RATE * dt;
 		}
@@ -1208,5 +1171,8 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (key == GLFW_KEY_K && action == GLFW_PRESS) {
 		controlState.shapes->at(*(controlState.focusedShape)).mPosition.z += TRANSLATE_RATE * 0.2;
 	}
-	
+	//Texture toggle
+	if (key == GLFW_KEY_X && action == GLFW_PRESS) {
+		*controlState.showTexture = !*controlState.showTexture;
+	}
 }
