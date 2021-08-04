@@ -50,6 +50,7 @@
 #include "Coordinates.h"
 #include "ControlState.h"
 #include "Wall.h"
+#include "texture.h"
 
 using namespace glm;
 using namespace std;
@@ -482,7 +483,23 @@ int main(int argc, char* argv[])
 		{
 			cameraFirstPerson = false;
 		}
+		//Texture toggle
+		int n = 0;
+		if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
 
+			if (texToggle == false)
+			{
+				texToggle = true;
+				n = 1;
+			}
+			if (texToggle == true && n == 0)
+			{
+				texToggle = false;
+
+			}
+
+
+		}
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
@@ -511,23 +528,7 @@ int main(int argc, char* argv[])
 				shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 			}
 		}
-		//Texture toggle
-		int n = 0;
-		 if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-			 
-			 if (texToggle == false)
-			 {
-				 texToggle = true;
-				 n = 1;
-			 }
-			 if (texToggle == true&&n==0)
-			 {
-				 texToggle = false;
-				
-			 }
-			 
-
-		}
+		
 		
 		// Change orientation with the arrow keys
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
@@ -1208,4 +1209,5 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (key == GLFW_KEY_K && action == GLFW_PRESS) {
 		controlState.shapes->at(*(controlState.focusedShape)).mPosition.z += TRANSLATE_RATE * 0.2;
 	}
+	
 }
