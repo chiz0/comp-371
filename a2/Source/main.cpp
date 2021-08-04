@@ -298,6 +298,7 @@ int main(int argc, char* argv[])
 	// Chi colour
 	int chiColour = createVertexArrayObjectTextured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
+
 	int alexColour = createVertexArrayObjectTextured(vec3(1.0f, 0.58f, 0.25f));
 	// Theo colour
 	int theoColour = createVertexArrayObjectTextured(vec3(1.0f, 0.15f, 0.0f));
@@ -363,12 +364,17 @@ int main(int argc, char* argv[])
 	int yLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 1.0f, 0.0f));
 	int zLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 0.0f, 1.0f));
 
+
+	bool texToggle = true;
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
-	bool texToggle = true;
+	
+
+
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
 	{
+		shaderManager.setBool("texToggle", false);
 		// Frame time calculation
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
@@ -378,6 +384,7 @@ int main(int argc, char* argv[])
 		//Draw Tiles
 		if (texToggle==true)
 		{
+			shaderManager.setBool("texToggle", true);
 			glBindTexture(GL_TEXTURE_2D, tileTexture);
 			glBindVertexArray(tileColour);
 		}
@@ -420,22 +427,23 @@ int main(int argc, char* argv[])
 		for (Shape shape : shapes) {
 			if (texToggle == true)
 			{
+				shaderManager.setBool("texToggle", true);
 				glBindTexture(GL_TEXTURE_2D, metalTexture);
 			}
 			shape.Draw(renderingMode);
 			if (texToggle == true)
 			{
+				shaderManager.setBool("texToggle", true);
 				glBindTexture(GL_TEXTURE_2D, fireTexture);
 			}
 			shaderManager.setBool("ignoreLighting", true);
-			if (texToggle == true)
-			{
-				shape.DrawGlow();
-			}
+
+			shape.DrawGlow();
 			shaderManager.setBool("ignoreLighting", false);
 		}
 		if (texToggle == true)
 		{
+			shaderManager.setBool("texToggle", true);
 			glBindTexture(GL_TEXTURE_2D, brickTexture);
 		}
 		for (Wall wall : walls) {
@@ -443,7 +451,8 @@ int main(int argc, char* argv[])
 		}
 		if (texToggle == true)
 		{
-			glBindTexture(GL_TEXTURE_2D, metalTexture);
+			shaderManager.setBool("texToggle", true);
+			glBindTexture(GL_TEXTURE_2D, tileTexture);
 		}
 		lightbulb.mPosition = lightPosition;
 		shaderManager.setBool("ignoreLighting", true);
@@ -502,20 +511,30 @@ int main(int argc, char* argv[])
 				shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 			}
 		}
+		//Texture toggle
+		int n = 0;
+		 if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
+			 
+			 if (texToggle == false)
+			 {
+				 texToggle = true;
+				 n = 1;
+			 }
+			 if (texToggle == true&&n==0)
+			 {
+				 texToggle = false;
+				
+			 }
+			 
 
+		}
+		
 		// Change orientation with the arrow keys
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
 			cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
 		}
-		if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
-			 texToggle= false;
-			
-		}
-		if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
-			texToggle = true;
-
-		}
+		
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
 			cameraHorizontalAngle += CAMERA_ANGULAR_SPEED * dt;
