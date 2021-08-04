@@ -419,7 +419,7 @@ int main(int argc, char* argv[])
 			shape.Draw(renderingMode);
 			glBindTexture(GL_TEXTURE_2D, fireTexture);
 			shaderManager.setBool("ignoreLighting", true);
-			shape.DrawGlow();
+			shape.DrawGlow(renderingMode);
 			shaderManager.setBool("ignoreLighting", false);
 		}
 		glBindTexture(GL_TEXTURE_2D, brickTexture);

@@ -236,11 +236,11 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 	}
 }
 
-void Shape::DrawGlow() {
+void Shape::DrawGlow(GLenum renderingMode) {
 	mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
 	for (auto it = begin(glowVoxels); it != end(glowVoxels); ++it) {
 		it->mAnchor = worldMatrix;
-		it->Draw(GL_TRIANGLES);
+		it->Draw(renderingMode);
 	}
 }
 

@@ -112,6 +112,7 @@
     <ClCompile Include="..\Source\Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\ControlState.h" />
     <ClInclude Include="..\Source\Coordinates.h" />
     <ClInclude Include="..\Source\ShaderManager.h" />
     <ClInclude Include="..\Source\Shape.h" />
