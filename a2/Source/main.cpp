@@ -437,8 +437,8 @@ int main(int argc, char* argv[])
 				glBindTexture(GL_TEXTURE_2D, fireTexture);
 			}
 			shaderManager.setBool("ignoreLighting", true);
-
-			shape.DrawGlow();
+			
+			shape.DrawGlow(renderingMode);
 			shaderManager.setBool("ignoreLighting", false);
 		}
 		if (texToggle == true)
