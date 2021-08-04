@@ -14,6 +14,10 @@
 //  Theodor
 // 
 //  Alexander
+//	- Point light and Lightbulb cube
+//	- Phong lighting
+//	- Breaking up code into helper classes
+//	- Glow effect on shapes
 //
 //  Antonio
 //
@@ -58,6 +62,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
 int createVertexArrayObjectSingleColoured(vec3 colour);
 int createVertexArrayObjectTextured(vec3 colour);
+int loadTexture(string name, char* path);
 
 bool initContext();
 
@@ -68,111 +73,17 @@ int main(int argc, char* argv[])
 	if (!initContext()) return -1;
 
 	// Black background
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
 	shaderManager.use();
 
-	//TODO Spin this off into its own class/function
 	//load the texture
-	unsigned int brickTexture;
-	glGenTextures(1, &brickTexture);
-	glBindTexture(GL_TEXTURE_2D, brickTexture);
-
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	int brickwidth, brickheight, bricknrChannels;
-	
-
-	stbi_set_flip_vertically_on_load(true);
-	// load and generate the texture
-	unsigned char* brickdata = stbi_load("../Assets/Textures/brick.jpg", &brickwidth, &brickheight, &bricknrChannels, 0);
-	if (brickdata)
-	{
-		std::cout << "Brick Texture has been found" << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, brickwidth, brickheight, 0, GL_RGB, GL_UNSIGNED_BYTE, brickdata);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	//frees data
-	stbi_image_free(brickdata);
-
-	glUniform1i(glGetUniformLocation(shaderManager.ID, "brickTexture"), 0);
-	// END TEXTURE LOAD
-
-	
-	int tilewidth, tileheight, tilenrChannels;
-	
-	//load the texture
-	unsigned int tileTexture;
-	glGenTextures(1, &tileTexture);
-	glBindTexture(GL_TEXTURE_2D, tileTexture);
-
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	stbi_set_flip_vertically_on_load(true);
-	// load and generate the texture
-	unsigned char* tiledata = stbi_load("../Assets/Textures/tile.jpg", &tilewidth, &tileheight, &tilenrChannels, 0);
-	if (tiledata)
-	{
-		std::cout << "tile Texture has been found" << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tilewidth, tileheight, 0, GL_RGB, GL_UNSIGNED_BYTE, tiledata);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load tile texture " << std::endl;
-	}
-	//frees data
-	stbi_image_free(tiledata);
-
-	glUniform1i(glGetUniformLocation(shaderManager.ID, "tileTexture"), 0);
-	// END TEXTURE LOAD
-	int metalwidth, metalheight, metalnrChannels;
-	//load the texture
-	unsigned int metalTexture;
-	glGenTextures(1, &metalTexture);
-	glBindTexture(GL_TEXTURE_2D, brickTexture);
-
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	stbi_set_flip_vertically_on_load(true);
-	// load and generate the texture
-	unsigned char* metaldata = stbi_load("../Assets/Textures/metal.jpg", &metalwidth, &metalheight, &metalnrChannels, 0);
-	if (metaldata)
-	{
-		std::cout << "metal Texture has been found" << std::endl;
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, metalwidth, metalheight, 0, GL_RGB, GL_UNSIGNED_BYTE, metaldata);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load metal texture " << std::endl;
-	}
-	//frees data
-	stbi_image_free(metaldata);
-
-	glUniform1i(glGetUniformLocation(shaderManager.ID, "metalTexture"), 0);
-	// END TEXTURE LOAD
+	int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
+	int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
+	int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
+	int fireTexture = loadTexture("fireTexture", TEXTURE_PATH_FIRE);
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
@@ -261,18 +172,56 @@ int main(int argc, char* argv[])
 	};
 
 	vector<struct coordinates> alexShape{
-		{ 1, 0, 0 },
+		{ 0, 0, 0 },
+		{ 0, 0, 1 },
+
+		{ 0, -1, 0 },
+		{ 0, -1, 1 },
+
 		{ 1, -1, 0 },
-		{ 1, -1, -1 },
-		{ 0, -2, -1 },
-		{ 1, -2, -1 },
-		{ 1, 0, 1 },
-		{ 0, 2, 1 },
-		{ 0, 1, 1 },
-		{ -1, 3, 1 },
-		{ -1, 2, 1 },
-		{ -1, 3, 0 },
-		{ 1, 1, 1 }
+		{ 1, -1, 1 },
+
+		{ 2, -1, 0 },
+		{ 2, -1, 1 },
+
+		{ 1, -2, 1 },
+		{ 2, -2, 1 },
+
+		{ 1, -2, 2 },
+		{ 2, -2, 2 },
+
+		{ 1, -3, 2 },
+		{ 2, -3, 2 },
+
+		{ 1, -3, 3 },
+		{ 2, -3, 3 },
+
+		{ -1, 0, 0 },
+		{ -1, 0, 1 },
+
+		{ -1, 1, 0 },
+		{ -1, 1, 1 },
+
+		{ -2, 1, 0 },
+		{ -2, 1, 1 },
+
+		{ -2, 2, 0 },
+		{ -2, 2, 1 },
+
+		{ -3, 2, 0 },
+		{ -3, 2, 1 },
+
+		{ -2, 2, 2 },
+		{ -3, 2, 2 },
+
+		{ -2, 3, 2 },
+		{ -3, 3, 2 },
+
+		{ -2, 3, 3 },
+		{ -3, 3, 3 },
+
+		{ -2, 4, 3 },
+		{ -3, 4, 3 },
 	};
 
 	vector<struct coordinates> theoShape{
@@ -347,24 +296,24 @@ int main(int argc, char* argv[])
 
 	// Colour of the shapes
 	// Chi colour
-	int chiColour = createVertexArrayObjectSingleColoured(vec3(0.429f, 0.808f, 0.922f));
+	int chiColour = createVertexArrayObjectTextured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.698f, 0.42f, 0.0f));
+	int alexColour = createVertexArrayObjectTextured(vec3(1.0f, 0.58f, 0.25f));
 	// Theo colour
-	int theoColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.15f, 0.0f));
+	int theoColour = createVertexArrayObjectTextured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
-	int antoColour = createVertexArrayObjectSingleColoured(vec3(0.5f, 0.5f, 0.3f));
+	int antoColour = createVertexArrayObjectTextured(vec3(0.5f, 0.5f, 0.3f));
 	// Lightbulb colour
-	int lightbulbColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 1.0f));
-
+	int lightbulbColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
 	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
-	int metalColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, false, 1.0f));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, false, 1.0f));
-	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, worldMatrixLocation, false, 1.0f);
+	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, glowColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, worldMatrixLocation, false, 1.0f));
+	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, glowColour, worldMatrixLocation, false, 1.0f);
 
 	for (int i = 0; i < 4; i++) {
 		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour, worldMatrixLocation));
@@ -413,11 +362,10 @@ int main(int argc, char* argv[])
 	int xLineColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.0f, 0.0f));
 	int yLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 1.0f, 0.0f));
 	int zLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 0.0f, 1.0f));
-	
 
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
-
+	bool texToggle = true;
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -425,20 +373,17 @@ int main(int argc, char* argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
-		// DEBUG - MOVING LIGHT
-		// TODO: REMOVE BEFORE SUBMISSION
-		//float moveY = cos(glfwGetTime());
-		//float moveX = sin(glfwGetTime());
-		//shaderManager.setVec3("lightPosition", lightPosition.x + moveX * 10.0f - 5.0f, lightPosition.y + moveY * 10.0f - 5.0f, lightPosition.z);
-
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//Draw Tiles
-		glBindTexture(GL_TEXTURE_2D, tileTexture);
-		glBindVertexArray(tileColour);
+		if (texToggle==true)
+		{
+			glBindTexture(GL_TEXTURE_2D, tileTexture);
+			glBindVertexArray(tileColour);
+		}
 		for (int i = -50; i <= 50; i++) {
 			for (int j = -50; j <= 50; j++) {
-				mat4 tileMatrix = translate(mat4(1.0f), vec3(i, 0.0f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.02f, 1.0f));
+				mat4 tileMatrix = translate(mat4(1.0f), vec3(i, -0.1f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.01f, 1.0f));
 				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &tileMatrix[0][0]);
 				glDrawArrays(renderingMode, 0, 36);
 			}
@@ -473,14 +418,37 @@ int main(int argc, char* argv[])
 
 		// Draw shapes and walls
 		for (Shape shape : shapes) {
+			if (texToggle == true)
+			{
+				glBindTexture(GL_TEXTURE_2D, metalTexture);
+			}
 			shape.Draw(renderingMode);
+			if (texToggle == true)
+			{
+				glBindTexture(GL_TEXTURE_2D, fireTexture);
+			}
+			shaderManager.setBool("ignoreLighting", true);
+			if (texToggle == true)
+			{
+				shape.DrawGlow();
+			}
+			shaderManager.setBool("ignoreLighting", false);
 		}
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
+		if (texToggle == true)
+		{
+			glBindTexture(GL_TEXTURE_2D, brickTexture);
+		}
 		for (Wall wall : walls) {
 			wall.Draw(renderingMode);
 		}
+		if (texToggle == true)
+		{
+			glBindTexture(GL_TEXTURE_2D, metalTexture);
+		}
 		lightbulb.mPosition = lightPosition;
+		shaderManager.setBool("ignoreLighting", true);
 		lightbulb.Draw(renderingMode);
+		shaderManager.setBool("ignoreLighting", false);
 
 		glBindVertexArray(0);
 
@@ -539,6 +507,14 @@ int main(int argc, char* argv[])
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
 			cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
+		}
+		if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
+			 texToggle= false;
+			
+		}
+		if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
+			texToggle = true;
+
 		}
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
@@ -692,6 +668,27 @@ int main(int argc, char* argv[])
 		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // Set point rendering mode
 		{
 			renderingMode = GL_POINTS;
+		}
+
+		// Projection Transform
+		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+		{
+			glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),  // field of view in degrees
+				800.0f / 600.0f,      // aspect ratio
+				0.01f, 100.0f);       // near and far (near > 0)
+
+			GLuint projectionMatrixLocation = shaderManager.getUniformLocation( "projectionMatrix");
+			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+		{
+			glm::mat4 projectionMatrix = glm::ortho(-4.0f, 4.0f,    // left/right
+				-3.0f, 3.0f,    // bottom/top
+				-100.0f, 100.0f);  // near/far (near == 0 is ok for ortho)
+
+			GLuint projectionMatrixLocation = shaderManager.getUniformLocation("projectionMatrix");
+			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 		}
 
 		// Reshuffle shape
@@ -952,7 +949,6 @@ int createVertexArrayObjectSingleColoured(vec3 colour)
 
 int createVertexArrayObjectTextured(vec3 colour)
 {
-
 	// Cube model
 	// Vertex, colour, normal
 	vec3 unitCube[] = {
@@ -1098,6 +1094,38 @@ int createVertexArrayObjectTextured(vec3 colour)
 	glBindVertexArray(0);
 
 	return vertexArrayObject;
+}
+
+int loadTexture(string name, char* path) {
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+	// load and generate the texture
+	int width, height, nrChannels;
+	unsigned char* textureData = stbi_load(path, &width, &height, &nrChannels, 0);
+	if (textureData)
+	{
+		cout << "Texture has been found: " << name << endl;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		cout << "Failed to load texture: " << name << endl;
+	}
+	//frees data
+	stbi_image_free(textureData);
+
+	return texture;
 }
 
 bool initContext() {     // Initialize GLFW and OpenGL version
