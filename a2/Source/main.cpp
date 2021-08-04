@@ -299,7 +299,6 @@ int main(int argc, char* argv[])
 	// Chi colour
 	int chiColour = createVertexArrayObjectTextured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-
 	int alexColour = createVertexArrayObjectTextured(vec3(1.0f, 0.58f, 0.25f));
 	// Theo colour
 	int theoColour = createVertexArrayObjectTextured(vec3(1.0f, 0.15f, 0.0f));
@@ -453,7 +452,7 @@ int main(int argc, char* argv[])
 		if (texToggle == true)
 		{
 			shaderManager.setBool("texToggle", true);
-			glBindTexture(GL_TEXTURE_2D, tileTexture);
+			glBindTexture(GL_TEXTURE_2D, metalTexture);
 		}
 		lightbulb.mPosition = lightPosition;
 		shaderManager.setBool("ignoreLighting", true);

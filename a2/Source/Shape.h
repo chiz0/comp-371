@@ -21,7 +21,7 @@ public:
 	Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, GLuint worldMatrixLocation, bool hasWall, float scalarScale);
 	void BuildGlow(vector<coordinates> description, GLuint worldMatrixLocation);
 	void Draw(GLenum renderingMode);
-	void DrawGlow();
+	void DrawGlow(GLenum renderingMode);
 	void Reshuffle();
 	void ResetPosition();
 
