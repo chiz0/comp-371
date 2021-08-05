@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 	if (!initContext()) return -1;
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
-	ShaderManager simpleDepthShader = ShaderManager(VERTEX_SHADER_FILEPATH2, FRAGMENT_SHADER_FILEPATH2);
+//	ShaderManager simpleDepthShader = ShaderManager(VERTEX_SHADER_FILEPATH2, FRAGMENT_SHADER_FILEPATH2);
 
 	shaderManager.use();
 
