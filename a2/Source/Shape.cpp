@@ -1,12 +1,7 @@
 #include "Shape.h"
 
-Shape::Shape(vec3 position, vector<coordinates> description, int vao, GLuint worldMatrixLocation, bool hasWall, float scalarScale) : mPosition(position), mvao(vao), mWorldMatrixLocation(worldMatrixLocation), voxelCount(description.size()), defaultPosition(position), showWall(hasWall), mScale(scalarScale), defaultScale(scalarScale)
+Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, GLuint worldMatrixLocation, bool hasWall, float scalarScale) : mPosition(position), mvao(vao), mGlowVao(glowVao), mWorldMatrixLocation(worldMatrixLocation), voxelCount(description.size()), defaultPosition(position), showWall(hasWall), mScale(scalarScale), defaultScale(scalarScale)
 {
-	for (int i = 0; i < WALL_SIZE; i++) {
-		for (int j = 0; j < WALL_SIZE; j++) {
-			projection[i][j] = false;
-		}
-	}
 	int originX = description.front().x;
 	int originY = description.front().y;
 	int originZ = description.front().z;
@@ -20,6 +15,8 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, GLuint wor
 			projection[remappedCoordinates.x + WALL_SIZE / 2][remappedCoordinates.y + WALL_SIZE / 2] = true;
 		}
 	}
+
+	BuildGlow(description, worldMatrixLocation);
 
 	if (hasWall) {
 		// Create wall voxels
@@ -95,11 +92,13 @@ void Shape::Reshuffle() {
 
 	mDescription.clear();
 	voxels.clear();
+	glowVoxels.clear();
 
 	for (auto it = begin(newCoordinates); it != end(newCoordinates); ++it) {
 		mDescription.push_back(*it);
 		voxels.push_back(Voxel(vec3(it->x, it->y, it->z), mvao, mWorldMatrixLocation));
 	}
+	BuildGlow(newCoordinates, mWorldMatrixLocation);
 }
 
 void Shape::ResetPosition() {
@@ -108,6 +107,185 @@ void Shape::ResetPosition() {
 	mScale = defaultScale;
 }
 
-GLuint Shape::GetVAO() {
-	return mvao;
+void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocation) {
+	bool shapeMap[WALL_SIZE][WALL_SIZE][WALL_SIZE] = { 0 };
+	// Build a map to easily determine whether a space is occupied
+	for (coordinates coordinate : description) {
+		shapeMap[coordinate.x + WALL_SIZE / 2][coordinate.y + WALL_SIZE / 2][coordinate.z + WALL_SIZE / 2] = true;
+	}
+	// Check each edge of a cube to see if it is unoccupied. If so, create a glow voxel
+	for (coordinates coordinate : description) {
+		if (isEdge(shapeMap, coordinate, 1, 1, 0) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x + 0.5, coordinate.y + 0.5, coordinate.z),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(0.2f, 0.2f, 1.0f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, 1, 0, 1) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x + 0.5, coordinate.y, coordinate.z + 0.5),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(0.2f, 1.0f, 0.2f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, 0, 1, 1) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x, coordinate.y + 0.5, coordinate.z + 0.5),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(1.0f, 0.2f, 0.2f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, -1, -1, 0) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x - 0.5, coordinate.y - 0.5, coordinate.z),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(0.2f, 0.2f, 1.0f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, 0, -1, -1) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x, coordinate.y - 0.5, coordinate.z - 0.5),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(1.0f, 0.2f, 0.2f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, -1, 0, -1) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x - 0.5, coordinate.y, coordinate.z - 0.5),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(0.2f, 1.0f, 0.2f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, 1, -1, 0) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x + 0.5, coordinate.y - 0.5, coordinate.z),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(0.2f, 0.2f, 1.0f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, 0, 1, -1) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x, coordinate.y + 0.5, coordinate.z - 0.5),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(1.0f, 0.2f, 0.2f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, 1, 0, -1) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x + 0.5, coordinate.y, coordinate.z - 0.5),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(0.2f, 1.0f, 0.2f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, -1, 1, 0) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x - 0.5, coordinate.y + 0.5, coordinate.z),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(0.2f, 0.2f, 1.0f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, 0, -1, 1) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x, coordinate.y - 0.5, coordinate.z + 0.5),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(1.0f, 0.2f, 0.2f)
+			));
+		}
+
+
+		if (isEdge(shapeMap, coordinate, -1, 0, 1) == true) {
+			glowVoxels.push_back(Voxel(
+				vec3(coordinate.x - 0.5, coordinate.y, coordinate.z + 0.5),
+				mGlowVao,
+				worldMatrixLocation,
+				vec3(0.2f, 1.0f, 0.2f)
+			));
+		}
+	}
+}
+
+void Shape::DrawGlow(GLenum renderingMode) {
+	mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
+	for (auto it = begin(glowVoxels); it != end(glowVoxels); ++it) {
+		it->mAnchor = worldMatrix;
+		it->Draw(renderingMode);
+	}
+}
+
+bool Shape::isEdge(bool shapeMap[WALL_SIZE][WALL_SIZE][WALL_SIZE], coordinates fromShape, int dx, int dy, int dz) {
+	// If any delta is zero, don't bother checking it
+	bool xClear = dx == 0;
+	bool yClear = dy == 0;
+	bool zClear = dz == 0;
+
+	int x = fromShape.x + WALL_SIZE / 2;
+	int y = fromShape.y + WALL_SIZE / 2;
+	int z = fromShape.z + WALL_SIZE / 2;
+
+	if (xClear == false) {
+		// Check for out of bounds
+		if (x + dx < 0 || x + dx >= WALL_SIZE) {
+			xClear == true;
+		}
+		else {
+			// Check for occupying voxels
+			xClear = shapeMap[x + dx][y][z] == false;
+		}
+	}
+
+	if (yClear == false) {
+		// Check for out of bounds
+		if (y + dy < 0 || y + dy >= WALL_SIZE) {
+			yClear == true;
+		}
+		else {
+			// Check for occupying voxels
+			yClear = shapeMap[x][y + dy][z] == false;
+		}
+	}
+
+	if (zClear == false) {
+		// Check for out of bounds
+		if (z + dz < 0 || z + dz >= WALL_SIZE) {
+			zClear == true;
+		}
+		else {
+			// Check for occupying voxels
+			zClear = shapeMap[x][y][z + dz] == false;
+		}
+	}
+
+	return xClear && yClear && zClear;
 }

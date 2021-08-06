@@ -100,6 +100,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\Source\FragmentShader.glsl" />
+    <None Include="..\Source\TexturedFrag.glsl" />
+    <None Include="..\Source\TexturedVert.glsl" />
     <None Include="..\Source\VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +112,7 @@
     <ClCompile Include="..\Source\Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\ControlState.h" />
     <ClInclude Include="..\Source\Coordinates.h" />
     <ClInclude Include="..\Source\ShaderManager.h" />
     <ClInclude Include="..\Source\Shape.h" />

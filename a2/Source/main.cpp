@@ -14,6 +14,10 @@
 //  Theodor
 // 
 //  Alexander
+//	- Point light and Lightbulb cube
+//	- Phong lighting
+//	- Breaking up code into helper classes
+//	- Glow effect on shapes
 //
 //  Antonio
 //
@@ -36,15 +40,17 @@
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
-#include <glm/gtc/type_ptr.hpp>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include "Constants.h"
 #include "Shape.h"
 #include "ShaderManager.h"
 #include "Coordinates.h"
-#include "ShaderLoader.h"	
 #include "ControlState.h"
 #include "Wall.h"
+#include "texture.h"
 
 using namespace glm;
 using namespace std;
@@ -56,31 +62,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
 int createVertexArrayObjectSingleColoured(vec3 colour);
+int createVertexArrayObjectTextured(vec3 colour);
+int loadTexture(string name, char* path);
 
 bool initContext();
-
-// shader variable setters
-void SetUniformMat4(GLuint shader_id, const char* uniform_name,
-	mat4 uniform_value) {
-	glUseProgram(shader_id);
-	glUniformMatrix4fv(glGetUniformLocation(shader_id, uniform_name), 1, GL_FALSE,
-		&uniform_value[0][0]);
-}
-
-void SetUniformVec3(GLuint shader_id, const char* uniform_name,
-	vec3 uniform_value) {
-	glUseProgram(shader_id);
-	glUniform3fv(glGetUniformLocation(shader_id, uniform_name), 1,
-		value_ptr(uniform_value));
-}
-
-template <class T>
-void SetUniform1Value(GLuint shader_id, const char* uniform_name,
-	T uniform_value) {
-	glUseProgram(shader_id);
-	glUniform1i(glGetUniformLocation(shader_id, uniform_name), uniform_value);
-	glUseProgram(0);
-}
 
 GLFWwindow* window = NULL;
 
@@ -91,60 +76,38 @@ int main(int argc, char* argv[])
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	// We can set the shader once, since we have only one
-	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
-	shaderManager.use();
 
-
-
-
-	
-	// Dimensions of the shadow texture, which should cover the viewport window
-	// size and shouldn't be oversized and waste resources
-	const unsigned int DEPTH_MAP_TEXTURE_SIZE = 1024;
-
-	// Variable storing index to texture used for shadow mapping
-	GLuint depth_map_texture;
-	// Get the texture
-	glGenTextures(1, &depth_map_texture);
-
-	// Bind the texture so the next glTex calls affect it
-	glBindTexture(GL_TEXTURE_2D, depth_map_texture);
-	// Create the texture and specify it's attributes, including widthn height,
-	// components (only depth is stored, no color information)
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, DEPTH_MAP_TEXTURE_SIZE,
-		DEPTH_MAP_TEXTURE_SIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	// Set texture sampler parameters.
-	// The two calls below tell the texture sampler inside the shader how to
-	// upsample and downsample the texture. Here we choose the nearest filtering
-	// option, which means we just use the value of the closest pixel to the
-	// chosen image coordinate.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	// The two calls below tell the texture sampler inside the shader how it
-	// should deal with texture coordinates outside of the [0, 1] range. Here we
-	// decide to just tile the image.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// Variable storing index to framebuffer used for shadow mapping
-	GLuint depthMapFBO;  // fbo: framebuffer object
-	// Get the framebuffer
+	// configure depth map FBO
+	// -----------------------
+	unsigned int depthMapFBO;
+	glGenFramebuffers(1, &depthMapFBO);
+	// create depth cubemap texture
+	unsigned int depthCubemap;
+	glGenTextures(1, &depthCubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+	for (unsigned int i = 0; i < 6; ++i)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	// attach depth texture as FBO's depth buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_map_texture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	// We can set the shader once, since we have only one
+	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
+	shaderManager.use();
 
-	// Always check that our framebuffer is ok
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		return false;
-	
-
-
-
-
+	//load the texture
+	int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
+	int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
+	int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
+	int fireTexture = loadTexture("fireTexture", TEXTURE_PATH_FIRE);
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
@@ -178,7 +141,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 
 	GLenum renderingMode = GL_TRIANGLES;
-
+	glBindTexture(GL_TEXTURE_2D, metalTexture);
 	// Track models
 	vector<Shape> shapes;               // Set of all shapes in the world
 	vector<Wall> walls;					// Set of all walls
@@ -233,18 +196,56 @@ int main(int argc, char* argv[])
 	};
 
 	vector<struct coordinates> alexShape{
-		{ 1, 0, 0 },
+		{ 0, 0, 0 },
+		{ 0, 0, 1 },
+
+		{ 0, -1, 0 },
+		{ 0, -1, 1 },
+
 		{ 1, -1, 0 },
-		{ 1, -1, -1 },
-		{ 0, -2, -1 },
-		{ 1, -2, -1 },
-		{ 1, 0, 1 },
-		{ 0, 2, 1 },
-		{ 0, 1, 1 },
-		{ -1, 3, 1 },
-		{ -1, 2, 1 },
-		{ -1, 3, 0 },
-		{ 1, 1, 1 }
+		{ 1, -1, 1 },
+
+		{ 2, -1, 0 },
+		{ 2, -1, 1 },
+
+		{ 1, -2, 1 },
+		{ 2, -2, 1 },
+
+		{ 1, -2, 2 },
+		{ 2, -2, 2 },
+
+		{ 1, -3, 2 },
+		{ 2, -3, 2 },
+
+		{ 1, -3, 3 },
+		{ 2, -3, 3 },
+
+		{ -1, 0, 0 },
+		{ -1, 0, 1 },
+
+		{ -1, 1, 0 },
+		{ -1, 1, 1 },
+
+		{ -2, 1, 0 },
+		{ -2, 1, 1 },
+
+		{ -2, 2, 0 },
+		{ -2, 2, 1 },
+
+		{ -3, 2, 0 },
+		{ -3, 2, 1 },
+
+		{ -2, 2, 2 },
+		{ -3, 2, 2 },
+
+		{ -2, 3, 2 },
+		{ -3, 3, 2 },
+
+		{ -2, 3, 3 },
+		{ -3, 3, 3 },
+
+		{ -2, 4, 3 },
+		{ -3, 4, 3 },
 	};
 
 	vector<struct coordinates> theoShape{
@@ -319,30 +320,33 @@ int main(int argc, char* argv[])
 
 	// Colour of the shapes
 	// Chi colour
-	int chiColour = createVertexArrayObjectSingleColoured(vec3(0.429f, 0.808f, 0.922f));
+	int chiColour = createVertexArrayObjectTextured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-	int alexColour = createVertexArrayObjectSingleColoured(vec3(0.898f, 0.22f, 0.0f));
+	int alexColour = createVertexArrayObjectTextured(vec3(1.0f, 0.58f, 0.25f));
 	// Theo colour
-	int theoColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.15f, 0.0f));
+	int theoColour = createVertexArrayObjectTextured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
-	int antoColour = createVertexArrayObjectSingleColoured(vec3(0.5f, 0.5f, 0.3f));
+	int antoColour = createVertexArrayObjectTextured(vec3(0.5f, 0.5f, 0.3f));
 	// Lightbulb colour
-	int lightbulbColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 1.0f));
+	int lightbulbColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
+	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, worldMatrixLocation, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, worldMatrixLocation, false, 1.0f));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, worldMatrixLocation, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, worldMatrixLocation, false, 1.0f));
-	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, worldMatrixLocation, false, 1.0f);
+	shapes.push_back(Shape(vec3(0, 10.0f, 0), chiShape, chiColour, glowColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, worldMatrixLocation, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, worldMatrixLocation, false, 1.0f));
+	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, glowColour, worldMatrixLocation, false, 1.0f);
 
 	for (int i = 0; i < 4; i++) {
-		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), shapes[i].mvao, worldMatrixLocation));
+		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour, worldMatrixLocation));
 	}
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
-
-	ControlState controlState = { &shapes, &focusedShape };
+	bool showTexture=true;
+	ControlState controlState = { &shapes, &focusedShape, &showTexture };
 	glfwSetWindowUserPointer(window, &controlState);
 
 	const vector<vec3> cameraPositions{
@@ -353,7 +357,7 @@ int main(int argc, char* argv[])
 	};
 
 	// Camera parameters for view transform
-	vec3 cameraPosition = vec3(0.0f, 1.0f, 20.0f);
+	vec3 cameraPosition = vec3(0.0f, 30.0f, 20.0f);
 	vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
 	vec3 cameraUp(0.0f, 1.0f, 0.0f);
 	vec3 cameraDestination = cameraPosition;
@@ -376,23 +380,7 @@ int main(int argc, char* argv[])
 	shaderManager.setFloat("diffuseLight", LIGHT_DIFFUSE_STRENGTH);
 	shaderManager.setFloat("specularLight", LIGHT_SPECULAR_STRENGTH);
 	shaderManager.setFloat("shininess", SHININESS);
-
-
-
-
-	//Orthographic projection of light
-	float near_plane = 1.0f, far_plane = 7.5f;
-	mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-	vec3 lightLookAt = glm::vec3(0.0f,0.0f,0.0f);
-	mat4 lightView = glm::lookAt(lightPosition,
-		lightLookAt,
-		glm::vec3(0.0f, 0.0f, 1.0f));
-
-	mat4 lightSpaceMatrix = lightProjection * lightView;
-
-
-
-
+	shaderManager.setInt("depthMap", 1);
 
 	// Grid and coordinate axis colours
 	int groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
@@ -402,51 +390,75 @@ int main(int argc, char* argv[])
 
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
+	
+
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
 	{
+		shaderManager.setBool("texToggle", showTexture);
 		// Frame time calculation
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
-		
-		
-		
-		shaderManager.use();
-		glUniformMatrix4fv(lightSpaceMatrixLocation, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
-		
-		
-		glViewport(0, 0, DEPTH_MAP_TEXTURE_SIZE, DEPTH_MAP_TEXTURE_SIZE);
-		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		//ConfigureShaderAndMatrices();
-		//RenderScene();
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		// 2. then render scene as normal with shadow mapping (using depth map)
-
-		glViewport(0, 0, WIDTH, SCR_HEIGHT);										//How to get width and height of window
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//ConfigureShaderAndMatrices();
-		glBindTexture(GL_TEXTURE_2D, depth_map_texture);
-		//RenderScene();
-		
-		
-		
-		
-		
-		
-		
-		// DEBUG - MOVING LIGHT
-		// TODO: REMOVE BEFORE SUBMISSION
-		//float moveY = cos(glfwGetTime());
-		//float moveX = sin(glfwGetTime());
-		//shaderManager.setVec3("lightPosition", lightPosition.x + moveX * 10.0f - 5.0f, lightPosition.y + moveY * 10.0f - 5.0f, lightPosition.z);
-
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+		// 0. create depth cubemap transformation matrices
+		// -----------------------------------------------
+		float near_plane = 1.0f;
+		float far_plane = 25.0f;
+		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
+		std::vector<glm::mat4> shadowTransforms;
+		shadowTransforms.push_back(shadowProj* glm::lookAt(lightPosition, lightPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		shadowTransforms.push_back(shadowProj* glm::lookAt(lightPosition, lightPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		shadowTransforms.push_back(shadowProj* glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+		shadowTransforms.push_back(shadowProj* glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+		shadowTransforms.push_back(shadowProj* glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		shadowTransforms.push_back(shadowProj* glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+
+
+		// 1. render scene to depth cubemap
+		// --------------------------------
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		shaderManager.use();
+		for (unsigned int i = 0; i < 6; ++i)
+			shaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+		shaderManager.setFloat("far_plane", far_plane);
+		//shaderManager.setVec3("lightPos", lightPosition);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
+		glfwSetWindowSizeCallback(window, &windowSizeCallback);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		shaderManager.use();
+		glm::mat4 orthProjection = glm::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 75.0f);
+		glm::mat4 camView = viewMatrix;
+		shaderManager.setMat4("orthProjection", orthProjection);
+		shaderManager.setMat4("camView", camView);
+		// set lighting uniforms
+		shaderManager.setVec3("lightPosition", lightPosition);
+		shaderManager.setVec3("camPos", cameraPosition);
+		shaderManager.setBool("shadows", true);
+		shaderManager.setFloat("far_plane", far_plane);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+
+
+
+		//Draw Tiles
+		glBindVertexArray(tileColour);
+		glBindTexture(GL_TEXTURE_2D, tileTexture);
+		for (int i = -50; i <= 50; i++) {
+			for (int j = -50; j <= 50; j++) {
+				mat4 tileMatrix = translate(mat4(1.0f), vec3(i, -0.1f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.01f, 1.0f));
+				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &tileMatrix[0][0]);
+				glDrawArrays(renderingMode, 0, 36);
+			}
+		}
 		// Draw ground
 		glBindVertexArray(groundColour);
 
@@ -475,22 +487,28 @@ int main(int argc, char* argv[])
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &zLine[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
 
-
-		
-		
-
-		
-
-		// Draw shape
+		// Draw shapes and walls
 		for (Shape shape : shapes) {
+			glBindTexture(GL_TEXTURE_2D, metalTexture);
 			shape.Draw(renderingMode);
+			glBindTexture(GL_TEXTURE_2D, fireTexture);
+			shaderManager.setBool("ignoreLighting", true);
+			
+			shape.DrawGlow(renderingMode);
+			shaderManager.setBool("ignoreLighting", false);
 		}
+		glBindTexture(GL_TEXTURE_2D, brickTexture);
+
+		for (Wall wall : walls) {
+			wall.Draw(renderingMode);
+		}
+		glBindTexture(GL_TEXTURE_2D, metalTexture);
 		lightbulb.mPosition = lightPosition;
+		shaderManager.setBool("ignoreLighting", true);
 		lightbulb.Draw(renderingMode);
+		shaderManager.setBool("ignoreLighting", false);
 
 		glBindVertexArray(0);
-
-		
 
 		// End Frame
 		glfwSwapBuffers(window);
@@ -513,7 +531,7 @@ int main(int argc, char* argv[])
 		{
 			cameraFirstPerson = false;
 		}
-
+		
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
@@ -542,12 +560,14 @@ int main(int argc, char* argv[])
 				shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 			}
 		}
-
+		
+		
 		// Change orientation with the arrow keys
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
 			cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
 		}
+		
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
 			cameraHorizontalAngle += CAMERA_ANGULAR_SPEED * dt;
@@ -628,32 +648,32 @@ int main(int argc, char* argv[])
 			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) // Ry
+		if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) // Ry
 		{
 			shapes[focusedShape].mOrientation.y += ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) // R-y
+		if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) // R-y
 		{
 			shapes[focusedShape].mOrientation.y -= ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) // Rz
+		if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS) // Rz
 		{
 			shapes[focusedShape].mOrientation.z += ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) // R-z
+		if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) // R-z
 		{
 			shapes[focusedShape].mOrientation.z -= ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) // Rx
+		if (glfwGetKey(window, GLFW_KEY_APOSTROPHE) == GLFW_PRESS) // Rx
 		{
 			shapes[focusedShape].mOrientation.x += ROTATE_RATE * dt;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) // R-x
+		if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_PRESS) // R-x
 		{
 			shapes[focusedShape].mOrientation.x -= ROTATE_RATE * dt;
 		}
@@ -700,6 +720,27 @@ int main(int argc, char* argv[])
 		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // Set point rendering mode
 		{
 			renderingMode = GL_POINTS;
+		}
+
+		// Projection Transform
+		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+		{
+			glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),  // field of view in degrees
+				800.0f / 600.0f,      // aspect ratio
+				0.01f, 100.0f);       // near and far (near > 0)
+
+			GLuint projectionMatrixLocation = shaderManager.getUniformLocation( "projectionMatrix");
+			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+		{
+			glm::mat4 projectionMatrix = glm::ortho(-4.0f, 4.0f,    // left/right
+				-3.0f, 3.0f,    // bottom/top
+				-100.0f, 100.0f);  // near/far (near == 0 is ok for ortho)
+
+			GLuint projectionMatrixLocation = shaderManager.getUniformLocation("projectionMatrix");
+			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 		}
 
 		// Reshuffle shape
@@ -958,6 +999,187 @@ int createVertexArrayObjectSingleColoured(vec3 colour)
 	return vertexArrayObject;
 }
 
+int createVertexArrayObjectTextured(vec3 colour)
+{
+	// Cube model
+	// Vertex, colour, normal
+	vec3 unitCube[] = {
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f), // left
+		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
+
+		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f), // far
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
+
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f), // bottom
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
+
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f), // near
+		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
+
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f), // right
+		vec3(0.5f,-0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f,-0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
+
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f), // top
+		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f)
+	};
+
+	vec2 uvMap[] = {
+		vec2(0.0f, 0.0f), // left
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+
+		vec2(0.0f, 1.0f), // far
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 0.0f),
+
+		vec2(1.0f, 1.0f), // bottom
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+
+		vec2(0.0f, 1.0f), // near
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(1.0f, 0.0f),
+
+		vec2(0.0f, 1.0f), // right
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(1.0f, 0.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+
+		vec2(1.0f, 0.0f), // top
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(1.0f, 0.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f)
+	};
+
+	// Create a vertex array
+	GLuint vertexArrayObject;
+	glGenVertexArrays(1, &vertexArrayObject);
+	glBindVertexArray(vertexArrayObject);
+
+	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
+	GLuint vertexBufferObject;
+	glGenBuffers(1, &vertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(unitCube), unitCube, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0,    // Location 0 matches aPos in Vertex Shader
+		3,						// size
+		GL_FLOAT,				// type
+		GL_FALSE,				// normalized?
+		3 * sizeof(vec3),		// stride
+		(void*)0				// array buffer offset
+	);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1,	// Location 1 matches aColor in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		3 * sizeof(vec3),
+		(void*)(sizeof(vec3))
+	);
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2,	// Location 2 matches aNormal in Vertex Shader
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		3 * sizeof(vec3),
+		(void*)(sizeof(vec3) * 2)
+	);
+	glEnableVertexAttribArray(2);
+
+	GLuint uvMapVertexBufferObject;
+	glGenBuffers(1, &uvMapVertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, uvMapVertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uvMap), uvMap, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(3,    // attribute 3 matches aUV in Vertex Shader
+		2,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(vec2),
+		(void*)0
+	);
+	glEnableVertexAttribArray(3);
+
+	glBindVertexArray(0);
+
+	return vertexArrayObject;
+}
+
+int loadTexture(string name, char* path) {
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+	// load and generate the texture
+	int width, height, nrChannels;
+	unsigned char* textureData = stbi_load(path, &width, &height, &nrChannels, 0);
+	if (textureData)
+	{
+		cout << "Texture has been found: " << name << endl;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		cout << "Failed to load texture: " << name << endl;
+	}
+	//frees data
+	stbi_image_free(textureData);
+
+	return texture;
+}
+
 bool initContext() {     // Initialize GLFW and OpenGL version
 	glfwInit();
 
@@ -973,7 +1195,7 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 #endif
 
 	// Create Window and rendering context using GLFW, resolution is 1024x768
-	window = glfwCreateWindow(1024, 768, "COMP 371 - Assignment 1 by Spiral Staircase", NULL, NULL);
+	window = glfwCreateWindow(1024, 768, "COMP 371 - Assignment 2 by Spiral Staircase", NULL, NULL);
 	if (window == NULL)
 	{
 		cerr << "Failed to create GLFW window" << endl;
@@ -1018,5 +1240,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	}
 	if (key == GLFW_KEY_K && action == GLFW_PRESS) {
 		controlState.shapes->at(*(controlState.focusedShape)).mPosition.z += TRANSLATE_RATE * 0.2;
+	}
+	//Texture toggle
+	if (key == GLFW_KEY_X && action == GLFW_PRESS) {
+		*controlState.showTexture = !*controlState.showTexture;
 	}
 }
