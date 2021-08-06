@@ -119,6 +119,7 @@
     <ClInclude Include="..\Source\Constants.h" />
     <ClInclude Include="..\Source\Voxel.h" />
     <ClInclude Include="..\Source\Wall.h" />
+    <ClInclude Include="texture.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DepthFragment.glsl">
