@@ -11,6 +11,18 @@ uniform bool ignoreLighting;
 uniform sampler2D textureSampler;
 uniform bool texToggle;
 
+uniform int depthMap;
+uniform mat4 shadowMatrices[6];
+uniform float far_plane;
+uniform mat4 orthProjection;
+uniform mat4 camView;
+uniform vec3 camPos;
+uniform bool shadows;
+uniform float farPlane;
+
+
+
+
 in vec3 vertexColor;
 in vec3 Normal;
 in vec3 FragPos;
