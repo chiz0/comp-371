@@ -72,14 +72,13 @@ GLFWwindow* window = NULL;
 int main(int argc, char* argv[])
 {
 	if (!initContext()) return -1;
-	// We can set the shader once, since we have only one
-	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
-	ShaderManager simpleDepthShader = ShaderManager(VERTEX_SHADER_FILEPATH2, FRAGMENT_SHADER_FILEPATH2);
-
-	shaderManager.use();
 
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// We can set the shader once, since we have only one
+	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
+	shaderManager.use();
 
 	//load the texture
 	int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
@@ -368,84 +367,6 @@ int main(int argc, char* argv[])
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
 	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	// Entering Game Loop
