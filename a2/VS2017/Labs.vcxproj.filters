@@ -35,6 +35,15 @@
     <None Include="..\Source\TexturedVert.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="ShadowDepth.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="ShadowFrag.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="ShadowVert.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\main.cpp">

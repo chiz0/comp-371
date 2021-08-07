@@ -20,7 +20,7 @@ public:
     unsigned int ID;                                                    // the program ID
 
     // Methods
-    ShaderManager(const char* vertexPath, const char* fragmentPath);    // Default constructor
+    ShaderManager(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);    // Default constructor
     void use();                                                         // Activate the shader
     void setBool(const string& name, bool value) const;                 // Pass a boolean value to the shader
     void setInt(const string& name, int value) const;                   // Pass an int to the shader

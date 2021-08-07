@@ -26,6 +26,11 @@ constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 20.0f, 0.0f);	// Where, relative to the
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
 constexpr char FRAGMENT_SHADER_FILEPATH[] = "../Source/TexturedFrag.glsl";
 
+constexpr char SHADOW_VERTEX_SHADER_FILEPATH[] = "../Source/ShadowVert.glsl";
+constexpr char SHADOW_FRAGMENT_SHADER_FILEPATH[] = "../Source/ShadowFrag.glsl";
+constexpr char SHADOW_DEPTH_SHADER_FILEPATH[] = "../Source/ShadowDepth.glsl";
+
+
 constexpr char* TEXTURE_PATH_TILE = "../Assets/Textures/tile.jpg";
 constexpr char* TEXTURE_PATH_METAL = "../Assets/Textures/metal.jpg";
 constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";

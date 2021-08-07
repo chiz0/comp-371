@@ -76,6 +76,13 @@ int main(int argc, char* argv[])
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+	// We can set the shader once, since we have only one
+	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
+	ShaderManager shaderManager2 = ShaderManager(SHADOW_VERTEX_SHADER_FILEPATH, SHADOW_FRAGMENT_SHADER_FILEPATH, SHADOW_DEPTH_SHADER_FILEPATH);
+	shaderManager.use();
+	shaderManager.setInt("depthMap", 1);
+
+
 
 	// configure depth map FBO
 	// -----------------------
@@ -99,10 +106,7 @@ int main(int argc, char* argv[])
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// We can set the shader once, since we have only one
-	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
-	shaderManager.use();
-
+	
 	//load the texture
 	int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
 	int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
@@ -125,6 +129,7 @@ int main(int argc, char* argv[])
 
 	// Get the world matrix
 	GLuint worldMatrixLocation = shaderManager.getUniformLocation("worldMatrix");
+	GLuint worldMatrixLocation2 = shaderManager2.getUniformLocation("worldMatrix");
 
 	// For frame time
 	float lastFrameTime = glfwGetTime();
@@ -343,6 +348,15 @@ int main(int argc, char* argv[])
 		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour, worldMatrixLocation));
 	}
 
+	shapes.push_back(Shape(vec3(0, 10.0f, 0), chiShape, chiColour, glowColour, worldMatrixLocation2, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, worldMatrixLocation2, false, 1.0f));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, worldMatrixLocation2, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, worldMatrixLocation2, false, 1.0f));
+
+	for (int i = 0; i < 4; i++) {
+		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour, worldMatrixLocation2));
+	}
+
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
 	bool showTexture=true;
@@ -381,6 +395,8 @@ int main(int argc, char* argv[])
 	shaderManager.setFloat("specularLight", LIGHT_SPECULAR_STRENGTH);
 	shaderManager.setFloat("shininess", SHININESS);
 	shaderManager.setInt("depthMap", 1);
+
+	shaderManager.setBool("shadows", true);
 
 	// Grid and coordinate axis colours
 	int groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
@@ -424,11 +440,11 @@ int main(int argc, char* argv[])
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		shaderManager.use();
+		shaderManager2.use();
 		for (unsigned int i = 0; i < 6; ++i)
-			shaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
-		shaderManager.setFloat("far_plane", far_plane);
-		//shaderManager.setVec3("lightPos", lightPosition);
+			shaderManager2.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+		shaderManager2.setFloat("farPlane", far_plane);
+		shaderManager2.setVec3("lightPos", lightPosition);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
@@ -442,8 +458,8 @@ int main(int argc, char* argv[])
 		// set lighting uniforms
 		shaderManager.setVec3("lightPosition", lightPosition);
 		shaderManager.setVec3("camPos", cameraPosition);
-		shaderManager.setBool("shadows", true);
-		shaderManager.setFloat("far_plane", far_plane);
+		
+		shaderManager.setFloat("farPlane", far_plane);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 
@@ -456,6 +472,7 @@ int main(int argc, char* argv[])
 			for (int j = -50; j <= 50; j++) {
 				mat4 tileMatrix = translate(mat4(1.0f), vec3(i, -0.1f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.01f, 1.0f));
 				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &tileMatrix[0][0]);
+				glUniformMatrix4fv(worldMatrixLocation2, 1, GL_FALSE, &tileMatrix[0][0]);
 				glDrawArrays(renderingMode, 0, 36);
 			}
 		}
@@ -465,11 +482,13 @@ int main(int argc, char* argv[])
 		for (int i = -50; i <= 50; i++) {
 			mat4 gridMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, i)) * scale(mat4(1.0f), vec3(100.0f, 0.02f, 0.02f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
+			glUniformMatrix4fv(worldMatrixLocation2, 1, GL_FALSE, &gridMatrix[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 		}
 		for (int i = -50; i <= 50; i++) {
 			mat4 gridMatrix = translate(mat4(1.0f), vec3(i, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(0.02f, 0.02f, 100.0f));
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
+			glUniformMatrix4fv(worldMatrixLocation2, 1, GL_FALSE, &gridMatrix[0][0]);
 			glDrawArrays(renderingMode, 0, 36);
 		}
 
@@ -477,14 +496,17 @@ int main(int argc, char* argv[])
 		glBindVertexArray(xLineColour);
 		mat4 xLine = translate(mat4(1.0f), vec3(2.5f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(5.0f, 0.1f, 0.1f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &xLine[0][0]);
+		glUniformMatrix4fv(worldMatrixLocation2, 1, GL_FALSE, &xLine[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
 		glBindVertexArray(yLineColour);
 		mat4 yLine = translate(mat4(1.0f), vec3(0.0f, 2.6f, 0.0f)) * scale(mat4(1.0f), vec3(0.1f, 5.0f, 0.1f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &yLine[0][0]);
+		glUniformMatrix4fv(worldMatrixLocation2, 1, GL_FALSE, &yLine[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
 		glBindVertexArray(zLineColour);
 		mat4 zLine = translate(mat4(1.0f), vec3(0.0f, 0.1f, 2.5f)) * scale(mat4(1.0f), vec3(0.1f, 0.1f, 5.0f));
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &zLine[0][0]);
+		glUniformMatrix4fv(worldMatrixLocation2, 1, GL_FALSE, &zLine[0][0]);
 		glDrawArrays(renderingMode, 0, 36);
 
 		// Draw shapes and walls

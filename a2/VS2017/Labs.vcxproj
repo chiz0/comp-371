@@ -103,6 +103,9 @@
     <None Include="..\Source\TexturedFrag.glsl" />
     <None Include="..\Source\TexturedVert.glsl" />
     <None Include="..\Source\VertexShader.glsl" />
+    <None Include="ShadowDepth.glsl" />
+    <None Include="ShadowFrag.glsl" />
+    <None Include="ShadowVert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\main.cpp" />

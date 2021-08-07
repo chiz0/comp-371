@@ -9,16 +9,15 @@ uniform float specularLight;
 uniform float shininess;
 uniform bool ignoreLighting;
 uniform sampler2D textureSampler;
+uniform samplerCube depthMap;
 uniform bool texToggle;
 
-uniform int depthMap;
-uniform mat4 shadowMatrices[6];
-uniform float far_plane;
+
 uniform mat4 orthProjection;
 uniform mat4 camView;
 uniform vec3 camPos;
 uniform bool shadows;
-uniform float far_plane;
+uniform float farPlane;
 
 
 
@@ -29,6 +28,43 @@ in vec3 FragPos;
 in vec2 vertexUV;
 
 out vec4 FragColor;
+
+
+
+// array of offset direction for sampling
+vec3 gridSamplingDisk[20] = vec3[]
+(
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
+float ShadowCalculation(vec3 fragPos)
+{
+    vec3 fragToLight = fragPos - lightPosition;
+    float currentDepth = length(fragToLight);
+    
+    float shadow = 0.0;
+    float bias = 0.15;
+    int samples = 20;
+    float viewDistance = length(camPos - fragPos);
+    float diskRadius = (1.0 + (viewDistance / farPlane)) / 25.0;
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(depthMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= farPlane;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(samples);
+        
+        
+    return shadow;
+} 
+
+
     
 void main()
 {
@@ -36,6 +72,8 @@ void main()
 	vec3 baseColour = vec3(vertexColor.r, vertexColor.g, vertexColor.b);
 	vec3 viewDirection = normalize(cameraPosition - FragPos);
 	vec3 lightTotal = vec3(1.0, 1.0, 1.0);
+
+	float shadow = shadows ? ShadowCalculation(FragPos) : 0.0;
 
 	if (ignoreLighting == false) {
 		vec3 lightDirection = normalize(lightPosition - FragPos);
@@ -46,9 +84,12 @@ void main()
 
 		vec3 specular = pow(max(dot(viewDirection, reflectDirection), 0.0), shininess) * specularLight * lightColour;
 
-		lightTotal = (ambientLight + diffusion + specular) * baseColour;
+		lightTotal = (ambientLight + (1.0 - shadow) * (diffusion + specular)) * baseColour;
 	}
+
 	
+	
+
 	vec4 textureColor = texture( textureSampler, vertexUV );
 	if(texToggle==true)
 	{
@@ -56,6 +97,6 @@ void main()
 	}
 	else
 	{
-	FragColor = vec4(lightTotal, 1.0f) * vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);
+		FragColor = vec4(lightTotal, 1.0f) * vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);
 	}
 }
