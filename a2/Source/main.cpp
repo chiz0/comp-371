@@ -67,7 +67,7 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 int createVertexArrayObjectSingleColoured(vec3 colour);
 int createVertexArrayObjectTextured(vec3 colour);
 int loadTexture(string name, char* path);
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb);
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, bool textures);
 
 bool initContext();
 
@@ -113,7 +113,9 @@ int main(int argc, char* argv[])
 	// configure depth map FBO
 	// -----------------------
 	unsigned int depthMapFBO;
+	unsigned int depthMapRBO;
 	glGenFramebuffers(1, &depthMapFBO);
+	glGenRenderbuffers(1, &depthMapRBO);
 	// create depth cubemap texture
 	unsigned int depthCubemap;
 	glGenTextures(1, &depthCubemap);
@@ -127,10 +129,12 @@ int main(int argc, char* argv[])
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	// attach depth texture as FBO's depth buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthMapRBO);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 
 
@@ -365,15 +369,15 @@ int main(int argc, char* argv[])
 	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 
-	//shapes.push_back(Shape(vec3(0, 10.0f, 0), chiShape, chiColour, glowColour, false, 1.0f));
-	shapes.push_back(Shape(vec3(0.0f, 3.0f, 0.0f), alexShape, alexColour, glowColour, false, 1.0f));
-	//shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, false, 1.0f));
-	//shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, false, 1.0f));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, glowColour, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, false, 1.0f));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, false, 1.0f));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, false, 1.0f));
 	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, glowColour, false, 1.0f);
 
-	//for (int i = 0; i < MODEL_COUNT; i++) {
-	//	walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour));
-	//}
+	for (int i = 0; i < MODEL_COUNT; i++) {
+		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour));
+	}
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
@@ -383,9 +387,9 @@ int main(int argc, char* argv[])
 
 	const vector<vec3> cameraPositions{
 		CAMERA_OFFSET + shapes[0].mPosition,
-		//CAMERA_OFFSET + shapes[1].mPosition,
-		//CAMERA_OFFSET + shapes[2].mPosition,
-		//CAMERA_OFFSET + shapes[3].mPosition
+		CAMERA_OFFSET + shapes[1].mPosition,
+		CAMERA_OFFSET + shapes[2].mPosition,
+		CAMERA_OFFSET + shapes[3].mPosition
 	};
 
 	// Camera parameters for view transform
@@ -458,18 +462,20 @@ int main(int argc, char* argv[])
 		// --------------------------------
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthMapRBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		shadowShaderManager.use();
 		for (unsigned int i = 0; i < 6; ++i)
 			shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 		shadowShaderManager.setFloat("farPlane", far_plane);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
-		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb);
+		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, false);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 		// 2. render scene as normal 
 		// -------------------------
-		glViewport(0, 0, VIEW_WIDTH , VIEW_HEIGHT );
+		glViewport(0, 0, VIEW_WIDTH, VIEW_HEIGHT );
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shaderManager.use();
 		// set lighting uniforms
@@ -477,74 +483,9 @@ int main(int argc, char* argv[])
 		shaderManager.setVec3("viewPos", cameraPosition);
 		shaderManager.setInt("shadows", true); // enable/disable shadows by pressing 'SPACE'
 		shaderManager.setFloat("farPlane", far_plane);
-		//glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb);
-
-		/*
-		{//Draw Tiles
-			glBindVertexArray(tileColour);
-			glBindTexture(GL_TEXTURE_2D, tileTexture);
-			for (int i = -50; i <= 50; i++) {
-				for (int j = -50; j <= 50; j++) {
-					mat4 tileMatrix = translate(mat4(1.0f), vec3(i, -0.1f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.01f, 1.0f));
-					glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &tileMatrix[0][0]);
-					glDrawArrays(renderingMode, 0, 36);
-				}
-			}
-			// Draw ground
-			glBindVertexArray(createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f)));
-
-			for (int i = -50; i <= 50; i++) {
-				mat4 gridMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, i)) * scale(mat4(1.0f), vec3(100.0f, 0.02f, 0.02f));
-				glUniformMatrix4fv(shaderManager.getUniformLocation("worldMatrix"), 1, GL_FALSE, &gridMatrix[0][0]);
-				glDrawArrays(renderingMode, 0, 36);
-			}
-			for (int i = -50; i <= 50; i++) {
-				mat4 gridMatrix = translate(mat4(1.0f), vec3(i, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(0.02f, 0.02f, 100.0f));
-				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridMatrix[0][0]);
-				glDrawArrays(renderingMode, 0, 36);
-			}
-
-			// Draw coordinate axes
-			glBindVertexArray(xLineColour);
-			mat4 xLine = translate(mat4(1.0f), vec3(2.5f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(5.0f, 0.1f, 0.1f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &xLine[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glBindVertexArray(yLineColour);
-			mat4 yLine = translate(mat4(1.0f), vec3(0.0f, 2.6f, 0.0f)) * scale(mat4(1.0f), vec3(0.1f, 5.0f, 0.1f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &yLine[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-			glBindVertexArray(zLineColour);
-			mat4 zLine = translate(mat4(1.0f), vec3(0.0f, 0.1f, 2.5f)) * scale(mat4(1.0f), vec3(0.1f, 0.1f, 5.0f));
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &zLine[0][0]);
-			glDrawArrays(renderingMode, 0, 36);
-
-			// Draw shapes and walls
-			for (Shape shape : shapes) {
-				glBindTexture(GL_TEXTURE_2D, metalTexture);
-				shape.Draw(renderingMode);
-				glBindTexture(GL_TEXTURE_2D, fireTexture);
-				shaderManager.setBool("ignoreLighting", true);
-
-				shape.DrawGlow(renderingMode);
-				shaderManager.setBool("ignoreLighting", false);
-			}
-			glBindTexture(GL_TEXTURE_2D, brickTexture);
-
-			for (Wall wall : walls) {
-				wall.Draw(renderingMode);
-			}
-			glBindTexture(GL_TEXTURE_2D, metalTexture);
-			lightbulb.mPosition = lightPosition;
-			shaderManager.setBool("ignoreLighting", true);
-			lightbulb.Draw(renderingMode);
-			shaderManager.setBool("ignoreLighting", false);
-
-			glBindVertexArray(0);
-
-		} //Draw needed stuff but commented
-		*/
+		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, false);
 
 		// End Frame
 		glfwSwapBuffers(window);
@@ -1293,20 +1234,19 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	}
 }
 
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb) {
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, bool textures) {
 	//Draw Tiles
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-	glBindTexture(GL_TEXTURE_2D, tileTexture);
-	//for (int i = -GRID_SIZE / 2; i <= GRID_SIZE / 2; i++) {
-	//	for (int j = -GRID_SIZE / 2; j <= GRID_SIZE / 2; j++) {
-	//		mat4 tileMatrix = translate(mat4(1.0f), vec3(i, -0.1f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.01f, 1.0f));
-	//		shaderManager.setMat4("worldMatrix", tileMatrix);
-	//		glDrawArrays(renderingMode, 0, 36);
-	//	}
-	//}
-	mat4 tileMatrix = translate(mat4(1.0f), vec3(0.0f, -0.1f, 0.0f)) * scale(mat4(1.0f), vec3(GRID_SIZE, 0.01f, GRID_SIZE));
-	shaderManager.setMat4("worldMatrix", tileMatrix);
-	glDrawArrays(renderingMode, 0, 36);
+	if (textures) {
+		glBindTexture(GL_TEXTURE_2D, tileTexture);
+	}
+	for (int i = -GRID_SIZE / 2 / 4; i <= GRID_SIZE / 2 / 4; i++) {
+		for (int j = -GRID_SIZE / 2 / 4; j <= GRID_SIZE / 2 / 4; j++) {
+			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * 4, -0.1f, j * 4)) * scale(mat4(1.0f), vec3(4.0f, 0.01f, 4.0f));
+			shaderManager.setMat4("worldMatrix", tileMatrix);
+			glDrawArrays(renderingMode, 0, 36);
+		}
+	}
 	// Draw grid
 	glBindVertexArray(createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f)));
 
@@ -1337,22 +1277,30 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 
 	// Draw shapes and walls
 	for (Shape shape : shapes) {
-		glBindTexture(GL_TEXTURE_2D, metalTexture);
+		if (textures) {
+			glBindTexture(GL_TEXTURE_2D, metalTexture);
+		}
 		shape.Draw(renderingMode, shaderManager);
-		glBindTexture(GL_TEXTURE_2D, fireTexture);
+		if (textures) {
+			glBindTexture(GL_TEXTURE_2D, fireTexture);
+		}
 		shaderManager.setBool("ignoreLighting", true);
 
 		shape.DrawGlow(renderingMode, shaderManager);
 		shaderManager.setBool("ignoreLighting", false);
 	}
-	glBindTexture(GL_TEXTURE_2D,brickTexture);
+	if (textures) {
+		glBindTexture(GL_TEXTURE_2D, brickTexture);
+	}
 
 	for (Wall wall : walls) {
 		wall.Draw(renderingMode, shaderManager);
 	}
-	glBindTexture(GL_TEXTURE_2D, metalTexture);
+	if (textures) {
+		glBindTexture(GL_TEXTURE_2D, metalTexture);
+	}
 	shaderManager.setBool("ignoreLighting", true);
-	//lightbulb.Draw(renderingMode, shaderManager);
+	lightbulb.Draw(renderingMode, shaderManager);
 	shaderManager.setBool("ignoreLighting", false);
 
 	glBindVertexArray(0);
