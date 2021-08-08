@@ -23,11 +23,13 @@ Wall::Wall(vec3 position, Shape* shape, int vao) : mPosition(position), mvao(vao
 }
 
 void Wall::Draw(GLenum renderingMode, ShaderManager shader) {
+	glBindVertexArray(mvao);
 	mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
 	for (auto it = begin(voxels); it != end(voxels); ++it) {
 		it->mAnchor = worldMatrix;
 		it->Draw(renderingMode, shader);
 	}
+	glBindVertexArray(0);
 }
 
 void Wall::ResetPosition() {
