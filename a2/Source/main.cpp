@@ -112,7 +112,6 @@ int main(int argc, char* argv[])
 
 	// configure depth map FBO
 	// -----------------------
-	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 	unsigned int depthMapFBO;
 	glGenFramebuffers(1, &depthMapFBO);
 	// create depth cubemap texture
@@ -405,7 +404,7 @@ int main(int argc, char* argv[])
 
 	// Set up lighting
 	vec3 lightPosition = LIGHT_OFFSET;
-	shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+	shaderManager.setVec3("lightPosition", lightPosition);
 	shaderManager.setVec3("lightColour", 1.0f, 1.0f, 1.0f);
 	shaderManager.setFloat("ambientLight", LIGHT_AMBIENT_STRENGTH);
 	shaderManager.setFloat("diffuseLight", LIGHT_DIFFUSE_STRENGTH);
@@ -1246,7 +1245,7 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 #endif
 
 	// Create Window and rendering context using GLFW, resolution is 1024x768
-	window = glfwCreateWindow(1024, 768, "COMP 371 - Assignment 2 by Spiral Staircase", NULL, NULL);
+	window = glfwCreateWindow(VIEW_WIDTH, VIEW_HEIGHT, "COMP 371 - Assignment 2 by Spiral Staircase", NULL, NULL);
 	if (window == NULL)
 	{
 		cerr << "Failed to create GLFW window" << endl;

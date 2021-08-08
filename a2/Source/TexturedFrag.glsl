@@ -75,10 +75,10 @@ void main()
 	vec4 textureColor = texture( textureSampler, vertexUV );
 	if(texToggle==true)
 	{
-		FragColor = vec4(lightTotal, 1.0f) * textureColor * vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);
+		FragColor = vec4(lightTotal, 1.0f) * textureColor * vec4(baseColour, 1.0f);
 	}
 	else
 	{
-		FragColor = vec4(lightTotal, 1.0f) * vec4(vertexColor.r, vertexColor.g, vertexColor.b, 1.0f);
+		FragColor = vec4(lightTotal, 1.0f) * vec4(baseColour, 1.0f);
 	}
 }
