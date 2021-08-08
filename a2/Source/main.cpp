@@ -40,6 +40,7 @@
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
+#include <glm/gtx/string_cast.hpp> 
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -51,6 +52,8 @@
 #include "ControlState.h"
 #include "Wall.h"
 #include "texture.h"
+
+
 
 using namespace glm;
 using namespace std;
@@ -83,6 +86,14 @@ int zLineColour;
 int main(int argc, char* argv[])
 {
 	if (!initContext()) return -1;
+
+	// glfw: initialize and configure
+	// ------------------------------
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -129,6 +140,7 @@ int main(int argc, char* argv[])
 	//Shader Configuration
 	shaderManager.use();
 	shaderManager.setInt("depthMap", 1);
+
 	
 
 	// Other camera parameters
@@ -637,6 +649,25 @@ int main(int argc, char* argv[])
 		cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
 		vec3 cameraSideVector = cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
 		normalize(cameraSideVector);
+
+		// Projection Transform
+		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+		{
+			glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),  // field of view in degrees
+				800.0f / 600.0f,      // aspect ratio
+				0.01f, 100.0f);       // near and far (near > 0)
+
+			shaderManager.setMat4("projectionMatrix", projectionMatrix);
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+		{
+			glm::mat4 projectionMatrix = glm::ortho(-4.0f, 4.0f,    // left/right
+				-3.0f, 3.0f,    // bottom/top
+				-100.0f, 100.0f);  // near/far (near == 0 is ok for ortho)
+
+			shaderManager.setMat4("projectionMatrix", projectionMatrix);
+		}
 
 		// Select shapes via 1-4 keys
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)

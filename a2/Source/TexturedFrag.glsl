@@ -48,6 +48,7 @@ float ShadowCalculation(vec3 fragPos)
         
     return shadow;
 }
+
     
 void main()
 {
