@@ -588,7 +588,7 @@ int main(int argc, char* argv[])
 		if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			if (!moveCameraToDestination) {
 				if (dy > 0) {
-					fieldOfView += currentCameraSpeed/100;
+					fieldOfView += currentCameraSpeed;
 					glm::mat4 projectionMatrix = glm::perspective(fieldOfView,  // field of view in degrees
 						VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
 						0.01f, 100.0f);
@@ -597,7 +597,7 @@ int main(int argc, char* argv[])
 					//cameraPosition += currentCameraSpeed * cameraLookAt;
 				}
 				if (dy < 0) {
-					fieldOfView -= currentCameraSpeed / 100;
+					fieldOfView -= currentCameraSpeed ;
 					glm::mat4 projectionMatrix = glm::perspective(fieldOfView,  // field of view in degrees
 						VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
 						0.01f, 100.0f);
