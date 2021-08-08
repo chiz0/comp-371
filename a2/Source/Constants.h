@@ -25,6 +25,8 @@ constexpr float SHININESS = 4.0f;						// Shininess coefficient of specular ligh
 constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 30.0f, 0.0f);	// Where, relative to the focused object, to place the light source
 constexpr float VIEW_WIDTH = 1024.0f;
 constexpr float VIEW_HEIGHT = 768.0f;
+constexpr float SHADOW_WIDTH = 1024.0f;
+constexpr float SHADOW_HEIGHT = 1024.0f;
 
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
 constexpr char FRAGMENT_SHADER_FILEPATH[] = "../Source/TexturedFrag.glsl";
