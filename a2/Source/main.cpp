@@ -1294,14 +1294,17 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 	//Draw Tiles
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
 	glBindTexture(GL_TEXTURE_2D, tileTexture);
-	for (int i = -GRID_SIZE / 2; i <= GRID_SIZE / 2; i++) {
-		for (int j = -GRID_SIZE / 2; j <= GRID_SIZE / 2; j++) {
-			mat4 tileMatrix = translate(mat4(1.0f), vec3(i, -0.1f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.01f, 1.0f));
-			shaderManager.setMat4("worldMatrix", tileMatrix);
-			glDrawArrays(renderingMode, 0, 36);
-		}
-	}
-	// Draw ground
+	//for (int i = -GRID_SIZE / 2; i <= GRID_SIZE / 2; i++) {
+	//	for (int j = -GRID_SIZE / 2; j <= GRID_SIZE / 2; j++) {
+	//		mat4 tileMatrix = translate(mat4(1.0f), vec3(i, -0.1f, j)) * scale(mat4(1.0f), vec3(1.0f, 0.01f, 1.0f));
+	//		shaderManager.setMat4("worldMatrix", tileMatrix);
+	//		glDrawArrays(renderingMode, 0, 36);
+	//	}
+	//}
+	mat4 tileMatrix = translate(mat4(1.0f), vec3(0.0f, -0.1f, 0.0f)) * scale(mat4(1.0f), vec3(GRID_SIZE, 0.01f, GRID_SIZE));
+	shaderManager.setMat4("worldMatrix", tileMatrix);
+	glDrawArrays(renderingMode, 0, 36);
+	// Draw grid
 	glBindVertexArray(createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f)));
 
 	for (int i = -GRID_SIZE / 2; i <= GRID_SIZE / 2; i++) {

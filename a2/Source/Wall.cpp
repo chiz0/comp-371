@@ -16,7 +16,7 @@ Wall::Wall(vec3 position, Shape* shape, int vao) : mPosition(position), mvao(vao
 						i - WALL_SIZE / 2 - originX,    // Wall segment x
 						j - WALL_SIZE / 2 - originY,    // Wall segment y
 						originZ	                        // Wall segment z
-					), vao, vec3(1.0f, 1.0f, WALL_THICKNESS)));
+					), vec3(1.0f, 1.0f, WALL_THICKNESS)));
 			}
 		}
 	}
