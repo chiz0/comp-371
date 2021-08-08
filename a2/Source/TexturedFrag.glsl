@@ -9,18 +9,13 @@ uniform float specularLight;
 uniform float shininess;
 uniform bool ignoreLighting;
 uniform sampler2D textureSampler;
-uniform samplerCube depthMap;
 uniform bool texToggle;
 
-
-uniform mat4 orthProjection;
-uniform mat4 camView;
-uniform vec3 camPos;
-uniform bool shadows;
+uniform samplerCube depthMap;
+uniform vec3 lightPos;
+uniform vec3 viewPos;
 uniform float farPlane;
-
-
-
+uniform bool shadows;
 
 in vec3 vertexColor;
 in vec3 Normal;
@@ -31,40 +26,29 @@ out vec4 FragColor;
 
 
 
-// array of offset direction for sampling
-vec3 gridSamplingDisk[20] = vec3[]
-(
-   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
-   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
-   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
-   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
-   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
-);
-
 float ShadowCalculation(vec3 fragPos)
 {
-    vec3 fragToLight = fragPos - lightPosition;
+    // get vector between fragment position and light position
+    vec3 fragToLight = fragPos - lightPos;
+
+    // use the fragment to light vector to sample from the depth map    
+    float closestDepth = texture(depthMap, fragToLight).r;
+
+    // it is currently in linear range between [0,1], let's re-transform it back to original depth value
+    closestDepth *= farPlane;
+
+    // now get current linear depth as the length between the fragment and light position
     float currentDepth = length(fragToLight);
-    
-    float shadow = 0.0;
-    float bias = 0.15;
-    int samples = 20;
-    float viewDistance = length(camPos - fragPos);
-    float diskRadius = (1.0 + (viewDistance / farPlane)) / 25.0;
-    for(int i = 0; i < samples; ++i)
-    {
-        float closestDepth = texture(depthMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
-        closestDepth *= farPlane;   // undo mapping [0;1]
-        if(currentDepth - bias > closestDepth)
-            shadow += 1.0;
-    }
-    shadow /= float(samples);
-        
+
+    // test for shadows
+    float bias = 0.00; // we use a much larger bias since depth is now in [near_plane, far_plane] range
+    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;  
+	
+    // display closestDepth as debug (to visualize depth cubemap)
+    //FragColor = vec4(vec3(closestDepth / farPlane), 1.0);    
         
     return shadow;
-} 
-
-
+}
     
 void main()
 {
@@ -73,7 +57,8 @@ void main()
 	vec3 viewDirection = normalize(cameraPosition - FragPos);
 	vec3 lightTotal = vec3(1.0, 1.0, 1.0);
 
-	float shadow = shadows ? ShadowCalculation(FragPos) : 0.0;
+	// calculate shadow
+    float shadow = shadows ? ShadowCalculation(FragPos) : 0.0;             
 
 	if (ignoreLighting == false) {
 		vec3 lightDirection = normalize(lightPosition - FragPos);
@@ -86,10 +71,7 @@ void main()
 
 		lightTotal = (ambientLight + (1.0 - shadow) * (diffusion + specular)) * baseColour;
 	}
-
 	
-	
-
 	vec4 textureColor = texture( textureSampler, vertexUV );
 	if(texToggle==true)
 	{
