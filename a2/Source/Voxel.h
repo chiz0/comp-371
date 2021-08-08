@@ -20,15 +20,13 @@ using namespace glm;
 class Voxel {
 public:
 	// Functions
-	Voxel(vec3 position, int vao, GLuint worldMatrixLocation, vec3 localScale = vec3(1.0f, 1.0f, 1.0f));	// Default constructor
-	void Draw(GLenum renderingMode);																		// Draw voxel to world
+	Voxel(vec3 position, vec3 localScale = vec3(1.0f, 1.0f, 1.0f));	// Default constructor
+	void Draw(GLenum renderingMode, ShaderManager shader);			// Draw voxel to world
 
 	// Properties
-	GLuint mWorldMatrixLocation;
 	mat4 mAnchor = mat4(1.0f);
 	vec3 mPosition;
 	vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
 	vec3 mScaleVector = vec3(1.0f, 1.0f, 1.0f);
 	float mScale = 1.0f;
-	int mvao;
 };
