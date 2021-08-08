@@ -12,7 +12,6 @@ uniform sampler2D textureSampler;
 uniform bool texToggle;
 
 uniform samplerCube depthMap;
-uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform float farPlane;
 uniform bool shadows;
@@ -29,7 +28,7 @@ out vec4 FragColor;
 float ShadowCalculation(vec3 fragPos)
 {
     // get vector between fragment position and light position
-    vec3 fragToLight = fragPos - lightPos;
+    vec3 fragToLight = fragPos - lightPosition;
 
     // use the fragment to light vector to sample from the depth map    
     float closestDepth = texture(depthMap, fragToLight).r;

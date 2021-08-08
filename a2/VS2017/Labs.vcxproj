@@ -99,13 +99,11 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\Source\FragmentShader.glsl" />
     <None Include="..\Source\ShadowDepth.glsl" />
     <None Include="..\Source\ShadowFrag.glsl" />
     <None Include="..\Source\ShadowVert.glsl" />
     <None Include="..\Source\TexturedFrag.glsl" />
     <None Include="..\Source\TexturedVert.glsl" />
-    <None Include="..\Source\VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\main.cpp" />
