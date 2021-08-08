@@ -1,6 +1,6 @@
 #include "Wall.h"
 
-Wall::Wall(vec3 position, Shape* shape, int vao, GLuint worldMatrixLocation) : mPosition(position), mvao(vao), mWorldMatrixLocation(worldMatrixLocation), defaultPosition(position), mScale(shape->defaultScale), defaultScale(shape->defaultScale)
+Wall::Wall(vec3 position, Shape* shape, int vao) : mPosition(position), mvao(vao), defaultPosition(position), mScale(shape->defaultScale), defaultScale(shape->defaultScale)
 {
 	int originX = shape->mDescription.front().x;
 	int originY = shape->mDescription.front().y;
@@ -16,17 +16,17 @@ Wall::Wall(vec3 position, Shape* shape, int vao, GLuint worldMatrixLocation) : m
 						i - WALL_SIZE / 2 - originX,    // Wall segment x
 						j - WALL_SIZE / 2 - originY,    // Wall segment y
 						originZ	                        // Wall segment z
-					), vao, worldMatrixLocation, vec3(1.0f, 1.0f, WALL_THICKNESS)));
+					), vao, vec3(1.0f, 1.0f, WALL_THICKNESS)));
 			}
 		}
 	}
 }
 
-void Wall::Draw(GLenum renderingMode) {
+void Wall::Draw(GLenum renderingMode, ShaderManager shader) {
 	mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
 	for (auto it = begin(voxels); it != end(voxels); ++it) {
 		it->mAnchor = worldMatrix;
-		it->Draw(renderingMode);
+		it->Draw(renderingMode, shader);
 	}
 }
 

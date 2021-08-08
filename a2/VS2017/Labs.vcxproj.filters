@@ -35,13 +35,13 @@
     <None Include="..\Source\TexturedVert.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="ShadowDepth.glsl">
+    <None Include="..\Source\ShadowDepth.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="ShadowFrag.glsl">
+    <None Include="..\Source\ShadowFrag.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="ShadowVert.glsl">
+    <None Include="..\Source\ShadowVert.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

@@ -18,10 +18,10 @@ using namespace std;
 class Shape {
 public:
 	// Functions
-	Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, GLuint worldMatrixLocation, bool hasWall, float scalarScale);
-	void BuildGlow(vector<coordinates> description, GLuint worldMatrixLocation);
-	void Draw(GLenum renderingMode);
-	void DrawGlow(GLenum renderingMode);
+	Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, bool hasWall, float scalarScale);
+	void BuildGlow(vector<coordinates> description);
+	void Draw(GLenum renderingMode, ShaderManager shader);
+	void DrawGlow(GLenum renderingMode, ShaderManager shader);
 	void Reshuffle();
 	void ResetPosition();
 
@@ -38,7 +38,6 @@ public:
 	float mScale = 1.0f;
 	int mvao;
 	int mGlowVao;
-	GLuint mWorldMatrixLocation;
 	vec3 defaultOrientation = vec3(0.0f, 0.0f, 0.0f);
 	vec3 defaultPosition;
 	float defaultScale = 1.0f;

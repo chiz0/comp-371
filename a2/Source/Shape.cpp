@@ -1,6 +1,6 @@
 #include "Shape.h"
 
-Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, GLuint worldMatrixLocation, bool hasWall, float scalarScale) : mPosition(position), mvao(vao), mGlowVao(glowVao), mWorldMatrixLocation(worldMatrixLocation), voxelCount(description.size()), defaultPosition(position), showWall(hasWall), mScale(scalarScale), defaultScale(scalarScale)
+Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, bool hasWall, float scalarScale) : mPosition(position), mvao(vao), mGlowVao(glowVao), voxelCount(description.size()), defaultPosition(position), showWall(hasWall), mScale(scalarScale), defaultScale(scalarScale)
 {
 	int originX = description.front().x;
 	int originY = description.front().y;
@@ -8,7 +8,7 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVa
 	for (auto it = begin(description); it != end(description); ++it) {
 		struct coordinates remappedCoordinates = { it->x - originX, it->y - originY, it->z - originZ };
 		mDescription.push_back(remappedCoordinates);
-		voxels.push_back(Voxel(vec3(remappedCoordinates.x, remappedCoordinates.y, remappedCoordinates.z), vao, worldMatrixLocation));
+		voxels.push_back(Voxel(vec3(remappedCoordinates.x, remappedCoordinates.y, remappedCoordinates.z), vao));
 		if (remappedCoordinates.x + WALL_SIZE / 2 >= 0 && remappedCoordinates.x < WALL_SIZE / 2
 			&& remappedCoordinates.y + WALL_SIZE / 2 >= 0 && remappedCoordinates.y < WALL_SIZE / 2)
 		{
@@ -16,7 +16,7 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVa
 		}
 	}
 
-	BuildGlow(description, worldMatrixLocation);
+	BuildGlow(description);
 
 	if (hasWall) {
 		// Create wall voxels
@@ -29,23 +29,23 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVa
 							i - WALL_SIZE / 2 - originX,    // Wall segment x
 							j - WALL_SIZE / 2 - originY,    // Wall segment y
 							originZ - WALL_DISTANCE         // Wall segment z
-						), vao, worldMatrixLocation, vec3(1.0f, 1.0f, WALL_THICKNESS)));
+						), vao, vec3(1.0f, 1.0f, WALL_THICKNESS)));
 				}
 			}
 		}
 	}
 }
 
-void Shape::Draw(GLenum renderingMode) {
+void Shape::Draw(GLenum renderingMode, ShaderManager shader) {
 	mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
 	for (auto it = begin(voxels); it != end(voxels); ++it) {
 		it->mAnchor = worldMatrix;
-		it->Draw(renderingMode);
+		it->Draw(renderingMode, shader);
 	}
 	if (showWall) {
 		for (auto it = begin(wallVoxels); it != end(wallVoxels); ++it) {
 			it->mAnchor = worldMatrix;
-			it->Draw(renderingMode);
+			it->Draw(renderingMode, shader);
 		}
 	}
 }
@@ -96,9 +96,9 @@ void Shape::Reshuffle() {
 
 	for (auto it = begin(newCoordinates); it != end(newCoordinates); ++it) {
 		mDescription.push_back(*it);
-		voxels.push_back(Voxel(vec3(it->x, it->y, it->z), mvao, mWorldMatrixLocation));
+		voxels.push_back(Voxel(vec3(it->x, it->y, it->z), mvao));
 	}
-	BuildGlow(newCoordinates, mWorldMatrixLocation);
+	BuildGlow(newCoordinates);
 }
 
 void Shape::ResetPosition() {
@@ -107,7 +107,7 @@ void Shape::ResetPosition() {
 	mScale = defaultScale;
 }
 
-void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocation) {
+void Shape::BuildGlow(vector<coordinates> description) {
 	bool shapeMap[WALL_SIZE][WALL_SIZE][WALL_SIZE] = { 0 };
 	// Build a map to easily determine whether a space is occupied
 	for (coordinates coordinate : description) {
@@ -119,7 +119,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x + 0.5, coordinate.y + 0.5, coordinate.z),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(0.2f, 0.2f, 1.0f)
 			));
 		}
@@ -129,7 +128,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x + 0.5, coordinate.y, coordinate.z + 0.5),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(0.2f, 1.0f, 0.2f)
 			));
 		}
@@ -139,7 +137,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x, coordinate.y + 0.5, coordinate.z + 0.5),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(1.0f, 0.2f, 0.2f)
 			));
 		}
@@ -149,7 +146,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x - 0.5, coordinate.y - 0.5, coordinate.z),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(0.2f, 0.2f, 1.0f)
 			));
 		}
@@ -159,7 +155,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x, coordinate.y - 0.5, coordinate.z - 0.5),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(1.0f, 0.2f, 0.2f)
 			));
 		}
@@ -169,7 +164,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x - 0.5, coordinate.y, coordinate.z - 0.5),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(0.2f, 1.0f, 0.2f)
 			));
 		}
@@ -179,7 +173,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x + 0.5, coordinate.y - 0.5, coordinate.z),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(0.2f, 0.2f, 1.0f)
 			));
 		}
@@ -189,7 +182,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x, coordinate.y + 0.5, coordinate.z - 0.5),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(1.0f, 0.2f, 0.2f)
 			));
 		}
@@ -199,7 +191,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x + 0.5, coordinate.y, coordinate.z - 0.5),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(0.2f, 1.0f, 0.2f)
 			));
 		}
@@ -209,7 +200,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x - 0.5, coordinate.y + 0.5, coordinate.z),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(0.2f, 0.2f, 1.0f)
 			));
 		}
@@ -219,7 +209,6 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x, coordinate.y - 0.5, coordinate.z + 0.5),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(1.0f, 0.2f, 0.2f)
 			));
 		}
@@ -229,18 +218,17 @@ void Shape::BuildGlow(vector<coordinates> description, GLuint worldMatrixLocatio
 			glowVoxels.push_back(Voxel(
 				vec3(coordinate.x - 0.5, coordinate.y, coordinate.z + 0.5),
 				mGlowVao,
-				worldMatrixLocation,
 				vec3(0.2f, 1.0f, 0.2f)
 			));
 		}
 	}
 }
 
-void Shape::DrawGlow(GLenum renderingMode) {
+void Shape::DrawGlow(GLenum renderingMode, ShaderManager shader) {
 	mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
 	for (auto it = begin(glowVoxels); it != end(glowVoxels); ++it) {
 		it->mAnchor = worldMatrix;
-		it->Draw(renderingMode);
+		it->Draw(renderingMode, shader);
 	}
 }
 
