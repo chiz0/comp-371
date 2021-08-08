@@ -18,6 +18,7 @@
 //	- Phong lighting
 //	- Breaking up code into helper classes
 //	- Glow effect on shapes
+//	- Shadow mapping debugging
 //
 //  Antonio
 //
