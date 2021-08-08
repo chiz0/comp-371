@@ -40,8 +40,8 @@ float ShadowCalculation(vec3 fragPos)
     float currentDepth = length(fragToLight);
 
     // test for shadows
-    float bias = 0.00; // we use a much larger bias since depth is now in [near_plane, far_plane] range
-    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;  
+    float bias = 0.05; // we use a much larger bias since depth is now in [near_plane, far_plane] range
+    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;  
 	
     // display closestDepth as debug (to visualize depth cubemap)
     //FragColor = vec4(vec3(closestDepth / farPlane), 1.0);    

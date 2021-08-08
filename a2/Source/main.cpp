@@ -69,27 +69,11 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 bool initContext();
 
 GLFWwindow* window = NULL;
-//load the texture
+// TODO: Move to shape class
 int tileTexture;
 int metalTexture; 
 int brickTexture;
 int fireTexture;
-
-
-int groundColour;
-//Chi colour
-int chiColour;
-// Alex colour
-int alexColour;
-// Theo colour
-int theoColour;
-// Anto colour
-int antoColour;
-// Lightbulb colour
-int lightbulbColour;
-int wallColour ;
-int tileColour ;
-int glowColour ;
 
 int xLineColour;
 int yLineColour;
@@ -153,7 +137,7 @@ int main(int argc, char* argv[])
 
 	// Set projection matrix for shader, this won't change
 	mat4 projectionMatrix = perspective(70.0f,            // field of view in degrees
-		1024.0f / 768.0f,  // aspect ratio
+		VIEW_WIDTH / VIEW_HEIGHT,  // aspect ratio
 		0.01f, 200.0f);   // near and far (near > 0)
 
 	glfwSetWindowSizeCallback(window, &windowSizeCallback);
@@ -353,21 +337,21 @@ int main(int argc, char* argv[])
 	};
 
 
-	groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
+	int groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
 	// Colour of the shapes
 	// Chi colour
-	chiColour = createVertexArrayObjectTextured(vec3(0.429f, 0.808f, 0.922f));
+	int chiColour = createVertexArrayObjectTextured(vec3(0.429f, 0.808f, 0.922f));
 	// Alex colour
-	alexColour = createVertexArrayObjectTextured(vec3(1.0f, 0.58f, 0.25f));
+	int alexColour = createVertexArrayObjectTextured(vec3(1.0f, 0.58f, 0.25f));
 	// Theo colour
-	theoColour = createVertexArrayObjectTextured(vec3(1.0f, 0.15f, 0.0f));
+	int theoColour = createVertexArrayObjectTextured(vec3(1.0f, 0.15f, 0.0f));
 	// Anto colour
-	antoColour = createVertexArrayObjectTextured(vec3(0.5f, 0.5f, 0.3f));
+	int antoColour = createVertexArrayObjectTextured(vec3(0.5f, 0.5f, 0.3f));
 	// Lightbulb colour
-	lightbulbColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
-	wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
-	tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
-	glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	int lightbulbColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
+	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 
 	//shapes.push_back(Shape(vec3(0, 10.0f, 0), chiShape, chiColour, glowColour, false, 1.0f));
 	shapes.push_back(Shape(vec3(0.0f, 3.0f, 0.0f), alexShape, alexColour, glowColour, false, 1.0f));
@@ -434,6 +418,7 @@ int main(int argc, char* argv[])
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
 
+		lightbulb.mPosition = lightPosition;
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -446,8 +431,8 @@ int main(int argc, char* argv[])
 
 		// 0. create depth cubemap transformation matrices
 		// -----------------------------------------------
-		float near_plane = 1.0f;
-		float far_plane = 25.0f;
+		float near_plane = 0.01f;
+		float far_plane = 100.0f;
 		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
 		std::vector<glm::mat4> shadowTransforms;
 		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
@@ -472,19 +457,15 @@ int main(int argc, char* argv[])
 
 		// 2. render scene as normal 
 		// -------------------------
-		glViewport(0, 0, 1024.0f , 768.0f );
+		glViewport(0, 0, VIEW_WIDTH , VIEW_HEIGHT );
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shaderManager.use();
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1024.0f / 768.0f , 0.1f, 100.0f);
-		glm::mat4 view = viewMatrix;
-		shaderManager.setMat4("projection", projection);
-		shaderManager.setMat4("view", view);
 		// set lighting uniforms
 		shaderManager.setVec3("lightPosition", lightPosition);
 		shaderManager.setVec3("viewPos", cameraPosition);
 		shaderManager.setInt("shadows", true); // enable/disable shadows by pressing 'SPACE'
 		shaderManager.setFloat("farPlane", far_plane);
-		glActiveTexture(GL_TEXTURE0);
+		//glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb);
 
@@ -635,7 +616,7 @@ int main(int argc, char* argv[])
 
 			cameraDestination = vec3(0.0f, 1.0f, 20.0f);
 			lightPosition = cameraDestination + LIGHT_OFFSET;
-			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+			shaderManager.setVec3("lightPosition", lightPosition);
 			moveCameraToDestination = true;
 		}
 
@@ -664,7 +645,7 @@ int main(int argc, char* argv[])
 			cameraDestination = cameraPositions[0];
 			lightPosition = cameraDestination + LIGHT_OFFSET;
 			moveCameraToDestination = true;
-			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+			shaderManager.setVec3("lightPosition", lightPosition);
 		}
 		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
 		{
@@ -672,7 +653,7 @@ int main(int argc, char* argv[])
 			cameraDestination = cameraPositions[1];
 			lightPosition = cameraDestination + LIGHT_OFFSET;
 			moveCameraToDestination = true;
-			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+			shaderManager.setVec3("lightPosition", lightPosition);
 		}
 		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
 		{
@@ -680,7 +661,7 @@ int main(int argc, char* argv[])
 			cameraDestination = cameraPositions[2];
 			lightPosition = cameraDestination + LIGHT_OFFSET;
 			moveCameraToDestination = true;
-			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+			shaderManager.setVec3("lightPosition", lightPosition);
 		}
 		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
 		{
@@ -688,7 +669,7 @@ int main(int argc, char* argv[])
 			cameraDestination = cameraPositions[3];
 			lightPosition = cameraDestination + LIGHT_OFFSET;
 			moveCameraToDestination = true;
-			shaderManager.setVec3("lightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+			shaderManager.setVec3("lightPosition", lightPosition);
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) // Ry
@@ -769,11 +750,10 @@ int main(int argc, char* argv[])
 		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
 		{
 			glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),  // field of view in degrees
-				800.0f / 600.0f,      // aspect ratio
+				VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
 				0.01f, 100.0f);       // near and far (near > 0)
 
-			GLuint projectionMatrixLocation = shaderManager.getUniformLocation( "projectionMatrix");
-			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+			shaderManager.setMat4("projectionMatrix", projectionMatrix);
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
@@ -782,8 +762,7 @@ int main(int argc, char* argv[])
 				-3.0f, 3.0f,    // bottom/top
 				-100.0f, 100.0f);  // near/far (near == 0 is ok for ortho)
 
-			GLuint projectionMatrixLocation = shaderManager.getUniformLocation("projectionMatrix");
-			glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+			shaderManager.setMat4("projectionMatrix", projectionMatrix);
 		}
 
 		// Reshuffle shape
@@ -812,12 +791,10 @@ int main(int argc, char* argv[])
 			cameraUp.x = 0.0f; cameraUp.y = 1.0f; cameraUp.z = 0.0f;
 			cameraHorizontalAngle = 90.0f;
 			cameraVerticalAngle = 0.0f;
-			shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+			shaderManager.setVec3("cameraPosition", cameraPosition);
 		}
 
 		//Antonio's part
-		mat4 viewMatrix = mat4(1.0);
-
 		vec3 position = cameraPosition;
 		viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
 		//if camera is third person, approximate the radius and give the world orientation perspective aimed at the origin {0,0,0}, Press N to normalize view to first person
@@ -1348,10 +1325,9 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 		wall.Draw(renderingMode, shaderManager);
 	}
 	glBindTexture(GL_TEXTURE_2D, metalTexture);
-	//lightbulb.mPosition = LIGHT_OFFSET;
-	//shaderManager.setBool("ignoreLighting", true);
+	shaderManager.setBool("ignoreLighting", true);
 	//lightbulb.Draw(renderingMode, shaderManager);
-	//shaderManager.setBool("ignoreLighting", false);
+	shaderManager.setBool("ignoreLighting", false);
 
 	glBindVertexArray(0);
 }
