@@ -48,6 +48,7 @@ void main()
 
 		lightTotal = (ambientLight + diffusion + specular) * baseColour;
 	}
+
 	
 	vec4 textureColor = texture( textureSampler, vertexUV );
 	if(texToggle==true)
