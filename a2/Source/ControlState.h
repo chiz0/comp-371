@@ -7,4 +7,5 @@ struct ControlState {
 	std::vector<Shape>* shapes;
 	int* focusedShape;
 	bool* showTexture;
+	bool* showShadow;
 };

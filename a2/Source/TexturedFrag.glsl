@@ -10,11 +10,11 @@ uniform float shininess;
 uniform bool ignoreLighting;
 uniform sampler2D textureSampler;
 uniform bool texToggle;
+uniform bool shadows;
 
 uniform samplerCube depthMap;
 uniform vec3 viewPos;
 uniform float farPlane;
-uniform bool shadows;
 
 in vec3 vertexColor;
 in vec3 Normal;
@@ -58,7 +58,10 @@ void main()
 	vec3 lightTotal = vec3(1.0, 1.0, 1.0);
 
 	// calculate shadow
-    float shadow = shadows ? ShadowCalculation(FragPos) : 0.0;             
+	float shadow = 0.0;
+	if (shadows == true) {
+		shadow = ShadowCalculation(FragPos);
+	}         
 
 	if (ignoreLighting == false) {
 		vec3 lightDirection = normalize(lightPosition - FragPos);

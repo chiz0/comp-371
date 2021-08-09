@@ -371,7 +371,8 @@ int main(int argc, char* argv[])
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
 	bool showTexture = true;
-	ControlState controlState = { &shapes, &focusedShape, &showTexture };
+	bool showShadow = true;
+	ControlState controlState = { &shapes, &focusedShape, &showTexture, &showShadow };
 	glfwSetWindowUserPointer(window, &controlState);
 
 	const vector<vec3> cameraPositions{
@@ -420,6 +421,7 @@ int main(int argc, char* argv[])
 	while (!glfwWindowShouldClose(window))
 	{
 		shaderManager.setBool("texToggle", showTexture);
+		shaderManager.setBool("shadows", showShadow);
 		// Frame time calculation
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
@@ -567,6 +569,13 @@ int main(int argc, char* argv[])
 			lightPosition = cameraDestination + LIGHT_OFFSET;
 			shaderManager.setVec3("lightPosition", lightPosition);
 			moveCameraToDestination = true;
+
+			fieldOfView = 70.0f;
+			glm::mat4 projectionMatrix = glm::perspective(fieldOfView,  // field of view in degrees
+				VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
+				0.01f, 100.0f);       // near and far (near > 0)
+
+			shaderManager.setMat4("projectionMatrix", projectionMatrix);
 		}
 
 		// Clamp vertical angle to [-85, 85] degrees
@@ -586,26 +595,6 @@ int main(int argc, char* argv[])
 		cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
 		vec3 cameraSideVector = cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
 		normalize(cameraSideVector);
-
-		// Projection Transform
-		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-		{
-			fieldOfView = 70.0f;
-			glm::mat4 projectionMatrix = glm::perspective(70.0f,  // field of view in degrees
-				VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
-				0.01f, 100.0f);       // near and far (near > 0)
-
-			shaderManager.setMat4("projectionMatrix", projectionMatrix);
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
-		{
-			glm::mat4 projectionMatrix = glm::ortho(-4.0f, 4.0f,    // left/right
-				-3.0f, 3.0f,    // bottom/top
-				-100.0f, 100.0f);  // near/far (near == 0 is ok for ortho)
-
-			shaderManager.setMat4("projectionMatrix", projectionMatrix);
-		}
 
 		// Select shapes via 1-4 keys
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
@@ -1215,6 +1204,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	//Texture toggle
 	if (key == GLFW_KEY_X && action == GLFW_PRESS) {
 		*controlState.showTexture = !*controlState.showTexture;
+	}
+	if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+		*controlState.showShadow = !*controlState.showShadow;
 	}
 }
 
