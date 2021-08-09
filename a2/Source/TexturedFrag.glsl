@@ -10,7 +10,7 @@ uniform float shininess;
 uniform bool ignoreLighting;
 uniform sampler2D textureSampler;
 uniform bool texToggle;
-uniform bool shadows;
+uniform bool showShadows;
 
 uniform samplerCube depthMap;
 uniform vec3 viewPos;
@@ -55,15 +55,13 @@ void main()
     vec3 normal = normalize(Normal);
 	vec3 baseColour = vec3(vertexColor.r, vertexColor.g, vertexColor.b);
 	vec3 viewDirection = normalize(cameraPosition - FragPos);
-	vec3 lightTotal = vec3(1.0, 1.0, 1.0);
-
-	// calculate shadow
-	float shadow = 0.0;
-	if (shadows == true) {
-		shadow = ShadowCalculation(FragPos);
-	}         
+	vec3 lightTotal = vec3(1.0, 1.0, 1.0);        
 
 	if (ignoreLighting == false) {
+
+		// calculate shadow mapping
+		float shadow = showShadows ? ShadowCalculation(FragPos) : 0.0;
+
 		vec3 lightDirection = normalize(lightPosition - FragPos);
 
 		vec3 reflectDirection = reflect(-lightDirection, normal);
