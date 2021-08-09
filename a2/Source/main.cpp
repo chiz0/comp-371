@@ -12,6 +12,8 @@
 // CONTRIBUTIONS
 //
 //  Theodor
+//  - Shadow mapping implementation
+//  - Camera Zoom fix
 // 
 //  Alexander
 //	- Point light and Lightbulb cube
@@ -21,11 +23,15 @@
 //	- Shadow mapping debugging
 //
 //  Antonio
+// -Texture mapping
+// -Texture toggle
+// 
 //
 //  Chi
 //  - Window resize handling
 //  - Keypress event handling
 //  - Standalone walls
+//
 
 #include <iostream>
 #include <list>
@@ -98,7 +104,7 @@ int main(int argc, char* argv[])
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
 	ShaderManager shadowShaderManager = ShaderManager(SHADOW_VERTEX_SHADER_FILEPATH, SHADOW_FRAGMENT_SHADER_FILEPATH, SHADOW_DEPTH_SHADER_FILEPATH);
 
-	
+
 
 	// configure depth map FBO
 	// -----------------------
@@ -415,7 +421,7 @@ int main(int argc, char* argv[])
 
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
-	
+
 
 
 	// Entering Game Loop
@@ -495,7 +501,7 @@ int main(int argc, char* argv[])
 		{
 			cameraFirstPerson = false;
 		}
-		
+
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
@@ -522,7 +528,7 @@ int main(int argc, char* argv[])
 						(float)windowWidth / windowHeight,      // aspect ratio
 						0.01f, 100.0f);
 					shaderManager.setMat4("projectionMatrix", projectionMatrix);
-					
+
 					//cameraPosition += currentCameraSpeed * cameraLookAt;
 				}
 				if (dy < 0) {
@@ -537,14 +543,14 @@ int main(int argc, char* argv[])
 				shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 			}
 		}
-		
-		
+
+
 		// Change orientation with the arrow keys
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
 			cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
 		}
-		
+
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
 			cameraHorizontalAngle += CAMERA_ANGULAR_SPEED * dt;
@@ -765,7 +771,7 @@ int main(int argc, char* argv[])
 			else
 				newz = cameraPosition.z;
 			float radius = sqrt(pow(newx, 2) + pow(newy, 2) + pow(newz, 2));
-			vec3 position = vec3{ 0,1,0 } -radius * cameraLookAt;
+			vec3 position = vec3{ 0,1,0 } - radius * cameraLookAt;
 			viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
 			shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 		}
@@ -928,7 +934,7 @@ int createVertexArrayObjectSingleColoured(vec3 colour)
 	glGenBuffers(1, &vertexBufferObject);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(unitCube), unitCube, GL_STATIC_DRAW);
-	
+
 	glVertexAttribPointer(0,    // Location 0 matches aPos in Vertex Shader
 		3,						// size
 		GL_FLOAT,				// type
