@@ -23,7 +23,9 @@
 //  Antonio
 //
 //  Chi
-//
+//  - Window resize handling
+//  - Keypress event handling
+//  - Standalone walls
 
 #include <iostream>
 #include <list>
@@ -139,9 +141,8 @@ int main(int argc, char* argv[])
 	float cameraVerticalAngle = 0.0f;
 	int windowWidth, windowHeight;
 
-	// Set projection matrix for shader, this won't change
-	float fieldOfView = 70.0f;
-	mat4 projectionMatrix = perspective(fieldOfView,            // field of view in degrees
+	float fieldOfView = FIELD_OF_VIEW;
+	mat4 projectionMatrix = perspective(radians(fieldOfView),            // field of view in degrees
 		VIEW_WIDTH / VIEW_HEIGHT,  // aspect ratio
 		0.01f, 200.0f);   // near and far (near > 0)
 
@@ -372,7 +373,7 @@ int main(int argc, char* argv[])
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
 	bool showTexture = true;
 	bool showShadow = true;
-	ControlState controlState = { &shapes, &focusedShape, &showTexture, &showShadow };
+	ControlState controlState = { &shapes, &focusedShape, &showTexture, &showShadow, &fieldOfView };
 	glfwSetWindowUserPointer(window, &controlState);
 
 	const vector<vec3> cameraPositions{
@@ -516,8 +517,9 @@ int main(int argc, char* argv[])
 			if (!moveCameraToDestination) {
 				if (dy > 0) {
 					fieldOfView += currentCameraSpeed;
-					glm::mat4 projectionMatrix = glm::perspective(fieldOfView,  // field of view in degrees
-						VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
+					fieldOfView = clamp(fieldOfView, 10.0f, 130.0f);
+					glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
+						(float)windowWidth / windowHeight,      // aspect ratio
 						0.01f, 100.0f);
 					shaderManager.setMat4("projectionMatrix", projectionMatrix);
 					
@@ -525,8 +527,9 @@ int main(int argc, char* argv[])
 				}
 				if (dy < 0) {
 					fieldOfView -= currentCameraSpeed ;
-					glm::mat4 projectionMatrix = glm::perspective(fieldOfView,  // field of view in degrees
-						VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
+					fieldOfView = clamp(fieldOfView, 10.0f, 130.0f);
+					glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
+						(float)windowWidth / windowHeight,      // aspect ratio
 						0.01f, 100.0f);
 					shaderManager.setMat4("projectionMatrix", projectionMatrix);
 					//cameraPosition -= currentCameraSpeed * cameraLookAt;
@@ -569,8 +572,8 @@ int main(int argc, char* argv[])
 			shaderManager.setVec3("lightPosition", lightPosition);
 			moveCameraToDestination = true;
 
-			fieldOfView = 70.0f;
-			glm::mat4 projectionMatrix = glm::perspective(fieldOfView,  // field of view in degrees
+			fieldOfView = FIELD_OF_VIEW;
+			glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
 				VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
 				0.01f, 100.0f);       // near and far (near > 0)
 
@@ -1177,12 +1180,15 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 }
 
 void windowSizeCallback(GLFWwindow* window, int width, int height) {
+
+	ControlState controlState = *(ControlState*)glfwGetWindowUserPointer(window);
+
 	glViewport(0, 0, width, height);
 
 	GLint shaderProgram = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &shaderProgram);
 
-	mat4 projectionMatrix = glm::perspective(70.0f,            // field of view in degrees
+	mat4 projectionMatrix = glm::perspective(radians(*controlState.fieldOfView),            // field of view in degrees
 		(float)width / (float)height,  // aspect ratio
 		0.01f, 200.0f);   // near and far (near > 0)
 

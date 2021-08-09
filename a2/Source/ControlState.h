@@ -8,4 +8,5 @@ struct ControlState {
 	int* focusedShape;
 	bool* showTexture;
 	bool* showShadow;
+	float* fieldOfView;
 };
