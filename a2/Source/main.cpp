@@ -137,6 +137,7 @@ int main(int argc, char* argv[])
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
 	float cameraVerticalAngle = 0.0f;
+	int windowWidth, windowHeight;
 
 	// Set projection matrix for shader, this won't change
 	float fieldOfView = 70.0f;
@@ -458,7 +459,8 @@ int main(int argc, char* argv[])
 
 		// 2. render scene as normal 
 		// -------------------------
-		glViewport(0, 0, VIEW_WIDTH, VIEW_HEIGHT );
+		glfwGetWindowSize(window, &windowWidth, &windowHeight);
+		glViewport(0, 0, windowWidth, windowHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shaderManager.use();
 		// set lighting uniforms
