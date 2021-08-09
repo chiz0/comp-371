@@ -66,16 +66,11 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 int createVertexArrayObjectSingleColoured(vec3 colour);
 int createVertexArrayObjectTextured(vec3 colour);
 int loadTexture(string name, char* path);
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, bool textures);
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture);
 
 bool initContext();
 
 GLFWwindow* window = NULL;
-// TODO: Move to shape class
-int tileTexture;
-int metalTexture; 
-int brickTexture;
-int fireTexture;
 
 int xLineColour;
 int yLineColour;
@@ -129,15 +124,9 @@ int main(int argc, char* argv[])
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-
-
-
-
 	//Shader Configuration
 	shaderManager.use();
 	shaderManager.setInt("depthMap", 1);
-
-	
 
 	//load the texture
 	int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
@@ -368,14 +357,14 @@ int main(int argc, char* argv[])
 	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, glowColour, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, false, 1.0f));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, false, 1.0f));
-	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, glowColour, false, 1.0f);
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, glowColour, false, 1.0f, metalTexture, fireTexture));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, false, 1.0f, metalTexture, fireTexture));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, false, 1.0f, metalTexture, fireTexture));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, false, 1.0f, metalTexture, fireTexture));
+	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, glowColour, false, 1.0f, metalTexture, fireTexture);
 
 	for (int i = 0; i < MODEL_COUNT; i++) {
-		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour));
+		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour, brickTexture));
 	}
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
@@ -463,7 +452,7 @@ int main(int argc, char* argv[])
 			shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 		shadowShaderManager.setFloat("farPlane", far_plane);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
-		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, false);
+		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
@@ -479,7 +468,7 @@ int main(int argc, char* argv[])
 		shaderManager.setFloat("farPlane", far_plane);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, false);
+		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
 
 		// End Frame
 		glfwSwapBuffers(window);
@@ -1227,12 +1216,13 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	}
 }
 
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, bool textures) {
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture) {
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tileTexture);
+
 	//Draw Tiles
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-	if (textures) {
-		glBindTexture(GL_TEXTURE_2D, tileTexture);
-	}
 	for (int i = -GRID_SIZE / 2 / 4; i <= GRID_SIZE / 2 / 4; i++) {
 		for (int j = -GRID_SIZE / 2 / 4; j <= GRID_SIZE / 2 / 4; j++) {
 			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * 4, -0.1f, j * 4)) * scale(mat4(1.0f), vec3(4.0f, 0.01f, 4.0f));
@@ -1270,27 +1260,15 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 
 	// Draw shapes and walls
 	for (Shape shape : shapes) {
-		if (textures) {
-			glBindTexture(GL_TEXTURE_2D, metalTexture);
-		}
 		shape.Draw(renderingMode, shaderManager);
-		if (textures) {
-			glBindTexture(GL_TEXTURE_2D, fireTexture);
-		}
 		shaderManager.setBool("ignoreLighting", true);
 
 		shape.DrawGlow(renderingMode, shaderManager);
 		shaderManager.setBool("ignoreLighting", false);
 	}
-	if (textures) {
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
-	}
 
 	for (Wall wall : walls) {
 		wall.Draw(renderingMode, shaderManager);
-	}
-	if (textures) {
-		glBindTexture(GL_TEXTURE_2D, metalTexture);
 	}
 	shaderManager.setBool("ignoreLighting", true);
 	lightbulb.Draw(renderingMode, shaderManager);

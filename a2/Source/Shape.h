@@ -18,7 +18,7 @@ using namespace std;
 class Shape {
 public:
 	// Functions
-	Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, bool hasWall, float scalarScale);
+	Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, bool hasWall, float scalarScale, int texture, int glowTexture);
 	void BuildGlow(vector<coordinates> description);
 	void Draw(GLenum renderingMode, ShaderManager shader);
 	void DrawGlow(GLenum renderingMode, ShaderManager shader);
@@ -41,6 +41,8 @@ public:
 	vec3 defaultOrientation = vec3(0.0f, 0.0f, 0.0f);
 	vec3 defaultPosition;
 	float defaultScale = 1.0f;
+	int texture;
+	int glowTexture;
 
 private:
 	bool isEdge(bool shapeMap[WALL_SIZE][WALL_SIZE][WALL_SIZE], coordinates fromShape, int dx, int dy, int dz);

@@ -19,7 +19,7 @@ using namespace std;
 class Wall {
 public:
 	// Functions
-	Wall(vec3 position, Shape* shape, int vao);
+	Wall(vec3 position, Shape* shape, int vao, int texture);
 	void Draw(GLenum renderingMode, ShaderManager shader);
 	void ResetPosition();
 
@@ -33,4 +33,5 @@ public:
 	vec3 defaultOrientation = vec3(0.0f, 0.0f, 0.0f);
 	vec3 defaultPosition;
 	float defaultScale = 1.0f;
+	int texture;
 };
