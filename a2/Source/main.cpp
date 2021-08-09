@@ -12,6 +12,8 @@
 // CONTRIBUTIONS
 //
 //  Theodor
+//  - Shadow mapping implementation
+//  - Camera Zoom fix
 // 
 //  Alexander
 //	- Point light and Lightbulb cube
