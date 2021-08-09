@@ -21,6 +21,9 @@
 //	- Shadow mapping debugging
 //
 //  Antonio
+// -Texture mapping
+// -Texture toggle
+// 
 //
 //  Chi
 //
