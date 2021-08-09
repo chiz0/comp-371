@@ -1228,9 +1228,9 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 
 	//Draw Tiles
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-	for (int i = -GRID_SIZE / 2 / 4; i <= GRID_SIZE / 2 / 4; i++) {
-		for (int j = -GRID_SIZE / 2 / 4; j <= GRID_SIZE / 2 / 4; j++) {
-			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * 4, -0.1f, j * 4)) * scale(mat4(1.0f), vec3(4.0f, 0.01f, 4.0f));
+	for (int i = -GRID_SIZE / 2 / FLOOR_SCALE; i <= GRID_SIZE / 2 / FLOOR_SCALE; i++) {
+		for (int j = -GRID_SIZE / 2 / FLOOR_SCALE; j <= GRID_SIZE / 2 / FLOOR_SCALE; j++) {
+			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, -0.1f, j * FLOOR_SCALE)) * scale(mat4(1.0f), vec3(FLOOR_SCALE, 0.01f, FLOOR_SCALE));
 			shaderManager.setMat4("worldMatrix", tileMatrix);
 			glDrawArrays(renderingMode, 0, 36);
 		}

@@ -19,8 +19,8 @@ Zoom-Out:    MOUSE_BUTTON_LEFT + (Mouse-Movement Sliding Down)
 Pan-Right:   MOUSE_BUTTON_RIGHT + (Mouse-Movement Sliding Right)
 Pan-Left:    MOUSE_BUTTON_RIGHT + (Mouse-Movement Sliding Left)
 
-Tilt-Up:     MOUSE_BUTTON_Middle + (Mouse-Movement Sliding Up)
-Tilt-Down:   MOUSE_BUTTON_Middle + (Mouse-Movement Sliding Down)
+Tilt-Up:     MOUSE_BUTTON_MIDDLE + (Mouse-Movement Sliding Up)
+Tilt-Down:   MOUSE_BUTTON_MIDDLE + (Mouse-Movement Sliding Down)
 
 Toggle First person:                KEY_N
 Toggle Third person around origin:  KEY_M
@@ -67,6 +67,11 @@ Forward:  	KEY_W
 Backward:   	KEY_S
 Left:       	KEY_A
 Right:      	KEY_D
+
+Incremental Translation
+-----------------------
+Forward:	KEY_I
+Backward:	KEY_K
 
  
 Reset
