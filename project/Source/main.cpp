@@ -1,4 +1,4 @@
-// COMP 371 Assignment 2
+// COMP 371 Assignment 3
 // Spiral Staircase (Section DD Team 3)
 // 
 // Badele, Theodor (40129466)
@@ -12,25 +12,12 @@
 // CONTRIBUTIONS
 //
 //  Theodor
-//  - Shadow mapping implementation
-//  - Camera Zoom fix
 // 
 //  Alexander
-//	- Point light and Lightbulb cube
-//	- Phong lighting
-//	- Breaking up code into helper classes
-//	- Glow effect on shapes
-//	- Shadow mapping debugging
 //
 //  Antonio
-// -Texture mapping
-// -Texture toggle
-// 
 //
 //  Chi
-//  - Window resize handling
-//  - Keypress event handling
-//  - Standalone walls
 //
 
 #include <iostream>
