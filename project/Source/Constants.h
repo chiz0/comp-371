@@ -31,6 +31,7 @@ constexpr float SHADOW_WIDTH = 1024.0f;
 constexpr float SHADOW_HEIGHT = 1024.0f;
 constexpr float NEAR_PLANE = 0.01f;
 constexpr float FAR_PLANE = 300.0f;
+constexpr float GRAVITY = 4.0f;
 
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
 constexpr char FRAGMENT_SHADER_FILEPATH[] = "../Source/TexturedFrag.glsl";
@@ -47,7 +48,6 @@ constexpr char* TEXTURE_PATH_METAL = "../Assets/Textures/metal.jpg";
 constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";
 constexpr char* TEXTURE_PATH_FIRE = "../Assets/Textures/fire.jpg";
 constexpr char* TEXTURE_PATH_PARTICLE = "../Assets/Textures/particle.jpg";
-
 
 constexpr char* AUDIO_PATH_MUSIC = "../Assets/Audio/mii.ogg";
 constexpr char* AUDIO_PATH_WOW = "../Assets/Audio/wow.ogg";

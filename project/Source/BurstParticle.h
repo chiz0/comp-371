@@ -15,7 +15,7 @@ using namespace std;
 
 class BurstParticle {
 public:
-	BurstParticle(vec3 position, vec3 velocity, vec4 colour, float duration, int texture);
+	BurstParticle(vec3 position, vec3 velocity, vec3 colour, float duration, int texture);
 	void Draw(ShaderManager shaderManager);
 	void Update(float dt);
 	bool isDead();
@@ -23,7 +23,7 @@ public:
 private:
 	vec3 mPosition;
 	vec3 mVelocity;
-	vec4 mColour;
+	vec3 mColour;
 	float mDuration;
 	int mTexture;
 };

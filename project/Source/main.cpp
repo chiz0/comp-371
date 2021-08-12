@@ -718,10 +718,9 @@ int main(int argc, char* argv[])
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
-			emitter.Emit(vec3(0.0f, 20.0f, 0.0f), 50.0f, 10.0f, particleTexture);
+			emitter.Emit(cameraPosition + cameraLookAt * 5.0f, 50.0f, 10.0f, particleTexture);
 			soundEngine->play2D(AUDIO_PATH_WOW);
 		}
-
 
 		// Reshuffle shape
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
