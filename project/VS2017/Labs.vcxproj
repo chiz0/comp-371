@@ -110,6 +110,7 @@
   <ItemGroup>
     <ClCompile Include="..\Source\BurstParticle.cpp" />
     <ClCompile Include="..\Source\Emitter.cpp" />
+    <ClCompile Include="..\Source\FlameParticle.cpp" />
     <ClCompile Include="..\Source\main.cpp" />
     <ClCompile Include="..\Source\ShaderManager.cpp" />
     <ClCompile Include="..\Source\Shape.cpp" />
@@ -121,6 +122,7 @@
     <ClInclude Include="..\Source\Coordinates.h" />
     <ClInclude Include="..\Source\BurstParticle.h" />
     <ClInclude Include="..\Source\Emitter.h" />
+    <ClInclude Include="..\Source\FlameParticle.h" />
     <ClInclude Include="..\Source\ShaderManager.h" />
     <ClInclude Include="..\Source\Shape.h" />
     <ClInclude Include="..\Source\Constants.h" />

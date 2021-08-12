@@ -416,6 +416,7 @@ int main(int argc, char* argv[])
 
 	int particleVAO = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	Emitter emitter = Emitter(particleVAO);
+	vec3 flameLocation = vec3(0.0f, 10.0f, 10.0f);
 
 	// Sound settings
 	ISoundEngine* soundEngine = createIrrKlangDevice();
@@ -437,6 +438,8 @@ int main(int argc, char* argv[])
 		lastFrameTime += dt;
 
 		lightbulb.mPosition = lightPosition;
+
+		emitter.EmitFlame(flameLocation, 1, 1.0f, particleTexture);
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -718,7 +721,7 @@ int main(int argc, char* argv[])
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
-			emitter.Emit(cameraPosition + cameraLookAt * 5.0f, 50.0f, 10.0f, particleTexture);
+			emitter.EmitBurst(cameraPosition + cameraLookAt * BURST_DISTANCE_FROM_CAMERA, 100, 5.0f, particleTexture);
 			soundEngine->play2D(AUDIO_PATH_WOW);
 		}
 
@@ -1152,7 +1155,7 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 #endif
 
 	// Create Window and rendering context using GLFW, resolution is 1024x768
-	window = glfwCreateWindow(VIEW_WIDTH, VIEW_HEIGHT, "COMP 371 - Assignment 2 by Spiral Staircase", NULL, NULL);
+	window = glfwCreateWindow(VIEW_WIDTH, VIEW_HEIGHT, "COMP 371 - Final project by Spiral Staircase", NULL, NULL);
 	if (window == NULL)
 	{
 		cerr << "Failed to create GLFW window" << endl;
@@ -1214,7 +1217,6 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tileTexture);
-
 	//Draw Tiles
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
 	for (int i = -GRID_SIZE / 2 / FLOOR_SCALE; i <= GRID_SIZE / 2 / FLOOR_SCALE; i++) {

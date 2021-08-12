@@ -6,7 +6,7 @@ BurstParticle::BurstParticle(vec3 position, vec3 velocity, vec3 colour, float du
 
 void BurstParticle::Draw(ShaderManager shaderManager)
 {
-	mat4 matrix = translate(mat4(1.0f), mPosition);
+	mat4 matrix = translate(mat4(1.0f), mPosition) * scale(mat4(1.0f), vec3(BURST_SCALE));
 	shaderManager.setMat4("worldMatrix", matrix);
 	shaderManager.setVec3("colour", mColour);
 	glActiveTexture(GL_TEXTURE0);

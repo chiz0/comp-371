@@ -7,7 +7,7 @@ using namespace std;
 
 constexpr int GRID_SIZE = 100;							// The world exists in an nxn grid
 constexpr int WALL_SIZE = 12;                           // How many unit cubes in nxn should the wall be
-constexpr int FLOOR_SCALE = 10;							// How large a single floor tile is
+constexpr int FLOOR_SCALE = 25;							// How large a single floor tile is
 constexpr float WALL_THICKNESS = 0.1f;                  // How thick is the wall
 constexpr int WALL_DISTANCE = 10;						// How far from the model should its wall be
 constexpr int MODEL_COUNT = 4;                          // How many models are present in the world
@@ -32,6 +32,10 @@ constexpr float SHADOW_HEIGHT = 1024.0f;
 constexpr float NEAR_PLANE = 0.01f;
 constexpr float FAR_PLANE = 300.0f;
 constexpr float GRAVITY = 4.0f;
+constexpr float BURST_SCALE = 0.3f;
+constexpr float BURST_DISTANCE_FROM_CAMERA = 1.0f;
+constexpr float FLAME_RISE = 1.0f;
+constexpr float FLAME_SCALE = 0.2f;
 
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
 constexpr char FRAGMENT_SHADER_FILEPATH[] = "../Source/TexturedFrag.glsl";

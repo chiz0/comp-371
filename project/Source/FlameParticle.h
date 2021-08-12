@@ -8,22 +8,22 @@
 #include <glm/common.hpp>
 
 #include "Constants.h"
-#include "BurstParticle.h"
-#include "FlameParticle.h"
+#include "ShaderManager.h"
 
 using namespace glm;
 using namespace std;
 
-class Emitter {
+class FlameParticle {
 public:
-	Emitter(int VAO);
-	void EmitBurst(vec3 position, int particleCount, float force, int texture);
-	void EmitFlame(vec3 position, int particleCount, float force, int texture);
-	void Update(float dt);
+	FlameParticle(vec3 position, vec3 velocity, vec3 colour, float duration, int texture);
 	void Draw(ShaderManager shaderManager);
+	void Update(float dt);
+	bool isDead();
 
 private:
-	vector<BurstParticle> burstParticles;
-	vector<FlameParticle> flameParticles;
-	int particleVAO;
+	vec3 mPosition;
+	vec3 mVelocity;
+	vec3 mColour;
+	float mDuration;
+	int mTexture;
 };
