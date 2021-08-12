@@ -95,9 +95,7 @@ int main(int argc, char* argv[])
 	// configure depth map FBO
 	// -----------------------
 	unsigned int depthMapFBO;
-	unsigned int depthMapRBO;
 	glGenFramebuffers(1, &depthMapFBO);
-	glGenRenderbuffers(1, &depthMapRBO);
 	// create depth cubemap texture
 	unsigned int depthCubemap;
 	glGenTextures(1, &depthCubemap);
@@ -111,12 +109,10 @@ int main(int argc, char* argv[])
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	// attach depth texture as FBO's depth buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthMapRBO);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	//Shader Configuration
 	shaderManager.use();
@@ -440,7 +436,6 @@ int main(int argc, char* argv[])
 		// --------------------------------
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-		glBindRenderbuffer(GL_RENDERBUFFER, depthMapRBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		shadowShaderManager.use();
 		for (unsigned int i = 0; i < 6; ++i)
@@ -449,7 +444,6 @@ int main(int argc, char* argv[])
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
 		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 		// 2. render scene as normal 
 		// -------------------------
