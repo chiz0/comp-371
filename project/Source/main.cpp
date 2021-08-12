@@ -47,7 +47,6 @@
 #include "Coordinates.h"
 #include "ControlState.h"
 #include "Wall.h"
-#include "texture.h"
 
 using namespace glm;
 using namespace std;
