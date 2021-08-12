@@ -39,7 +39,11 @@ constexpr char SHADOW_VERTEX_SHADER_FILEPATH[] = "../Source/ShadowVert.glsl";
 constexpr char SHADOW_FRAGMENT_SHADER_FILEPATH[] = "../Source/ShadowFrag.glsl";
 constexpr char SHADOW_DEPTH_SHADER_FILEPATH[] = "../Source/ShadowDepth.glsl";
 
+constexpr char PARTICLE_VERTEX_SHADER_FILEPATH[] = "../Source/ParticleVertex.glsl";
+constexpr char PARTICLE_FRAGMENT_SHADER_FILEPATH[] = "../Source/ParticleFragment.glsl";
+
 constexpr char* TEXTURE_PATH_TILE = "../Assets/Textures/tile.jpg";
 constexpr char* TEXTURE_PATH_METAL = "../Assets/Textures/metal.jpg";
 constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";
 constexpr char* TEXTURE_PATH_FIRE = "../Assets/Textures/fire.jpg";
+constexpr char* TEXTURE_PATH_PARTICLE = "../Assets/Textures/particle.jpg";

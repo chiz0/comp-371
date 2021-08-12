@@ -44,6 +44,12 @@
     <None Include="..\Source\TexturedVert.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="..\Source\ParticleVertex.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Source\ParticleFragment.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\main.cpp">
@@ -59,6 +65,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Wall.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\BurstParticle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Emitter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -82,6 +94,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\ControlState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\BurstParticle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Emitter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

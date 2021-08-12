@@ -37,6 +37,8 @@
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
 #include <glm/gtx/string_cast.hpp> 
+#include <time.h>
+#include <irrKlang.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -47,9 +49,11 @@
 #include "Coordinates.h"
 #include "ControlState.h"
 #include "Wall.h"
+#include "Emitter.h"
 
 using namespace glm;
 using namespace std;
+using namespace irrklang;
 
 /////////////////////// MAIN ///////////////////////
 
@@ -75,6 +79,8 @@ int main(int argc, char* argv[])
 {
 	if (!initContext()) return -1;
 
+	srand(time(NULL));
+
 	// glfw: initialize and configure
 	// ------------------------------
 	glfwInit();
@@ -89,7 +95,7 @@ int main(int argc, char* argv[])
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
 	ShaderManager shadowShaderManager = ShaderManager(SHADOW_VERTEX_SHADER_FILEPATH, SHADOW_FRAGMENT_SHADER_FILEPATH, SHADOW_DEPTH_SHADER_FILEPATH);
-
+	ShaderManager particleShaderManager = ShaderManager(PARTICLE_VERTEX_SHADER_FILEPATH, PARTICLE_FRAGMENT_SHADER_FILEPATH);
 
 
 	// configure depth map FBO
@@ -123,6 +129,7 @@ int main(int argc, char* argv[])
 	int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
 	int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
 	int fireTexture = loadTexture("fireTexture", TEXTURE_PATH_FIRE);
+	int particleTexture = loadTexture("particleTexture", TEXTURE_PATH_PARTICLE);
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
@@ -407,6 +414,19 @@ int main(int argc, char* argv[])
 
 	mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
+	int particleVAO = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	Emitter emitter = Emitter(particleVAO);
+
+	// Sound settings
+	//ISoundEngine* soundEngine = createIrrKlangDevice();
+
+	//if (!soundEngine)
+	//{
+	//	cout << ("WARNING: Could not start sound engine") << endl;
+	//}
+
+	//soundEngine->play2D("../Assets/Audio/morning.ogg");
+
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -458,6 +478,12 @@ int main(int argc, char* argv[])
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
+
+		// Update and draw particles
+		emitter.Update(dt);
+		emitter.Draw(shaderManager);
+		
+		shaderManager.use();
 
 		// End Frame
 		glfwSwapBuffers(window);
@@ -689,6 +715,10 @@ int main(int argc, char* argv[])
 		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // Set point rendering mode
 		{
 			renderingMode = GL_POINTS;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
+			emitter.Emit(vec3(0.0f, 20.0f, 0.0f), 50.0f, 10.0f, particleTexture);
 		}
 
 
@@ -1225,8 +1255,8 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 	// Draw shapes and walls
 	for (Shape shape : shapes) {
 		shape.Draw(renderingMode, shaderManager);
-		shaderManager.setBool("ignoreLighting", true);
 
+		shaderManager.setBool("ignoreLighting", true);
 		shape.DrawGlow(renderingMode, shaderManager);
 		shaderManager.setBool("ignoreLighting", false);
 	}
@@ -1234,6 +1264,7 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 	for (Wall wall : walls) {
 		wall.Draw(renderingMode, shaderManager);
 	}
+
 	shaderManager.setBool("ignoreLighting", true);
 	lightbulb.Draw(renderingMode, shaderManager);
 	shaderManager.setBool("ignoreLighting", false);
