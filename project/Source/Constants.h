@@ -29,6 +29,8 @@ constexpr float VIEW_WIDTH = 1024.0f;
 constexpr float VIEW_HEIGHT = 768.0f;
 constexpr float SHADOW_WIDTH = 1024.0f;
 constexpr float SHADOW_HEIGHT = 1024.0f;
+constexpr float NEAR_PLANE = 0.01f;
+constexpr float FAR_PLANE = 300.0f;
 
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
 constexpr char FRAGMENT_SHADER_FILEPATH[] = "../Source/TexturedFrag.glsl";

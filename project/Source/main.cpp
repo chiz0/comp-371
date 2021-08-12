@@ -1,4 +1,4 @@
-// COMP 371 Assignment 3
+// COMP 371 Final project
 // Spiral Staircase (Section DD Team 3)
 // 
 // Badele, Theodor (40129466)
@@ -135,9 +135,9 @@ int main(int argc, char* argv[])
 	int windowWidth, windowHeight;
 
 	float fieldOfView = FIELD_OF_VIEW;
-	mat4 projectionMatrix = perspective(radians(fieldOfView),            // field of view in degrees
-		VIEW_WIDTH / VIEW_HEIGHT,  // aspect ratio
-		0.01f, 200.0f);   // near and far (near > 0)
+	mat4 projectionMatrix = perspective(radians(fieldOfView),   // field of view in degrees
+		VIEW_WIDTH / VIEW_HEIGHT,								// aspect ratio
+		NEAR_PLANE, FAR_PLANE);									// near and far (near > 0)
 
 	glfwSetWindowSizeCallback(window, &windowSizeCallback);
 
@@ -410,6 +410,7 @@ int main(int argc, char* argv[])
 	glfwSetKeyCallback(window, &keyCallback);
 
 
+	mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
@@ -427,16 +428,14 @@ int main(int argc, char* argv[])
 
 		// 0. create depth cubemap transformation matrices
 		// -----------------------------------------------
-		float near_plane = 0.01f;
-		float far_plane = 100.0f;
-		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
-		std::vector<glm::mat4> shadowTransforms;
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		mat4 shadowTransforms[6] = {
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f))
+		};
 
 		// 1. render scene to depth cubemap
 		// --------------------------------
@@ -446,8 +445,8 @@ int main(int argc, char* argv[])
 		glClear(GL_DEPTH_BUFFER_BIT);
 		shadowShaderManager.use();
 		for (unsigned int i = 0; i < 6; ++i)
-			shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
-		shadowShaderManager.setFloat("farPlane", far_plane);
+			shadowShaderManager.setMat4("shadowMatrices[" + to_string(i) + "]", shadowTransforms[i]);
+		shadowShaderManager.setFloat("farPlane", FAR_PLANE);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
 		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -462,7 +461,7 @@ int main(int argc, char* argv[])
 		// set lighting uniforms
 		shaderManager.setVec3("lightPosition", lightPosition);
 		shaderManager.setVec3("viewPos", cameraPosition);
-		shaderManager.setFloat("farPlane", far_plane);
+		shaderManager.setFloat("farPlane", FAR_PLANE);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
@@ -511,23 +510,23 @@ int main(int argc, char* argv[])
 				if (dy > 0) {
 					fieldOfView += currentCameraSpeed;
 					fieldOfView = clamp(fieldOfView, 10.0f, 130.0f);
-					glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
+					mat4 projectionMatrix = perspective(radians(fieldOfView),  // field of view in degrees
 						(float)windowWidth / windowHeight,      // aspect ratio
-						0.01f, 100.0f);
+						NEAR_PLANE, FAR_PLANE);
 					shaderManager.setMat4("projectionMatrix", projectionMatrix);
 
 					//cameraPosition += currentCameraSpeed * cameraLookAt;
 				}
 				if (dy < 0) {
-					fieldOfView -= currentCameraSpeed ;
+					fieldOfView -= currentCameraSpeed;
 					fieldOfView = clamp(fieldOfView, 10.0f, 130.0f);
-					glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
+					mat4 projectionMatrix = perspective(radians(fieldOfView),  // field of view in degrees
 						(float)windowWidth / windowHeight,      // aspect ratio
-						0.01f, 100.0f);
+						NEAR_PLANE, FAR_PLANE);
 					shaderManager.setMat4("projectionMatrix", projectionMatrix);
 					//cameraPosition -= currentCameraSpeed * cameraLookAt;
 				}
-				shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+				shaderManager.setVec3("cameraPosition", cameraPosition);
 			}
 		}
 
@@ -566,20 +565,22 @@ int main(int argc, char* argv[])
 			moveCameraToDestination = true;
 
 			fieldOfView = FIELD_OF_VIEW;
-			glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
+			mat4 projectionMatrix = perspective(radians(fieldOfView),  // field of view in degrees
 				VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
-				0.01f, 100.0f);       // near and far (near > 0)
+				NEAR_PLANE, FAR_PLANE);       // near and far (near > 0)
 
 			shaderManager.setMat4("projectionMatrix", projectionMatrix);
 		}
 
 		// Clamp vertical angle to [-85, 85] degrees
-		cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
-		if (cameraHorizontalAngle > 360)
+		cameraVerticalAngle = clamp(cameraVerticalAngle, -85.0f, 85.0f);
+
+		// Hacky modulus operation
+		while (cameraHorizontalAngle > 360)
 		{
 			cameraHorizontalAngle -= 360;
 		}
-		else if (cameraHorizontalAngle < -360)
+		while (cameraHorizontalAngle < -360)
 		{
 			cameraHorizontalAngle += 360;
 		}
@@ -588,8 +589,6 @@ int main(int argc, char* argv[])
 		float phi = radians(cameraVerticalAngle);
 
 		cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-		vec3 cameraSideVector = cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
-		normalize(cameraSideVector);
 
 		// Select shapes via 1-4 keys
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
@@ -719,7 +718,7 @@ int main(int argc, char* argv[])
 				cameraPosition = cameraDestination;
 				moveCameraToDestination = false;
 			}
-			cameraPosition += cameraDelta * CAMERA_JUMP_SPEED * dt;
+			cameraPosition += cameraDelta * glm::min(CAMERA_JUMP_SPEED * dt, 1.0f);
 
 			// Reset camera orientation
 			cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
@@ -737,30 +736,10 @@ int main(int argc, char* argv[])
 			viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		}
 		else {
-			int newx;
-			int newy;
-			int newz;
-			if (cameraPosition.x < 0) {
-				newx = cameraPosition.x * -1;
-			}
-			else
-				newx = cameraPosition.x;
-			if (cameraPosition.y < 0)
-			{
-				newy = cameraPosition.y * -1;
-			}
-			else
-				newy = cameraPosition.y;
-			if (cameraPosition.z < 0)
-			{
-				newz = cameraPosition.z * -1;
-			}
-			else
-				newz = cameraPosition.z;
-			float radius = sqrt(pow(newx, 2) + pow(newy, 2) + pow(newz, 2));
-			vec3 position = vec3{ 0,1,0 } - radius * cameraLookAt;
+			float radius = sqrt(pow(cameraPosition.x, 2) + pow(cameraPosition.y, 2) + pow(cameraPosition.z, 2));
+			vec3 position = vec3(0.0f, 1.0f, 0.0f) - radius * cameraLookAt;
 			viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
-			shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+			shaderManager.setVec3("cameraPosition", cameraPosition);
 		}
 		shaderManager.setMat4("viewMatrix", viewMatrix);
 
@@ -1181,9 +1160,9 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
 	GLint shaderProgram = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &shaderProgram);
 
-	mat4 projectionMatrix = glm::perspective(radians(*controlState.fieldOfView),            // field of view in degrees
+	mat4 projectionMatrix = perspective(radians(*controlState.fieldOfView),            // field of view in degrees
 		(float)width / (float)height,  // aspect ratio
-		0.01f, 200.0f);   // near and far (near > 0)
+		NEAR_PLANE, FAR_PLANE);   // near and far (near > 0)
 
 	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
