@@ -86,23 +86,18 @@ ShaderManager::ShaderManager(const char* vertexPath, const char* fragmentPath, c
 }
 
 
-void ShaderManager::setVec3(const string& name, float value1, float value2, float value3) const
-{
-    glUniform3f(glGetUniformLocation(ID, name.c_str()), value1, value2, value3);
-}
-
-GLuint ShaderManager::getUniformLocation(const GLchar* key)
-{
-    return glGetUniformLocation(ID, key);
-}
-
 // activate the shader
-    // ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 void ShaderManager::use()
 {
     glUseProgram(ID);
 }
 // utility uniform functions
+// ------------------------------------------------------------------------
+void ShaderManager::setVec3(const string& name, float value1, float value2, float value3) const
+{
+    glUniform3f(glGetUniformLocation(ID, name.c_str()), value1, value2, value3);
+}
 // ------------------------------------------------------------------------
 void ShaderManager::setBool(const std::string& name, bool value) const
 {
