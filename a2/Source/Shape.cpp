@@ -1,6 +1,6 @@
 #include "Shape.h"
 
-Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, bool hasWall, float scalarScale) : mPosition(position), mvao(vao), mGlowVao(glowVao), voxelCount(description.size()), defaultPosition(position), showWall(hasWall), mScale(scalarScale), defaultScale(scalarScale)
+Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, bool hasWall, float scalarScale, int texture, int glowTexture) : mPosition(position), mvao(vao), mGlowVao(glowVao), voxelCount(description.size()), defaultPosition(position), showWall(hasWall), mScale(scalarScale), defaultScale(scalarScale), texture(texture), glowTexture(glowTexture)
 {
 	int originX = description.front().x;
 	int originY = description.front().y;
@@ -39,6 +39,8 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVa
 void Shape::Draw(GLenum renderingMode, ShaderManager shader) {
 	mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
 	glBindVertexArray(mvao);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
 	for (auto it = begin(voxels); it != end(voxels); ++it) {
 		it->mAnchor = worldMatrix;
 		it->Draw(renderingMode, shader);
@@ -216,6 +218,8 @@ void Shape::BuildGlow(vector<coordinates> description) {
 
 void Shape::DrawGlow(GLenum renderingMode, ShaderManager shader) {
 	glBindVertexArray(mGlowVao);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, glowTexture);
 	mat4 worldMatrix = translate(mat4(1.0f), mPosition) * rotate(mat4(1.0f), radians(mOrientation.x), vec3(1.0f, 0.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.y), vec3(0.0f, 1.0f, 0.0f)) * rotate(mat4(1.0f), radians(mOrientation.z), vec3(0.0f, 0.0f, 1.0f)) * scale(mat4(1.0f), vec3(1.0f, 1.0f, 1.0f) * mScale);
 	for (auto it = begin(glowVoxels); it != end(glowVoxels); ++it) {
 		it->mAnchor = worldMatrix;

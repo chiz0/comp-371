@@ -7,6 +7,7 @@ using namespace std;
 
 constexpr int GRID_SIZE = 100;							// The world exists in an nxn grid
 constexpr int WALL_SIZE = 12;                           // How many unit cubes in nxn should the wall be
+constexpr int FLOOR_SCALE = 10;							// How large a single floor tile is
 constexpr float WALL_THICKNESS = 0.1f;                  // How thick is the wall
 constexpr int WALL_DISTANCE = 10;						// How far from the model should its wall be
 constexpr int MODEL_COUNT = 4;                          // How many models are present in the world
@@ -16,8 +17,9 @@ constexpr float ROTATE_RATE = 20;                       // The rate at which mod
 constexpr float TRANSLATE_RATE = 2.0f;                  // The rate at which models move left, right, up, and down
 constexpr float CAMERA_JUMP_SPEED = 8.0f;               // The speed at which a camera moves from model to model
 constexpr float CAMERA_ANGULAR_SPEED = 60.0f;           // The speed at which the camera rotates
-constexpr float CAMERA_SPEED = 0.0075f;                   // Speed of camera zooming
+constexpr float CAMERA_SPEED = 10.0f;					// Speed of camera zooming
 constexpr vec3 CAMERA_OFFSET = vec3(-2.0f, 2.0f, 10.0f);// The default position of the camera relative to a model
+constexpr float FIELD_OF_VIEW = 70.0f;					// The starting zoom level of the camera
 constexpr float LIGHT_AMBIENT_STRENGTH = 0.1f;			// Intensity of the ambient light
 constexpr float LIGHT_DIFFUSE_STRENGTH = 0.5f;			// Intensity of the diffuse light
 constexpr float LIGHT_SPECULAR_STRENGTH = 0.7f;			// Intensity of the specular light

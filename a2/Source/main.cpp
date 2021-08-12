@@ -12,6 +12,8 @@
 // CONTRIBUTIONS
 //
 //  Theodor
+//  - Shadow mapping implementation
+//  - Camera Zoom fix
 // 
 //  Alexander
 //	- Point light and Lightbulb cube
@@ -21,8 +23,14 @@
 //	- Shadow mapping debugging
 //
 //  Antonio
+// -Texture mapping
+// -Texture toggle
+// 
 //
 //  Chi
+//  - Window resize handling
+//  - Keypress event handling
+//  - Standalone walls
 //
 
 #include <iostream>
@@ -54,8 +62,6 @@
 #include "Wall.h"
 #include "texture.h"
 
-
-
 using namespace glm;
 using namespace std;
 
@@ -68,16 +74,11 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 int createVertexArrayObjectSingleColoured(vec3 colour);
 int createVertexArrayObjectTextured(vec3 colour);
 int loadTexture(string name, char* path);
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, bool textures);
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture);
 
 bool initContext();
 
 GLFWwindow* window = NULL;
-// TODO: Move to shape class
-int tileTexture;
-int metalTexture; 
-int brickTexture;
-int fireTexture;
 
 int xLineColour;
 int yLineColour;
@@ -99,17 +100,11 @@ int main(int argc, char* argv[])
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	//load the texture
-	tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
-	metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
-	brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
-	fireTexture = loadTexture("fireTexture", TEXTURE_PATH_FIRE);
-
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
 	ShaderManager shadowShaderManager = ShaderManager(SHADOW_VERTEX_SHADER_FILEPATH, SHADOW_FRAGMENT_SHADER_FILEPATH, SHADOW_DEPTH_SHADER_FILEPATH);
 
-	
+
 
 	// configure depth map FBO
 	// -----------------------
@@ -137,23 +132,23 @@ int main(int argc, char* argv[])
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-
-
-
-
 	//Shader Configuration
 	shaderManager.use();
 	shaderManager.setInt("depthMap", 1);
 
-	
+	//load the texture
+	int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
+	int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
+	int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
+	int fireTexture = loadTexture("fireTexture", TEXTURE_PATH_FIRE);
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
 	float cameraVerticalAngle = 0.0f;
+	int windowWidth, windowHeight;
 
-	// Set projection matrix for shader, this won't change
-	float fieldOfView = 70.0f;
-	mat4 projectionMatrix = perspective(fieldOfView,            // field of view in degrees
+	float fieldOfView = FIELD_OF_VIEW;
+	mat4 projectionMatrix = perspective(radians(fieldOfView),            // field of view in degrees
 		VIEW_WIDTH / VIEW_HEIGHT,  // aspect ratio
 		0.01f, 200.0f);   // near and far (near > 0)
 
@@ -370,20 +365,21 @@ int main(int argc, char* argv[])
 	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, glowColour, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, false, 1.0f));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, false, 1.0f));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, false, 1.0f));
-	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, glowColour, false, 1.0f);
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, glowColour, false, 1.0f, metalTexture, fireTexture));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, false, 1.0f, metalTexture, fireTexture));
+	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, false, 1.0f, metalTexture, fireTexture));
+	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, false, 1.0f, metalTexture, fireTexture));
+	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, glowColour, false, 1.0f, metalTexture, fireTexture);
 
 	for (int i = 0; i < MODEL_COUNT; i++) {
-		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour));
+		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour, brickTexture));
 	}
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
 	bool showTexture = true;
-	ControlState controlState = { &shapes, &focusedShape, &showTexture };
+	bool showShadow = true;
+	ControlState controlState = { &shapes, &focusedShape, &showTexture, &showShadow, &fieldOfView };
 	glfwSetWindowUserPointer(window, &controlState);
 
 	const vector<vec3> cameraPositions{
@@ -399,7 +395,7 @@ int main(int argc, char* argv[])
 	vec3 cameraUp(0.0f, 1.0f, 0.0f);
 	vec3 cameraDestination = cameraPosition;
 	bool  cameraFirstPerson = true; // press 1 or 2 to toggle this variable
-	shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+	shaderManager.setVec3("cameraPosition", cameraPosition);
 
 	// Set initial view matrix
 	mat4 viewMatrix = lookAt(cameraPosition,  // eye
@@ -416,6 +412,7 @@ int main(int argc, char* argv[])
 	shaderManager.setFloat("diffuseLight", LIGHT_DIFFUSE_STRENGTH);
 	shaderManager.setFloat("specularLight", LIGHT_SPECULAR_STRENGTH);
 	shaderManager.setFloat("shininess", SHININESS);
+	shaderManager.setInt("depthMap", 1);
 
 	// Grid and coordinate axis colours
 	xLineColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.0f, 0.0f));
@@ -424,13 +421,14 @@ int main(int argc, char* argv[])
 
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
-	
+
 
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
 	{
 		shaderManager.setBool("texToggle", showTexture);
+		shaderManager.setBool("showShadows", showShadow);
 		// Frame time calculation
 		float dt = glfwGetTime() - lastFrameTime;
 		lastFrameTime += dt;
@@ -439,12 +437,6 @@ int main(int argc, char* argv[])
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		
-
-
-		
-
 
 		// 0. create depth cubemap transformation matrices
 		// -----------------------------------------------
@@ -470,23 +462,23 @@ int main(int argc, char* argv[])
 			shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 		shadowShaderManager.setFloat("farPlane", far_plane);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
-		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, false);
+		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 		// 2. render scene as normal 
 		// -------------------------
-		glViewport(0, 0, VIEW_WIDTH, VIEW_HEIGHT );
+		glfwGetWindowSize(window, &windowWidth, &windowHeight);
+		glViewport(0, 0, windowWidth, windowHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shaderManager.use();
 		// set lighting uniforms
 		shaderManager.setVec3("lightPosition", lightPosition);
 		shaderManager.setVec3("viewPos", cameraPosition);
-		shaderManager.setInt("shadows", true); // enable/disable shadows by pressing 'SPACE'
 		shaderManager.setFloat("farPlane", far_plane);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, false);
+		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
 
 		// End Frame
 		glfwSwapBuffers(window);
@@ -509,7 +501,7 @@ int main(int argc, char* argv[])
 		{
 			cameraFirstPerson = false;
 		}
-		
+
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
@@ -531,17 +523,19 @@ int main(int argc, char* argv[])
 			if (!moveCameraToDestination) {
 				if (dy > 0) {
 					fieldOfView += currentCameraSpeed;
-					glm::mat4 projectionMatrix = glm::perspective(fieldOfView,  // field of view in degrees
-						VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
+					fieldOfView = clamp(fieldOfView, 10.0f, 130.0f);
+					glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
+						(float)windowWidth / windowHeight,      // aspect ratio
 						0.01f, 100.0f);
 					shaderManager.setMat4("projectionMatrix", projectionMatrix);
-					
+
 					//cameraPosition += currentCameraSpeed * cameraLookAt;
 				}
 				if (dy < 0) {
 					fieldOfView -= currentCameraSpeed ;
-					glm::mat4 projectionMatrix = glm::perspective(fieldOfView,  // field of view in degrees
-						VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
+					fieldOfView = clamp(fieldOfView, 10.0f, 130.0f);
+					glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
+						(float)windowWidth / windowHeight,      // aspect ratio
 						0.01f, 100.0f);
 					shaderManager.setMat4("projectionMatrix", projectionMatrix);
 					//cameraPosition -= currentCameraSpeed * cameraLookAt;
@@ -549,14 +543,14 @@ int main(int argc, char* argv[])
 				shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 			}
 		}
-		
-		
+
+
 		// Change orientation with the arrow keys
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
 			cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
 		}
-		
+
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
 			cameraFirstPerson = false;
 			cameraHorizontalAngle += CAMERA_ANGULAR_SPEED * dt;
@@ -583,6 +577,13 @@ int main(int argc, char* argv[])
 			lightPosition = cameraDestination + LIGHT_OFFSET;
 			shaderManager.setVec3("lightPosition", lightPosition);
 			moveCameraToDestination = true;
+
+			fieldOfView = FIELD_OF_VIEW;
+			glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
+				VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
+				0.01f, 100.0f);       // near and far (near > 0)
+
+			shaderManager.setMat4("projectionMatrix", projectionMatrix);
 		}
 
 		// Clamp vertical angle to [-85, 85] degrees
@@ -602,26 +603,6 @@ int main(int argc, char* argv[])
 		cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
 		vec3 cameraSideVector = cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
 		normalize(cameraSideVector);
-
-		// Projection Transform
-		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
-		{
-			fieldOfView = 70.0f;
-			glm::mat4 projectionMatrix = glm::perspective(70.0f,  // field of view in degrees
-				VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
-				0.01f, 100.0f);       // near and far (near > 0)
-
-			shaderManager.setMat4("projectionMatrix", projectionMatrix);
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
-		{
-			glm::mat4 projectionMatrix = glm::ortho(-4.0f, 4.0f,    // left/right
-				-3.0f, 3.0f,    // bottom/top
-				-100.0f, 100.0f);  // near/far (near == 0 is ok for ortho)
-
-			shaderManager.setMat4("projectionMatrix", projectionMatrix);
-		}
 
 		// Select shapes via 1-4 keys
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
@@ -732,7 +713,6 @@ int main(int argc, char* argv[])
 		}
 
 
-
 		// Reshuffle shape
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
@@ -791,7 +771,7 @@ int main(int argc, char* argv[])
 			else
 				newz = cameraPosition.z;
 			float radius = sqrt(pow(newx, 2) + pow(newy, 2) + pow(newz, 2));
-			vec3 position = vec3{ 0,1,0 } -radius * cameraLookAt;
+			vec3 position = vec3{ 0,1,0 } - radius * cameraLookAt;
 			viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
 			shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
 		}
@@ -954,7 +934,7 @@ int createVertexArrayObjectSingleColoured(vec3 colour)
 	glGenBuffers(1, &vertexBufferObject);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(unitCube), unitCube, GL_STATIC_DRAW);
-	
+
 	glVertexAttribPointer(0,    // Location 0 matches aPos in Vertex Shader
 		3,						// size
 		GL_FLOAT,				// type
@@ -1206,12 +1186,15 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 }
 
 void windowSizeCallback(GLFWwindow* window, int width, int height) {
+
+	ControlState controlState = *(ControlState*)glfwGetWindowUserPointer(window);
+
 	glViewport(0, 0, width, height);
 
 	GLint shaderProgram = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &shaderProgram);
 
-	mat4 projectionMatrix = glm::perspective(70.0f,            // field of view in degrees
+	mat4 projectionMatrix = glm::perspective(radians(*controlState.fieldOfView),            // field of view in degrees
 		(float)width / (float)height,  // aspect ratio
 		0.01f, 200.0f);   // near and far (near > 0)
 
@@ -1233,17 +1216,21 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if (key == GLFW_KEY_X && action == GLFW_PRESS) {
 		*controlState.showTexture = !*controlState.showTexture;
 	}
+	if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+		*controlState.showShadow = !*controlState.showShadow;
+	}
 }
 
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, bool textures) {
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture) {
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tileTexture);
+
 	//Draw Tiles
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-	if (textures) {
-		glBindTexture(GL_TEXTURE_2D, tileTexture);
-	}
-	for (int i = -GRID_SIZE / 2 / 4; i <= GRID_SIZE / 2 / 4; i++) {
-		for (int j = -GRID_SIZE / 2 / 4; j <= GRID_SIZE / 2 / 4; j++) {
-			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * 4, -0.1f, j * 4)) * scale(mat4(1.0f), vec3(4.0f, 0.01f, 4.0f));
+	for (int i = -GRID_SIZE / 2 / FLOOR_SCALE; i <= GRID_SIZE / 2 / FLOOR_SCALE; i++) {
+		for (int j = -GRID_SIZE / 2 / FLOOR_SCALE; j <= GRID_SIZE / 2 / FLOOR_SCALE; j++) {
+			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, -0.1f, j * FLOOR_SCALE)) * scale(mat4(1.0f), vec3(FLOOR_SCALE, 0.01f, FLOOR_SCALE));
 			shaderManager.setMat4("worldMatrix", tileMatrix);
 			glDrawArrays(renderingMode, 0, 36);
 		}
@@ -1278,27 +1265,15 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 
 	// Draw shapes and walls
 	for (Shape shape : shapes) {
-		if (textures) {
-			glBindTexture(GL_TEXTURE_2D, metalTexture);
-		}
 		shape.Draw(renderingMode, shaderManager);
-		if (textures) {
-			glBindTexture(GL_TEXTURE_2D, fireTexture);
-		}
 		shaderManager.setBool("ignoreLighting", true);
 
 		shape.DrawGlow(renderingMode, shaderManager);
 		shaderManager.setBool("ignoreLighting", false);
 	}
-	if (textures) {
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
-	}
 
 	for (Wall wall : walls) {
 		wall.Draw(renderingMode, shaderManager);
-	}
-	if (textures) {
-		glBindTexture(GL_TEXTURE_2D, metalTexture);
 	}
 	shaderManager.setBool("ignoreLighting", true);
 	lightbulb.Draw(renderingMode, shaderManager);
