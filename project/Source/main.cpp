@@ -418,14 +418,14 @@ int main(int argc, char* argv[])
 	Emitter emitter = Emitter(particleVAO);
 
 	// Sound settings
-	//ISoundEngine* soundEngine = createIrrKlangDevice();
+	ISoundEngine* soundEngine = createIrrKlangDevice();
 
-	//if (!soundEngine)
-	//{
-	//	cout << ("WARNING: Could not start sound engine") << endl;
-	//}
+	if (!soundEngine)
+	{
+		cout << ("WARNING: Could not start sound engine") << endl;
+	}
 
-	//soundEngine->play2D("../Assets/Audio/morning.ogg");
+	soundEngine->play2D(AUDIO_PATH_MUSIC, true);
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
@@ -719,6 +719,7 @@ int main(int argc, char* argv[])
 
 		if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
 			emitter.Emit(vec3(0.0f, 20.0f, 0.0f), 50.0f, 10.0f, particleTexture);
+			soundEngine->play2D(AUDIO_PATH_WOW);
 		}
 
 

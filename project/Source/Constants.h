@@ -47,3 +47,7 @@ constexpr char* TEXTURE_PATH_METAL = "../Assets/Textures/metal.jpg";
 constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";
 constexpr char* TEXTURE_PATH_FIRE = "../Assets/Textures/fire.jpg";
 constexpr char* TEXTURE_PATH_PARTICLE = "../Assets/Textures/particle.jpg";
+
+
+constexpr char* AUDIO_PATH_MUSIC = "../Assets/Audio/mii.ogg";
+constexpr char* AUDIO_PATH_WOW = "../Assets/Audio/wow.ogg";
