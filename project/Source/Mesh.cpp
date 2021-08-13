@@ -20,7 +20,7 @@ void Mesh::Draw(ShaderManager shader, mat4 position)
         else if (name == "texture_specular")
             number = to_string(specularNr++);
 
-        shader.setFloat(("material." + name + number).c_str(), i);
+        shader.setFloat(("material." + name + "[" + number + "]").c_str(), i);
         glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);
