@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
 	int groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
 	// Colour of the shapes
 	// Chi colour
-	int OW1Colour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	int overworldColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	// Alex colour
 	int alexColour = createVertexArrayObjectTextured(vec3(1.0f, 0.58f, 0.25f));
 	// Theo colour
@@ -195,8 +195,8 @@ int main(int argc, char* argv[])
 	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 
-	shapes.push_back(Shape(vec3(0, 0, 0), OW1, OW1Colour, glowColour, false, 1.0f, grassTexture, fireTexture));
-	shapes.push_back(Shape(vec3(20, 0, 0), OW2, OW1Colour, glowColour, false, 1.0f, grassTexture, fireTexture));
+	shapes.push_back(Shape(vec3(0, 0, 0), overworld[0], overworldColour, glowColour, false, 1.0f, grassTexture, fireTexture));
+	shapes.push_back(Shape(vec3(20, 0, 0), overworld[1], overworldColour, glowColour, false, 1.0f, grassTexture, fireTexture));
 	//shapes.push_back(Shape(vec3(40, 0, 0), OW3, OW1Colour, glowColour, false, 1.0f, grassTexture, fireTexture));
 	//shapes.push_back(Shape(vec3(60, 0, 0), OW4, OW1Colour, glowColour, false, 1.0f, grassTexture, fireTexture));
 	//shapes.push_back(Shape(vec3(80, 0, 0), OW5, OW1Colour, glowColour, false, 1.0f, grassTexture, fireTexture));
