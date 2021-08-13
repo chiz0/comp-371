@@ -28,7 +28,7 @@ struct Texture {
 class Mesh {
 public:
     Mesh(vector<Vertex> mVertices, vector<unsigned int> mIndices, vector<Texture> mTextures);
-    void Draw(ShaderManager shader);
+    void Draw(ShaderManager shader, mat4 position);
 
 private:
     vector<Vertex> mVertices;

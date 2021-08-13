@@ -5,7 +5,7 @@ Mesh::Mesh(vector<Vertex> mVertices, vector<unsigned int> mIndices, vector<Textu
     setupMesh();
 }
 
-void Mesh::Draw(ShaderManager shader)
+void Mesh::Draw(ShaderManager shader, mat4 position)
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -24,6 +24,7 @@ void Mesh::Draw(ShaderManager shader)
         glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);
+    shader.setMat4("worldMatrix", position);
 
     // draw mesh
     glBindVertexArray(VAO);

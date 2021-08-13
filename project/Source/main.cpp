@@ -39,7 +39,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <stb_image.h>
 
 #include "Constants.h"
 #include "Shape.h"
@@ -48,6 +48,7 @@
 #include "ControlState.h"
 #include "Wall.h"
 #include "texture.h"
+#include "Model.h"
 
 using namespace glm;
 using namespace std;
@@ -90,8 +91,6 @@ int main(int argc, char* argv[])
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
 	ShaderManager shadowShaderManager = ShaderManager(SHADOW_VERTEX_SHADER_FILEPATH, SHADOW_FRAGMENT_SHADER_FILEPATH, SHADOW_DEPTH_SHADER_FILEPATH);
-
-
 
 	// configure depth map FBO
 	// -----------------------
@@ -256,7 +255,7 @@ int main(int argc, char* argv[])
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
 
-
+	Model model = Model("../Assets/Objects/rock/rock.obj");
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
@@ -313,6 +312,11 @@ int main(int argc, char* argv[])
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 		drawScene(shaderManager, renderingMode, shapes, lightbulb, tileTexture);
+
+		float time = glfwGetTime();
+		mat4 modelPosition = translate(mat4(1.0f), vec3(sin(time) + cameraPosition.x, cos(time) + cameraPosition.y, cameraPosition.z - 10.0f));
+
+		model.Draw(shaderManager, modelPosition);
 
 		// End Frame
 		glfwSwapBuffers(window);

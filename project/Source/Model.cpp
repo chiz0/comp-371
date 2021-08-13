@@ -1,14 +1,16 @@
 #include "Model.h"
 
+#include <stb_image.h>
+
 Model::Model(char* path)
 {
     loadModel(path);
 }
 
-void Model::Draw(ShaderManager shader)
+void Model::Draw(ShaderManager shader, mat4 position)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
-        meshes[i].Draw(shader);
+        meshes[i].Draw(shader, position);
 }
 
 void Model::loadModel(string path)

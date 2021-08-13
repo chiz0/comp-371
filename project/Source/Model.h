@@ -13,7 +13,6 @@
 #include "Constants.h"
 #include "ShaderManager.h"
 #include "Mesh.h"
-#include "stb_image.h"
 
 using namespace Assimp;
 using namespace glm;
@@ -23,7 +22,7 @@ class Model
 {
 public:
     Model(char* path);
-    void Draw(ShaderManager shader);
+    void Draw(ShaderManager shader, mat4 position);
 private:
     // model data
     vector<Mesh> meshes;
