@@ -36,7 +36,7 @@
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
-#include <glm/gtx/string_cast.hpp> 
+#include <glm/gtx/string_cast.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-	// Black background
+	// Blue background
 	glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
 
 	// We can set the shader once, since we have only one
