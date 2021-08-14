@@ -23,10 +23,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Source\FragmentShader.glsl">
+    <None Include="..\Source\TexturedFrag.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="..\Source\VertexShader.glsl">
+    <None Include="..\Source\TexturedVert.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Source\ShadowDepth.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Source\ShadowFrag.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Source\ShadowVert.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="..\Source\TexturedFrag.glsl">
