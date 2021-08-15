@@ -49,6 +49,9 @@
 #include "Wall.h"
 #include "texture.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 using namespace glm;
 using namespace std;
 
@@ -74,6 +77,13 @@ int zLineColour;
 
 int main(int argc, char* argv[])
 {
+	FT_Library  library;
+	
+	FT_Error error = FT_Init_FreeType(&library);
+	if (error)
+	{
+		cout << "error occured";
+	}
 	if (!initContext()) return -1;
 
 	// glfw: initialize and configure
