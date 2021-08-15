@@ -10,6 +10,7 @@ using namespace glm;
 using namespace std;
 
 vector<Shape> shapes;
+vector<Shape> owChunks[10];
 
 vector<struct coordinates> grassHillShape{
 			{0,0,0},
