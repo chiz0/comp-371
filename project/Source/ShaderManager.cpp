@@ -1,11 +1,4 @@
 #include "ShaderManager.h"
-#include <GL/glew.h>
-#include <glm/glm.hpp>
-
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
 
 ShaderManager::ShaderManager(const char* vertexPath, const char* fragmentPath, const char* geometryPath )
 {

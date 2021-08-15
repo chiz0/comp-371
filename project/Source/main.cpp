@@ -36,10 +36,10 @@
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
-#include <glm/gtx/string_cast.hpp> 
+#include <glm/gtx/string_cast.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <stb_image.h>
 
 #include "Constants.h"
 #include "Environment.h"
@@ -49,6 +49,7 @@
 #include "ControlState.h"
 #include "Wall.h"
 #include "texture.h"
+#include "Model.h"
 
 using namespace glm;
 using namespace std;
@@ -85,14 +86,12 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-	// Black background
+	// Blue background
 	glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
 
 	// We can set the shader once, since we have only one
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
 	ShaderManager shadowShaderManager = ShaderManager(SHADOW_VERTEX_SHADER_FILEPATH, SHADOW_FRAGMENT_SHADER_FILEPATH, SHADOW_DEPTH_SHADER_FILEPATH);
-
-
 
 	// configure depth map FBO
 	// -----------------------
@@ -293,7 +292,7 @@ Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour,
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
 
-
+	Model model = Model("../Assets/Objects/rock/rock.obj");
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
@@ -350,6 +349,11 @@ Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour,
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 		drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
+
+		float time = glfwGetTime();
+		mat4 modelPosition = translate(mat4(1.0f), vec3(sin(time) + cameraPosition.x, cos(time) + cameraPosition.y, cameraPosition.z - 10.0f));
+
+		model.Draw(shaderManager, modelPosition);
 
 		// End Frame
 		glfwSwapBuffers(window);
