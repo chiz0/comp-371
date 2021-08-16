@@ -30,10 +30,11 @@ public:
 
     // Properties
     const int PADDING = 2;
+    vec2 offset;
     double timer = 0;
     Shape* _shape;
     vector<vector<bool>> hole;
-    vector<vector<Voxel>> voxels;
+    vector<Voxel> voxels;
     enum {
         INITIALIZED,
         IDLE,
@@ -51,4 +52,5 @@ public:
     const float ANIMATE_CREATION_VOXEL_FALL_HEIGHT = 30.0f;
     const float ANIMATE_CREATION_MOVE_SPEED = 50.0f;
     const float ANIMATE_CREATION_VOXEL_INTERVAL = 3.0f;
+    const float ANIMATE_CREATION_SIMULTANEOUS_ROWS = 3.0f;
 };

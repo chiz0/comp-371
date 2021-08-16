@@ -49,6 +49,7 @@ public:
     vec3 displayOrientation = vec3(0);
     const float ANIMATE_CREATION_MOVE_SPEED = 20.0f;
     const int ANIMATE_CREATION_VOXEL_SPREAD = 10;
+    const float ANIMATE_ROTATE_SPEED = 10.0f;
 
 private:
     // Functions

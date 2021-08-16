@@ -156,6 +156,7 @@ int main(int argc, char* argv[])
 	vector<Wall*> walls;
 	int selectedShape = -1;
 	int currentDifficulty = 6;
+	float currentWallSpeed = 1.5f;
 
 	// Only use one VAO (set colours with uniform)
 	int cubeVAO = createVertexArrayObjectTextured(vec3(1.0f));
@@ -263,12 +264,12 @@ int main(int argc, char* argv[])
 		for (Event event : currentFrameEvents) {
 			switch (event) {
 			case GAME_START: {
-				eventQueue.push_back({ CREATE_SHAPE, 1 });
+				eventQueue.push_back({ CREATE_SHAPE, 0 });
 				break;
 			}
 
 			case CREATE_SHAPE: {
-				vec3 shapeColour = vec3((float)(rand() % 1000) / 1000.0f, (float)(rand() % 1000) / 1000.0f, (float)(rand() % 1000) / 1000.0f);
+				vec3 shapeColour = vec3((float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f);
 				Shape* newShape = new Shape(vec3(0), currentDifficulty, shapeColour, metalTexture);
 				shapes.push_back(newShape);
 				selectedShape = 0;
@@ -285,7 +286,7 @@ int main(int argc, char* argv[])
 			case CREATE_WALL: {
 				Wall* newWall = new Wall(vec3(0, 0, -WALL_DISTANCE), shapes[selectedShape], vec3(1), brickTexture);
 				walls.push_back(newWall);
-				newWall->speed = 1.5f;
+				newWall->speed = currentWallSpeed;
 				gameEntities.push_back(newWall);
 				break;
 			}
@@ -313,6 +314,7 @@ int main(int argc, char* argv[])
 				eventQueue.push_back({ DESTROY_WALL, 2 });
 				eventQueue.push_back({ DESTROY_SHAPE, 2 });
 				currentDifficulty++;
+				currentWallSpeed += currentWallSpeed >= 4 ? 0 : 0.1f;
 				soundEngine->play2D(AUDIO_PATH_WOW, false);
 				break;
 			}
