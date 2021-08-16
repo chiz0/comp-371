@@ -848,10 +848,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		eventQueue->push_back({ INPUT_UP, 0 });
 	}
 	if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-		eventQueue->push_back({ INPUT_DOWN, 0 });
+		eventQueue->push_back({ INPUT_LEFT, 0 });
 	}
 	if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-		eventQueue->push_back({ INPUT_LEFT, 0 });
+		eventQueue->push_back({ INPUT_DOWN, 0 });
 	}
 	if (key == GLFW_KEY_D && action == GLFW_PRESS) {
 		eventQueue->push_back({ INPUT_RIGHT, 0 });
