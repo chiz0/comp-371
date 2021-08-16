@@ -21,13 +21,14 @@ using namespace std;
 class Model
 {
 public:
-    Model(char* path);
-    void Draw(ShaderManager shader, mat4 position);
+    Model(char* path, mat4 position);
+    void Draw(ShaderManager shader);
 private:
     // model data
     vector<Mesh> meshes;
     vector<Texture> textures_loaded;
     string directory;
+    mat4 position;
 
     void loadModel(string path);
     void processNode(aiNode* node, const aiScene* scene);
