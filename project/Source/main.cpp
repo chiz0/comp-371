@@ -20,13 +20,14 @@
 //  Chi
 //
 
+// Preprocessor macros
+// Standard library
 #include <iostream>
-#include <list>
-#include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
 
+// Third-party
 #define GLEW_STATIC 1   // This allows linking with Static Library on Windows, without DLL
 #include <GL/glew.h>    // Include GLEW - OpenGL Extension Wrangler
 
@@ -37,6 +38,8 @@
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
 #include <glm/gtx/string_cast.hpp> 
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <time.h>
 #include <irrKlang.h>
 
@@ -46,40 +49,33 @@
 #include "Constants.h"
 #include "Shape.h"
 #include "ShaderManager.h"
-#include "Coordinates.h"
 #include "ControlState.h"
 #include "Wall.h"
 #include "Emitter.h"
+
 
 using namespace glm;
 using namespace std;
 using namespace irrklang;
 
-/////////////////////// MAIN ///////////////////////
 
+// Function declarations
+// Event handlers
 void windowSizeCallback(GLFWwindow* window, int width, int height);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour);
-int createVertexArrayObjectSingleColoured(vec3 colour);
 int createVertexArrayObjectTextured(vec3 colour);
+int createVertexArrayObjectTextured();
 int loadTexture(string name, char* path);
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture);
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObject*>* gameEntities);
 
 bool initContext();
 
 GLFWwindow* window = NULL;
 
-int xLineColour;
-int yLineColour;
-int zLineColour;
-
-
 int main(int argc, char* argv[])
 {
 	if (!initContext()) return -1;
-
-	srand(time(NULL));
 
 	// glfw: initialize and configure
 	// ------------------------------
@@ -141,15 +137,7 @@ int main(int argc, char* argv[])
 		VIEW_WIDTH / VIEW_HEIGHT,								// aspect ratio
 		NEAR_PLANE, FAR_PLANE);									// near and far (near > 0)
 
-	glfwSetWindowSizeCallback(window, &windowSizeCallback);
-
 	shaderManager.setMat4("projectionMatrix", projectionMatrix);
-
-	// For frame time
-	float lastFrameTime = glfwGetTime();
-	int lastMouseLeftState = GLFW_RELEASE;
-	double lastMousePosX, lastMousePosY;
-	glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
 	// Other OpenGL states to set once before the Game Loop
 	// Enable Backface culling
@@ -161,225 +149,47 @@ int main(int argc, char* argv[])
 
 	GLenum renderingMode = GL_TRIANGLES;
 	glBindTexture(GL_TEXTURE_2D, metalTexture);
-	// Track models
-	vector<Shape> shapes;               // Set of all shapes in the world
-	vector<Wall> walls;					// Set of all walls
 
-	///////// DESIGN MODELS HERE /////////
-	// Chi shape
-	vector<struct coordinates> chiShape{
-		{ 0, 0, 0 },
-		{ 0, 0, 1 },
-		{ 0, 0, -1 },
-		{ 0, 0, 2 },
-		{ 0, 0, -2 },
-		{ 0, 0, 3 },
-		{ 0, 0, -3 },
-		{ 1, 0, 0 },
-		{ 1, 0, 1 },
-		{ 1, 0, -1 },
-		{ 1, 0, 2 },
-		{ 1, 0, -2 },
-		{ -1, 0, 0 },
-		{ -1, 0, 1 },
-		{ -1, 0, -1 },
-		{ -1, 0, 2 },
-		{ -1, 0, -2 },
-		{ 2, 0, 0 },
-		{ 2, 0, 1 },
-		{ 2, 0, -1 },
-		{ -2, 0, 0 },
-		{ -2, 0, 1 },
-		{ -2, 0, -1 },
-		{ 3, 0, 0 },
-		{ -3, 0, 0 },
-		{ 0, 1, 0 },
-		{ 0, 1, 1 },
-		{ 0, 1, -1 },
-		{ 0, 1, 2 },
-		{ 0, 1, -2 },
-		{ 1, 1, 0 },
-		{ 1, 1, 1 },
-		{ 1, 1, -1 },
-		{ -1, 1, 0 },
-		{ -1, 1, 1 },
-		{ -1, 1, -1 },
-		{ 2, 1, 0 },
-		{ -2, 1, 0 },
-		{ 0, 2, 0 },
-		{ 0, 2, 1 },
-		{ 0, 2, -1 },
-		{ 1, 2, 0 },
-		{ -1, 2, 0 },
-		{ 0, 3, 0 }
-	};
+	// Persistent game variables
+	vector<Event> currentFrameEvents;
+	vector<Shape*> shapes;
+	vector<Wall*> walls;
+	int selectedShape = -1;
+	int currentDifficulty = 6;
 
-	vector<struct coordinates> alexShape{
-		{ 0, 0, 0 },
-		{ 0, 0, 1 },
-
-		{ 0, -1, 0 },
-		{ 0, -1, 1 },
-
-		{ 1, -1, 0 },
-		{ 1, -1, 1 },
-
-		{ 2, -1, 0 },
-		{ 2, -1, 1 },
-
-		{ 1, -2, 1 },
-		{ 2, -2, 1 },
-
-		{ 1, -2, 2 },
-		{ 2, -2, 2 },
-
-		{ 1, -3, 2 },
-		{ 2, -3, 2 },
-
-		{ 1, -3, 3 },
-		{ 2, -3, 3 },
-
-		{ -1, 0, 0 },
-		{ -1, 0, 1 },
-
-		{ -1, 1, 0 },
-		{ -1, 1, 1 },
-
-		{ -2, 1, 0 },
-		{ -2, 1, 1 },
-
-		{ -2, 2, 0 },
-		{ -2, 2, 1 },
-
-		{ -3, 2, 0 },
-		{ -3, 2, 1 },
-
-		{ -2, 2, 2 },
-		{ -3, 2, 2 },
-
-		{ -2, 3, 2 },
-		{ -3, 3, 2 },
-
-		{ -2, 3, 3 },
-		{ -3, 3, 3 },
-
-		{ -2, 4, 3 },
-		{ -3, 4, 3 },
-	};
-
-	vector<struct coordinates> theoShape{
-
-		{ 0, 0, 0 },
-		{ -1, 3, 2 },
-		{ -1, 2, 2 },
-		{ -1, 1, 2 },
-		{ -1, 0, 2 },
-		{ -1, -1, 2 },
-		{ -1, -2, 2 },
-		{ -1, -3, 2 },
-
-		{ 0, 3, 0 },
-		{ 1, 3, 0 },
-		{ 0, 3, 2 },
-		{ 2, 2, 2 },
-		{ 2, 1, 2 },
-		{ 1, 0, 0 },
-		{ 0, -1, 2 },
-		{ 1, -2, 2 },
-		{ 2, -3, 1 },
-
-		{ -1, 3, 1 },
-		{ -1, 3, -1 },
-		{ 2, 0, 1 },
-		{ 2, -3, -1 },
-		{ 1, -3, 0 }
-	};
-
-	vector<struct coordinates> antoShape{
-		{ 0, 0, 0 },
-		{ 0, 0, -1 },
-		{ 0, 0, -2 },
-
-		{ 1, 0, 0 },
-		{ 1, 0, -1 },
-		{ 1, 0, -2 },
-
-		{ 1, 1, 0 },
-		{ 1, 1, -1 },
-		{ 1, 1, -2 },
-
-		{ 1, -1, 0 },
-		{ 1, -1, -1 },
-		{ 1, -1, -2 },
-
-		{ -1, 0, 0 },
-		{ -1, 0, -1 },
-		{ -1, 0, -2 },
-
-		{ -1, 1, -1 },
-		{ -1, 1, -2 },
-		{ -1, 1, 0 },
-
-		{ -1, -1, 0 },
-		{ -1, -1, -1 },
-		{ -1, -1, -2 },
-
-		{ 0, -2, -1 },
-		{ 0, -2, 0 },
-		{ 0, -2, -2 },
-
-		{ 0, 2, 0 },
-		{ 0, 2, -1 },
-		{ 0, 2, -2 }
-	};
-
-	vector<struct coordinates> lightbulbShape{
-		{0, 0, 0}
-	};
-
-
-	int groundColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f));
-	// Colour of the shapes
-	// Chi colour
-	int chiColour = createVertexArrayObjectTextured(vec3(0.429f, 0.808f, 0.922f));
-	// Alex colour
-	int alexColour = createVertexArrayObjectTextured(vec3(1.0f, 0.58f, 0.25f));
-	// Theo colour
-	int theoColour = createVertexArrayObjectTextured(vec3(1.0f, 0.15f, 0.0f));
-	// Anto colour
-	int antoColour = createVertexArrayObjectTextured(vec3(0.5f, 0.5f, 0.3f));
-	// Lightbulb colour
-	int lightbulbColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
-	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
-	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
-	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
-
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, glowColour, false, 1.0f, metalTexture, fireTexture));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, false, 1.0f, metalTexture, fireTexture));
-	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, false, 1.0f, metalTexture, fireTexture));
-	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, -STAGE_WIDTH), antoShape, antoColour, glowColour, false, 1.0f, metalTexture, fireTexture));
-	Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, glowColour, false, 1.0f, metalTexture, fireTexture);
-
-	for (int i = 0; i < MODEL_COUNT; i++) {
-		walls.push_back(Wall(vec3(shapes[i].mPosition.x, shapes[i].mPosition.y, shapes[i].mPosition.z - WALL_DISTANCE), &(shapes[i]), wallColour, brickTexture));
-	}
+	// Only use one VAO (set colours with uniform)
+	int cubeVAO = createVertexArrayObjectTextured(vec3(1.0f));
+	glBindVertexArray(cubeVAO);
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
 	bool showTexture = true;
 	bool showShadow = true;
-	ControlState controlState = { &shapes, &focusedShape, &showTexture, &showShadow, &fieldOfView };
-	glfwSetWindowUserPointer(window, &controlState);
 
-	const vector<vec3> cameraPositions{
-		CAMERA_OFFSET + shapes[0].mPosition,
-		CAMERA_OFFSET + shapes[1].mPosition,
-		CAMERA_OFFSET + shapes[2].mPosition,
-		CAMERA_OFFSET + shapes[3].mPosition
+	// Create event queue
+	vector<ScheduledEvent> eventQueue{
+		{GAME_START, 0}
 	};
 
+	// Set event callbacks
+	glfwSetWindowSizeCallback(window, &windowSizeCallback);
+	glfwSetKeyCallback(window, &keyCallback);
+	glfwSetWindowUserPointer(window, &eventQueue);
+
+	// Create entity pointer container
+	vector<GameObject*> gameEntities;
+
+	// Initialize random seed
+	srand(time(NULL));
+
+	// Frame time and mouse input
+	double lastFrameTime = glfwGetTime();
+	int lastMouseLeftState = GLFW_RELEASE;
+	double lastMousePosX, lastMousePosY;
+	glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
+
 	// Camera parameters for view transform
-	vec3 cameraPosition = vec3(0.0f, 20.0f, 20.0f);
+	vec3 cameraPosition = vec3(0.0f, 0.0f, 10.0f);
 	vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
 	vec3 cameraUp(0.0f, 1.0f, 0.0f);
 	vec3 cameraDestination = cameraPosition;
@@ -403,20 +213,10 @@ int main(int argc, char* argv[])
 	shaderManager.setFloat("shininess", SHININESS);
 	shaderManager.setInt("depthMap", 1);
 
-	// Grid and coordinate axis colours
-	xLineColour = createVertexArrayObjectSingleColoured(vec3(1.0f, 0.0f, 0.0f));
-	yLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 1.0f, 0.0f));
-	zLineColour = createVertexArrayObjectSingleColoured(vec3(0.0f, 0.0f, 1.0f));
-
-	// Register keypress event callback
-	glfwSetKeyCallback(window, &keyCallback);
-
 
 	mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
-	int particleVAO = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
-	Emitter emitter = Emitter(particleVAO);
-	vec3 flameLocation = vec3(0.0f, 10.0f, 10.0f);
+	Emitter emitter = Emitter(cubeVAO);
 
 	// Sound settings
 	ISoundEngine* soundEngine = createIrrKlangDevice();
@@ -428,18 +228,127 @@ int main(int argc, char* argv[])
 
 	soundEngine->play2D(AUDIO_PATH_MUSIC, true);
 
+
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
 	{
 		shaderManager.setBool("texToggle", showTexture);
 		shaderManager.setBool("showShadows", showShadow);
-		// Frame time calculation
-		float dt = glfwGetTime() - lastFrameTime;
-		lastFrameTime += dt;
 
-		lightbulb.mPosition = lightPosition;
+		// Frame time
+		double now = glfwGetTime();
+		double dt = now - lastFrameTime;
+		lastFrameTime = now;
 
-		emitter.EmitFlame(flameLocation, 1, 1.0f, particleTexture);
+
+		// Process event queue timers
+		for (int i = eventQueue.size() - 1; i >= 0; i--) {
+			ScheduledEvent& element = eventQueue.at(i);
+			element.timeRemaining -= dt;
+			if (element.timeRemaining <= 0) {
+				currentFrameEvents.push_back(element.type);
+				eventQueue.erase(eventQueue.begin() + i);
+			}
+		}
+
+		// Delete flagged entities
+		for (int i = gameEntities.size() - 1; i >= 0; i--) {
+			if (gameEntities.at(i)->destroyFlag) {
+				delete gameEntities.at(i);
+				gameEntities.erase(gameEntities.begin() + i);
+			}
+		}
+
+		// Process current frame events
+		for (Event event : currentFrameEvents) {
+			switch (event) {
+			case GAME_START: {
+				eventQueue.push_back({ CREATE_SHAPE, 1 });
+				break;
+			}
+
+			case CREATE_SHAPE: {
+				vec3 shapeColour = vec3((float)(rand() % 1000) / 1000.0f, (float)(rand() % 1000) / 1000.0f, (float)(rand() % 1000) / 1000.0f);
+				Shape* newShape = new Shape(vec3(0), currentDifficulty, shapeColour, metalTexture);
+				shapes.push_back(newShape);
+				selectedShape = 0;
+				eventQueue.push_back({ CREATE_WALL, 0 });
+				break;
+			}
+
+			case DISPLAY_SHAPE: {
+				Shape* newShape = shapes.at(selectedShape);
+				gameEntities.push_back(newShape);
+				break;
+			}
+
+			case CREATE_WALL: {
+				Wall* newWall = new Wall(vec3(0, 0, -WALL_DISTANCE), shapes[selectedShape], vec3(1), brickTexture);
+				walls.push_back(newWall);
+				newWall->speed = 1.5f;
+				gameEntities.push_back(newWall);
+				break;
+			}
+
+			case INPUT_UP:
+			case INPUT_DOWN:
+			case INPUT_LEFT:
+			case INPUT_RIGHT: {
+				if (selectedShape >= 0) {
+					shapes.at(selectedShape)->processEvent(event);
+				}
+				break;
+			}
+
+			case LEVEL_FAILED: {
+				cout << "Failure...\n";
+				eventQueue.push_back({ DESTROY_WALL, 0 });
+				eventQueue.push_back({ DESTROY_SHAPE, 0 });
+				soundEngine->play2D(AUDIO_PATH_BRUH, false);
+				break;
+			}
+
+			case LEVEL_SUCCESS: {
+				cout << "Success!\n";
+				eventQueue.push_back({ DESTROY_WALL, 2 });
+				eventQueue.push_back({ DESTROY_SHAPE, 2 });
+				currentDifficulty++;
+				soundEngine->play2D(AUDIO_PATH_WOW, false);
+				break;
+			}
+
+			case DESTROY_WALL: {
+				for (Wall* wall : walls) {
+					wall->destroyFlag = true;
+				}
+				
+				break;
+			}
+
+			case DESTROY_SHAPE: {
+				for (Shape* shape : shapes) {
+					shape->destroyFlag = true;
+				}
+				selectedShape = -1;
+				shapes.clear();
+				eventQueue.push_back({ CREATE_SHAPE, 2 });
+				break;
+			}
+
+			case EXIT_PROGRAM: {
+				// Exit program
+				glfwSetWindowShouldClose(window, true);
+			}
+			}
+		}
+
+		currentFrameEvents.clear();
+
+		// Update entities
+		for (GameObject*& entity : gameEntities) {
+			entity->update(&eventQueue, dt);
+		}
+
 
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -465,7 +374,7 @@ int main(int argc, char* argv[])
 			shadowShaderManager.setMat4("shadowMatrices[" + to_string(i) + "]", shadowTransforms[i]);
 		shadowShaderManager.setFloat("farPlane", FAR_PLANE);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
-		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
+		drawScene(shadowShaderManager, renderingMode, &gameEntities);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		// 2. render scene as normal 
@@ -480,7 +389,7 @@ int main(int argc, char* argv[])
 		shaderManager.setFloat("farPlane", FAR_PLANE);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
+		drawScene(shaderManager, renderingMode, &gameEntities);
 
 		// Update and draw particles
 		emitter.Update(dt);
@@ -492,23 +401,8 @@ int main(int argc, char* argv[])
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		// Handle inputs
-		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-			glfwSetWindowShouldClose(window, true);
-
-		// If shift is held, double camera speed
-		bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-		float currentCameraSpeed = (fastCam) ? CAMERA_SPEED * 2 : CAMERA_SPEED;
-
-		if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) // FPview
-		{
-			cameraFirstPerson = true;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) //TPview
-		{
-			cameraFirstPerson = false;
-		}
+		
+		cameraFirstPerson = false;
 
 		double mousePosX, mousePosY;
 		glfwGetCursorPos(window, &mousePosX, &mousePosY);
@@ -519,80 +413,8 @@ int main(int argc, char* argv[])
 		lastMousePosX = mousePosX;
 		lastMousePosY = mousePosY;
 
-		// Lock the camera rotation to be only when the middle and right button are pressed
-		if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-			cameraHorizontalAngle -= dx * CAMERA_ANGULAR_SPEED * dt;
-		}
-		if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
-			cameraVerticalAngle -= dy * CAMERA_ANGULAR_SPEED * dt;
-		}
-
-		if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-			if (!moveCameraToDestination) {
-				if (dy > 0) {
-					fieldOfView += currentCameraSpeed;
-					fieldOfView = clamp(fieldOfView, 10.0f, 130.0f);
-					mat4 projectionMatrix = perspective(radians(fieldOfView),  // field of view in degrees
-						(float)windowWidth / windowHeight,      // aspect ratio
-						NEAR_PLANE, FAR_PLANE);
-					shaderManager.setMat4("projectionMatrix", projectionMatrix);
-
-					//cameraPosition += currentCameraSpeed * cameraLookAt;
-				}
-				if (dy < 0) {
-					fieldOfView -= currentCameraSpeed;
-					fieldOfView = clamp(fieldOfView, 10.0f, 130.0f);
-					mat4 projectionMatrix = perspective(radians(fieldOfView),  // field of view in degrees
-						(float)windowWidth / windowHeight,      // aspect ratio
-						NEAR_PLANE, FAR_PLANE);
-					shaderManager.setMat4("projectionMatrix", projectionMatrix);
-					//cameraPosition -= currentCameraSpeed * cameraLookAt;
-				}
-				shaderManager.setVec3("cameraPosition", cameraPosition);
-			}
-		}
-
-
-		// Change orientation with the arrow keys
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-			cameraFirstPerson = false;
-			cameraHorizontalAngle -= CAMERA_ANGULAR_SPEED * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-			cameraFirstPerson = false;
-			cameraHorizontalAngle += CAMERA_ANGULAR_SPEED * dt;
-		}
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-			cameraFirstPerson = false;
-			cameraVerticalAngle -= CAMERA_ANGULAR_SPEED * dt;
-		}
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-			cameraFirstPerson = false;
-			cameraVerticalAngle += CAMERA_ANGULAR_SPEED * dt;
-		}
-
-		//Go Back to initial position and orientation
-		if (glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) {
-			cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
-			cameraUp.x = 0.0f; cameraUp.y = 1.0f; cameraUp.z = 0.0f;
-
-			//initial orientation
-			cameraHorizontalAngle = 90.0f;
-			cameraVerticalAngle = 0.0f;
-
-			cameraDestination = vec3(0.0f, 1.0f, 20.0f);
-			lightPosition = cameraDestination + LIGHT_OFFSET;
-			shaderManager.setVec3("lightPosition", lightPosition);
-			moveCameraToDestination = true;
-
-			fieldOfView = FIELD_OF_VIEW;
-			mat4 projectionMatrix = perspective(radians(fieldOfView),  // field of view in degrees
-				VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
-				NEAR_PLANE, FAR_PLANE);       // near and far (near > 0)
-
-			shaderManager.setMat4("projectionMatrix", projectionMatrix);
-		}
+		cameraHorizontalAngle -= dx * CAMERA_ANGULAR_SPEED * dt;
+		cameraVerticalAngle -= dy * CAMERA_ANGULAR_SPEED * dt;
 
 		// Clamp vertical angle to [-85, 85] degrees
 		cameraVerticalAngle = clamp(cameraVerticalAngle, -85.0f, 85.0f);
@@ -612,147 +434,12 @@ int main(int argc, char* argv[])
 
 		cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
 
-		// Select shapes via 1-4 keys
-		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		{
-			focusedShape = 0;
-			cameraDestination = cameraPositions[0];
-			lightPosition = cameraDestination + LIGHT_OFFSET;
-			moveCameraToDestination = true;
-			shaderManager.setVec3("lightPosition", lightPosition);
-		}
-		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		{
-			focusedShape = 1;
-			cameraDestination = cameraPositions[1];
-			lightPosition = cameraDestination + LIGHT_OFFSET;
-			moveCameraToDestination = true;
-			shaderManager.setVec3("lightPosition", lightPosition);
-		}
-		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		{
-			focusedShape = 2;
-			cameraDestination = cameraPositions[2];
-			lightPosition = cameraDestination + LIGHT_OFFSET;
-			moveCameraToDestination = true;
-			shaderManager.setVec3("lightPosition", lightPosition);
-		}
-		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		{
-			focusedShape = 3;
-			cameraDestination = cameraPositions[3];
-			lightPosition = cameraDestination + LIGHT_OFFSET;
-			moveCameraToDestination = true;
-			shaderManager.setVec3("lightPosition", lightPosition);
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS) // Ry
-		{
-			shapes[focusedShape].mOrientation.y += ROTATE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS) // R-y
-		{
-			shapes[focusedShape].mOrientation.y -= ROTATE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS) // Rz
-		{
-			shapes[focusedShape].mOrientation.z += ROTATE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_PERIOD) == GLFW_PRESS) // R-z
-		{
-			shapes[focusedShape].mOrientation.z -= ROTATE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_APOSTROPHE) == GLFW_PRESS) // Rx
-		{
-			shapes[focusedShape].mOrientation.x += ROTATE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_SEMICOLON) == GLFW_PRESS) // R-x
-		{
-			shapes[focusedShape].mOrientation.x -= ROTATE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) // grow object
-		{
-			shapes[focusedShape].mScale += SCALE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) // shrink object
-		{
-			shapes[focusedShape].mScale -= SCALE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // move object forward
-		{
-			shapes[focusedShape].mPosition.z -= TRANSLATE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // move object backward
-		{
-			shapes[focusedShape].mPosition.z += TRANSLATE_RATE * dt;
-		}
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // move object left
-		{
-			shapes[focusedShape].mPosition.x -= TRANSLATE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // move object right
-		{
-			shapes[focusedShape].mPosition.x += TRANSLATE_RATE * dt;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) // Set triangle rendering mode
-		{
-			renderingMode = GL_TRIANGLES;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) // Set line rendering mode
-		{
-			renderingMode = GL_LINE_LOOP;
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) // Set point rendering mode
-		{
-			renderingMode = GL_POINTS;
-		}
 
 		if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
 			emitter.EmitBurst(cameraPosition + cameraLookAt * BURST_DISTANCE_FROM_CAMERA, 100, 5.0f, particleTexture);
 			soundEngine->play2D(AUDIO_PATH_WOW);
 		}
 
-		// Reshuffle shape
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-		{
-			shapes[focusedShape].Reshuffle();
-		}
-		// Reset shape position and orientation
-		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		{
-			shapes[focusedShape].ResetPosition();
-		}
-
-		if (moveCameraToDestination) {
-			// Slide the camera towards its destination
-			vec3 cameraDelta = cameraDestination - cameraPosition;
-			if (abs(cameraDelta.x) < 0.1 && abs(cameraDelta.y) < 0.1 && abs(cameraDelta.z) < 0.1) {
-				// We have arrived at the destination
-				cameraPosition = cameraDestination;
-				moveCameraToDestination = false;
-			}
-			cameraPosition += cameraDelta * glm::min(CAMERA_JUMP_SPEED * dt, 1.0f);
-
-			// Reset camera orientation
-			cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
-			cameraUp.x = 0.0f; cameraUp.y = 1.0f; cameraUp.z = 0.0f;
-			cameraHorizontalAngle = 90.0f;
-			cameraVerticalAngle = 0.0f;
-			shaderManager.setVec3("cameraPosition", cameraPosition);
-		}
 
 		//Antonio's part
 		vec3 position = cameraPosition;
@@ -777,52 +464,97 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, vec3 leftRightColour)
+
+int createVertexArrayObjectTextured()
 {
 	// Cube model
-	// Vertex, colour, normal
+	// Vertex, normal
 	vec3 unitCube[] = {
-		vec3(-0.5f,-0.5f,-0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f), // left
-		vec3(-0.5f,-0.5f, 0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-0.5f,-0.5f,-0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), leftRightColour, vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(-1.0f, 0.0f, 0.0f), // left
+		vec3(-0.5f,-0.5f, 0.5f), vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(-1.0f, 0.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(-1.0f, 0.0f, 0.0f),
 
-		vec3(0.5f, 0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f), // far
-		vec3(-0.5f,-0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
-		vec3(-0.5f, 0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.5f, 0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.5f,-0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
-		vec3(-0.5f,-0.5f,-0.5f), frontBackColour, vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, -1.0f), // far
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, -1.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, -1.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, 0.0f, -1.0f),
 
-		vec3(0.5f,-0.5f, 0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f), // bottom
-		vec3(-0.5f,-0.5f,-0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
-		vec3(0.5f,-0.5f,-0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
-		vec3(0.5f,-0.5f, 0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
-		vec3(-0.5f,-0.5f, 0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
-		vec3(-0.5f,-0.5f,-0.5f), topBottomColour, vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, -1.0f, 0.0f), // bottom
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.5f,-0.5f,-0.5f), vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, -1.0f, 0.0f),
+		vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, -1.0f, 0.0f),
+		vec3(-0.5f,-0.5f,-0.5f), vec3(0.0f, -1.0f, 0.0f),
 
-		vec3(-0.5f, 0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f), // near
-		vec3(-0.5f,-0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.5f, 0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
-		vec3(-0.5f, 0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), frontBackColour, vec3(0.0f, 0.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 0.0f, 1.0f), // near
+		vec3(-0.5f,-0.5f, 0.5f), vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 0.0f, 1.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 0.0f, 1.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(0.0f, 0.0f, 1.0f),
 
-		vec3(0.5f, 0.5f, 0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f), // right
-		vec3(0.5f,-0.5f,-0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
-		vec3(0.5f, 0.5f,-0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
-		vec3(0.5f,-0.5f,-0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
-		vec3(0.5f, 0.5f, 0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
-		vec3(0.5f,-0.5f, 0.5f), leftRightColour, vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f), // right
+		vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f,-0.5f,-0.5f), vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f, 0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
+		vec3(0.5f,-0.5f, 0.5f), vec3(1.0f, 0.0f, 0.0f),
 
-		vec3(0.5f, 0.5f, 0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f), // top
-		vec3(0.5f, 0.5f,-0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.5f, 0.5f, 0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), topBottomColour, vec3(0.0f, 1.0f, 0.0f)
+		vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f), // top
+		vec3(0.5f, 0.5f,-0.5f), vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 1.0f, 0.0f),
+		vec3(0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f,-0.5f), vec3(0.0f, 1.0f, 0.0f),
+		vec3(-0.5f, 0.5f, 0.5f), vec3(0.0f, 1.0f, 0.0f)
+	};
+
+	vec2 uvMap[] = {
+		vec2(0.0f, 0.0f), // left
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+
+		vec2(0.0f, 1.0f), // far
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 0.0f),
+
+		vec2(1.0f, 1.0f), // bottom
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+
+		vec2(0.0f, 1.0f), // near
+		vec2(0.0f, 0.0f),
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(1.0f, 0.0f),
+
+		vec2(0.0f, 1.0f), // right
+		vec2(1.0f, 0.0f),
+		vec2(1.0f, 1.0f),
+		vec2(1.0f, 0.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f),
+
+		vec2(1.0f, 0.0f), // top
+		vec2(1.0f, 1.0f),
+		vec2(0.0f, 1.0f),
+		vec2(1.0f, 0.0f),
+		vec2(0.0f, 1.0f),
+		vec2(0.0f, 0.0f)
 	};
 
 	// Create a vertex array
@@ -837,120 +569,34 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(unitCube), unitCube, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0,    // Location 0 matches aPos in Vertex Shader
-		3,						// size
-		GL_FLOAT,				// type
-		GL_FALSE,				// normalized?
-		3 * sizeof(vec3),		// stride
-		(void*)0				// array buffer offset
+		3,                        // size
+		GL_FLOAT,                // type
+		GL_FALSE,                // normalized?
+		2 * sizeof(vec3),        // stride
+		(void*)0                // array buffer offset
 	);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1,	// Location 1 matches aColor in Vertex Shader
+	glVertexAttribPointer(1,    // Location 1 matches aNormal in Vertex Shader
 		3,
 		GL_FLOAT,
 		GL_FALSE,
-		3 * sizeof(vec3),
+		2 * sizeof(vec3),
 		(void*)(sizeof(vec3))
 	);
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2,	// Location 2 matches aNormal in Vertex Shader
-		3,
+	GLuint uvMapVertexBufferObject;
+	glGenBuffers(1, &uvMapVertexBufferObject);
+	glBindBuffer(GL_ARRAY_BUFFER, uvMapVertexBufferObject);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uvMap), uvMap, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(2,    // attribute 2 matches aUV in Vertex Shader
+		2,
 		GL_FLOAT,
 		GL_FALSE,
-		3 * sizeof(vec3),
-		(void*)(sizeof(vec3) * 2)
-	);
-	glEnableVertexAttribArray(2);
-
-	glBindVertexArray(0);
-
-	return vertexArrayObject;
-}
-
-int createVertexArrayObjectSingleColoured(vec3 colour)
-{
-	// Cube model
-	// Vertex, colour, normal
-	vec3 unitCube[] = {
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f), // left
-		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(-1.0f, 0.0f, 0.0f),
-
-		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f), // far
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
-		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
-		vec3(0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, 0.0f, -1.0f),
-
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f), // bottom
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
-		vec3(0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
-		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
-		vec3(-0.5f,-0.5f,-0.5f), colour, vec3(0.0f, -1.0f, 0.0f),
-
-		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f), // near
-		vec3(-0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
-		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(0.0f, 0.0f, 1.0f),
-
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f), // right
-		vec3(0.5f,-0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
-		vec3(0.5f, 0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
-		vec3(0.5f,-0.5f,-0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
-		vec3(0.5f,-0.5f, 0.5f), colour, vec3(1.0f, 0.0f, 0.0f),
-
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f), // top
-		vec3(0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
-		vec3(0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f,-0.5f), colour, vec3(0.0f, 1.0f, 0.0f),
-		vec3(-0.5f, 0.5f, 0.5f), colour, vec3(0.0f, 1.0f, 0.0f)
-	};
-
-	// Create a vertex array
-	GLuint vertexArrayObject;
-	glGenVertexArrays(1, &vertexArrayObject);
-	glBindVertexArray(vertexArrayObject);
-
-	// Upload Vertex Buffer to the GPU, keep a reference to it (vertexBufferObject)
-	GLuint vertexBufferObject;
-	glGenBuffers(1, &vertexBufferObject);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(unitCube), unitCube, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0,    // Location 0 matches aPos in Vertex Shader
-		3,						// size
-		GL_FLOAT,				// type
-		GL_FALSE,				// normalized?
-		3 * sizeof(vec3),		// stride
-		(void*)0				// array buffer offset
-	);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1,	// Location 1 matches aColor in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		3 * sizeof(vec3),
-		(void*)(sizeof(vec3))
-	);
-	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2,	// Location 2 matches aNormal in Vertex Shader
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		3 * sizeof(vec3),
-		(void*)(sizeof(vec3) * 2)
+		sizeof(vec2),
+		(void*)0
 	);
 	glEnableVertexAttribArray(2);
 
@@ -1179,14 +825,12 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 
 void windowSizeCallback(GLFWwindow* window, int width, int height) {
 
-	ControlState controlState = *(ControlState*)glfwGetWindowUserPointer(window);
-
 	glViewport(0, 0, width, height);
 
 	GLint shaderProgram = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &shaderProgram);
 
-	mat4 projectionMatrix = perspective(radians(*controlState.fieldOfView),            // field of view in degrees
+	mat4 projectionMatrix = glm::perspective(radians(FIELD_OF_VIEW),            // field of view in degrees
 		(float)width / (float)height,  // aspect ratio
 		NEAR_PLANE, FAR_PLANE);   // near and far (near > 0)
 
@@ -1196,80 +840,31 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
-	ControlState controlState = *(ControlState*)glfwGetWindowUserPointer(window);
+	vector<ScheduledEvent>* eventQueue = (vector<ScheduledEvent>*)glfwGetWindowUserPointer(window);
 
-	if (key == GLFW_KEY_I && action == GLFW_PRESS) {
-		controlState.shapes->at(*(controlState.focusedShape)).mPosition.z -= TRANSLATE_RATE * 0.2;
+	if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+		eventQueue->push_back({ INPUT_UP, 0 });
 	}
-	if (key == GLFW_KEY_K && action == GLFW_PRESS) {
-		controlState.shapes->at(*(controlState.focusedShape)).mPosition.z += TRANSLATE_RATE * 0.2;
+	if (key == GLFW_KEY_A && action == GLFW_PRESS) {
+		eventQueue->push_back({ INPUT_DOWN, 0 });
 	}
-	//Texture toggle
-	if (key == GLFW_KEY_X && action == GLFW_PRESS) {
-		*controlState.showTexture = !*controlState.showTexture;
+	if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+		eventQueue->push_back({ INPUT_LEFT, 0 });
 	}
-	if (key == GLFW_KEY_B && action == GLFW_PRESS) {
-		*controlState.showShadow = !*controlState.showShadow;
+	if (key == GLFW_KEY_D && action == GLFW_PRESS) {
+		eventQueue->push_back({ INPUT_RIGHT, 0 });
+	}
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		eventQueue->push_back({ EXIT_PROGRAM, 0 });
 	}
 }
 
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture) {
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObject*>* gameEntities) {
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tileTexture);
-	//Draw Tiles
-	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-	for (int i = -GRID_SIZE / 2 / FLOOR_SCALE; i <= GRID_SIZE / 2 / FLOOR_SCALE; i++) {
-		for (int j = -GRID_SIZE / 2 / FLOOR_SCALE; j <= GRID_SIZE / 2 / FLOOR_SCALE; j++) {
-			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, -0.1f, j * FLOOR_SCALE)) * scale(mat4(1.0f), vec3(FLOOR_SCALE, 0.01f, FLOOR_SCALE));
-			shaderManager.setMat4("worldMatrix", tileMatrix);
-			glDrawArrays(renderingMode, 0, 36);
-		}
-	}
-	// Draw grid
-	glBindVertexArray(createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f)));
 
-	for (int i = -GRID_SIZE / 2; i <= GRID_SIZE / 2; i++) {
-		mat4 gridMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, i)) * scale(mat4(1.0f), vec3(100.0f, 0.02f, 0.02f));
-		shaderManager.setMat4("worldMatrix", gridMatrix);
-		glDrawArrays(renderingMode, 0, 36);
-	}
-	for (int i = -GRID_SIZE / 2; i <= GRID_SIZE / 2; i++) {
-		mat4 gridMatrix = translate(mat4(1.0f), vec3(i, 0.0f, 0.0f)) * scale(mat4(1.0f), vec3(0.02f, 0.02f, 100.0f));
-		shaderManager.setMat4("worldMatrix", gridMatrix);
-		glDrawArrays(renderingMode, 0, 36);
+	for (GameObject*& entity : *gameEntities) {
+		entity->draw(&renderingMode, &shaderManager);
 	}
 
-	// Draw coordinate axes
-	glBindVertexArray(xLineColour);
-	mat4 xLine = translate(mat4(1.0f), vec3(2.5f, 0.1f, 0.0f)) * scale(mat4(1.0f), vec3(5.0f, 0.1f, 0.1f));
-	shaderManager.setMat4("worldMatrix", xLine);
-	glDrawArrays(renderingMode, 0, 36);
-	glBindVertexArray(yLineColour);
-	mat4 yLine = translate(mat4(1.0f), vec3(0.0f, 2.6f, 0.0f)) * scale(mat4(1.0f), vec3(0.1f, 5.0f, 0.1f));
-	shaderManager.setMat4("worldMatrix", yLine);
-	glDrawArrays(renderingMode, 0, 36);
-	glBindVertexArray(zLineColour);
-	mat4 zLine = translate(mat4(1.0f), vec3(0.0f, 0.1f, 2.5f)) * scale(mat4(1.0f), vec3(0.1f, 0.1f, 5.0f));
-	shaderManager.setMat4("worldMatrix", zLine);
-	glDrawArrays(renderingMode, 0, 36);
-
-	// Draw shapes and walls
-	for (Shape shape : shapes) {
-		shape.Draw(renderingMode, shaderManager);
-
-		shaderManager.setBool("ignoreLighting", true);
-		shape.DrawGlow(renderingMode, shaderManager);
-		shaderManager.setBool("ignoreLighting", false);
-	}
-
-	for (Wall wall : walls) {
-		wall.Draw(renderingMode, shaderManager);
-	}
-
-	shaderManager.setBool("ignoreLighting", true);
-	lightbulb.Draw(renderingMode, shaderManager);
-	shaderManager.setBool("ignoreLighting", false);
-
-	glBindVertexArray(0);
 }

@@ -5,6 +5,7 @@ layout (location = 1) in vec3 aColor;
 layout (location = 2) in vec3 aNormal;
 layout (location = 3) in vec2 aUV;
 
+uniform vec3 aColor;
 uniform vec3 colour = vec3(1.0, 1.0, 1.0);
 uniform mat4 worldMatrix;
 uniform mat4 viewMatrix = mat4(1.0); // default value for view matrix (identity)
