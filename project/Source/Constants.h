@@ -37,6 +37,10 @@ constexpr float BURST_DISTANCE_FROM_CAMERA = 1.0f;
 constexpr float FLAME_RISE = 1.0f;
 constexpr float FLAME_SCALE = 0.2f;
 
+constexpr float ANIMATE_CREATION_MOVE_SPEED = 20.0f;
+constexpr int ANIMATE_CREATION_VOXEL_SPREAD = 10;
+constexpr float ANIMATE_ROTATE_SPEED = 10.0f;
+
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
 constexpr char FRAGMENT_SHADER_FILEPATH[] = "../Source/TexturedFrag.glsl";
 

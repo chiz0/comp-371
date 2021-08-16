@@ -61,8 +61,7 @@ void Shape::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
 	glBindTexture(GL_TEXTURE_2D, _texture);
 	shaderProgram->setVec3("colour", _colour);
 	shaderProgram->setInt("textureSampler", 0);
-	quat orientationQuat(displayOrientation);
-	mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(orientationQuat) * scale(mat4(1.0f), _scale);
+	mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(displayOrientation) * scale(mat4(1.0f), _scale);
 	for (auto it = begin(voxels); it != end(voxels); ++it) {
 		it->anchorMatrix = worldMatrix;
 		it->draw(renderingMode, shaderProgram);
@@ -115,6 +114,10 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
 	}
 	case ANIMATE_ROTATE: {
 		userInputResponse = false;
+
+		// TODO: Find the midpoint between two quaternions
+		//quat inverse = quat(_orientation.w, -_orientation.x, -_orientation.y, -_orientation.z);
+
 		bool finished = true;
 			if (displayOrientation.x < _orientation.x - ANIMATE_ROTATE_SPEED * dt) {
 				displayOrientation.x += ANIMATE_ROTATE_SPEED * dt;
@@ -165,78 +168,60 @@ void Shape::processEvent(Event event) {
 	if (userInputResponse) {
 		switch (event) {
 			
-		case INPUT_UP: {
-			/*
-			_orientation.x -= cos(radians(_orientation.y)) * cos(radians(_orientation.z));
-			_orientation.y += cos(radians(_orientation.y)) * sin(radians(_orientation.z));
-			_orientation.z -= sin(radians(_orientation.y));
-			*/
-			_orientation.x -= radians(90.0f);
-			state = ANIMATE_ROTATE;
-			break;
-		}
-		case INPUT_DOWN: {
-			/*
-			_orientation.x += cos(radians(_orientation.y)) * cos(radians(_orientation.z));
-			_orientation.y -= cos(radians(_orientation.y)) * sin(radians(_orientation.z));
-			_orientation.z += sin(radians(_orientation.y));
-			*/
-			_orientation.x += radians(90.0f);
-			state = ANIMATE_ROTATE;
-			break;
-		}
-		case INPUT_LEFT: {
-			/*
-			if (sin(radians(_orientation.x)) >= 0.9 && sin(radians(_orientation.y)) >= 0.9 && cos(radians(_orientation.z)) >= 0.9 || sin(radians(_orientation.x)) <= -0.9 && sin(radians(_orientation.y)) >= 0.9 && cos(radians(_orientation.z)) <= -0.9) {
-				_orientation.x -= radians(90.0f);
+			case INPUT_UP: {
+				/*
+				_orientation.x -= cos(radians(_orientation.y)) * cos(radians(_orientation.z));
+				_orientation.y += cos(radians(_orientation.y)) * sin(radians(_orientation.z));
+				_orientation.z -= sin(radians(_orientation.y));
+				*/
+				_orientation *= angleAxis(radians(90.0f), vec3(-1.0f, 0.0f, 0.0f));
+				state = ANIMATE_ROTATE;
+				break;
 			}
-			else {
-				_orientation.x -= (cos(radians(_orientation.x)) * sin(radians(_orientation.z)) + abs(sin(radians(_orientation.x)) * sin(radians(_orientation.y)) * cos(radians(_orientation.z))));
-				_orientation.y -= (cos(radians(_orientation.x)) * cos(radians(_orientation.z)) + sin(radians(_orientation.x)) * sin(radians(_orientation.y)) * sin(radians(_orientation.z)));
-				_orientation.z += sin(radians(_orientation.x)) * cos(radians(_orientation.y));
+			case INPUT_DOWN: {
+				/*
+				_orientation.x += cos(radians(_orientation.y)) * cos(radians(_orientation.z));
+				_orientation.y -= cos(radians(_orientation.y)) * sin(radians(_orientation.z));
+				_orientation.z += sin(radians(_orientation.y));
+				*/
+				_orientation *= angleAxis(radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
+				state = ANIMATE_ROTATE;
+				break;
 			}
-			*/
-			_orientation.y -= radians(90.0f);
-			state = ANIMATE_ROTATE;
-			break;
-		}
-		case INPUT_RIGHT: {
-			/*
-			if (sin(radians(_orientation.x)) >= 0.9 && sin(radians(_orientation.y)) >= 0.9 && cos(radians(_orientation.z)) >= 0.9 || sin(radians(_orientation.x)) <= -0.9 && sin(radians(_orientation.y)) >= 0.9 && cos(radians(_orientation.z)) <= -0.9) {
-				_orientation.x += radians(90.0f);
+			case INPUT_LEFT: {
+				/*
+				if (sin(radians(_orientation.x)) >= 0.9 && sin(radians(_orientation.y)) >= 0.9 && cos(radians(_orientation.z)) >= 0.9 || sin(radians(_orientation.x)) <= -0.9 && sin(radians(_orientation.y)) >= 0.9 && cos(radians(_orientation.z)) <= -0.9) {
+					_orientation.x -= radians(90.0f);
+				}
+				else {
+					_orientation.x -= (cos(radians(_orientation.x)) * sin(radians(_orientation.z)) + abs(sin(radians(_orientation.x)) * sin(radians(_orientation.y)) * cos(radians(_orientation.z))));
+					_orientation.y -= (cos(radians(_orientation.x)) * cos(radians(_orientation.z)) + sin(radians(_orientation.x)) * sin(radians(_orientation.y)) * sin(radians(_orientation.z)));
+					_orientation.z += sin(radians(_orientation.x)) * cos(radians(_orientation.y));
+				}
+				*/
+				_orientation *= angleAxis(radians(90.0f), vec3(0.0f,-1.0f, 0.0f));
+				state = ANIMATE_ROTATE;
+				break;
 			}
-			else {
-				_orientation.x += (cos(radians(_orientation.x)) * sin(radians(_orientation.z)) + abs(sin(radians(_orientation.x)) * sin(radians(_orientation.y)) * cos(radians(_orientation.z))));
-				_orientation.y += (cos(radians(_orientation.x)) * cos(radians(_orientation.z)) + sin(radians(_orientation.x)) * sin(radians(_orientation.y)) * sin(radians(_orientation.z)));
-				_orientation.z -= sin(radians(_orientation.x)) * cos(radians(_orientation.y));
+			case INPUT_RIGHT: {
+				/*
+				if (sin(radians(_orientation.x)) >= 0.9 && sin(radians(_orientation.y)) >= 0.9 && cos(radians(_orientation.z)) >= 0.9 || sin(radians(_orientation.x)) <= -0.9 && sin(radians(_orientation.y)) >= 0.9 && cos(radians(_orientation.z)) <= -0.9) {
+					_orientation.x += radians(90.0f);
+				}
+				else {
+					_orientation.x += (cos(radians(_orientation.x)) * sin(radians(_orientation.z)) + abs(sin(radians(_orientation.x)) * sin(radians(_orientation.y)) * cos(radians(_orientation.z))));
+					_orientation.y += (cos(radians(_orientation.x)) * cos(radians(_orientation.z)) + sin(radians(_orientation.x)) * sin(radians(_orientation.y)) * sin(radians(_orientation.z)));
+					_orientation.z -= sin(radians(_orientation.x)) * cos(radians(_orientation.y));
 				
-			}*/
-			_orientation.y += radians(90.0f);
-			state = ANIMATE_ROTATE;
-			break;
+				}*/
+				_orientation *= angleAxis(radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+				state = ANIMATE_ROTATE;
+				break;
+			}
 		}
-		}
-		
-		if (_orientation.x >= radians(360.0f)) {
-			_orientation.x -= radians(360.0f);
-		}
-		else if (_orientation.x < radians(0.0f)) {
-			_orientation.x += radians(360.0f);
-		}
-		if (_orientation.y >= radians(360.0f)) {
-			_orientation.y -= radians(360.0f);
-		}
-		else if (_orientation.y < radians(0.0f)) {
-			_orientation.y += radians(360.0f);
-		}
-		if (_orientation.z >= radians(360.0f)) {
-			_orientation.z -= radians(360.0f);
-		}
-		else if (_orientation.z < radians(0.0f)) {
-			_orientation.z += radians(360.0f);
-		}
-		
 
+		_orientation = normalize(_orientation);
+		
 		vector<float*> scalars = { &_orientation.x, &_orientation.y, &_orientation.z };
 		for (float* scalar : scalars) {
 			if (*scalar <= radians(1.0f) || *scalar >= radians(359.0f)) {
@@ -428,8 +413,9 @@ void Shape::init(vector<ivec3> description) {
 }
 
 void Shape::randomRightAngleRotations() {
-	_orientation.x = radians((rand() % 4) * 90.0f);
-	_orientation.y = radians((rand() % 4) * 90.0f);
-	_orientation.z = radians((rand() % 4) * 90.0f);
+	_orientation *= angleAxis((rand() % 4) * 90.0f, vec3(1.0f, 0.0f, 0.0f));
+	_orientation *= angleAxis((rand() % 4) * 90.0f, vec3(0.0f, 1.0f, 0.0f));
+	_orientation *= angleAxis((rand() % 4) * 90.0f, vec3(0.0f, 0.0f, 1.0f));
+	_orientation = normalize(_orientation);
 	displayOrientation = _orientation;
 }

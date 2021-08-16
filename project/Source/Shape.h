@@ -42,14 +42,11 @@ public:
         ANIMATE_ROTATE
     } state = INITIALIZED;
     vec3 _position;
-    vec3 _orientation = vec3(0);
+    quat _orientation = quat();
     vec3 _scale = vec3(1.0f);
     vec3 _colour;
     int _texture;
-    vec3 displayOrientation = vec3(0);
-    const float ANIMATE_CREATION_MOVE_SPEED = 20.0f;
-    const int ANIMATE_CREATION_VOXEL_SPREAD = 10;
-    const float ANIMATE_ROTATE_SPEED = 10.0f;
+    quat displayOrientation = quat();
 
 private:
     // Functions
