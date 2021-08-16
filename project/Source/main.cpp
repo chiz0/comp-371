@@ -64,7 +64,7 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 int createVertexArrayObjectSingleColoured(vec3 colour);
 int createVertexArrayObjectTextured(vec3 colour);
 int loadTexture(string name, char* path);
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture);
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture, vec3 cameraPos);
 
 bool initContext();
 
@@ -138,6 +138,10 @@ int main(int argc, char* argv[])
 	int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
 	int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
 	int fireTexture = loadTexture("fireTexture", TEXTURE_PATH_FIRE);
+	int TTexture = loadTexture("TTexture", TEXTURE_PATH_T);
+	int ITexture = loadTexture("ITexture", TEXTURE_PATH_I);
+	int MTexture = loadTexture("MTexture", TEXTURE_PATH_M);
+	int ETexture = loadTexture("ETexture", TEXTURE_PATH_E);
 
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
@@ -361,7 +365,7 @@ int main(int argc, char* argv[])
 	int wallColour = createVertexArrayObjectTextured(vec3(0.8f, 0.2f, 0.2f));
 	int tileColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
 	int glowColour = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
-
+	
 	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, STAGE_WIDTH), chiShape, chiColour, glowColour, false, 1.0f, metalTexture, fireTexture));
 	shapes.push_back(Shape(vec3(-STAGE_WIDTH, 10.0f, STAGE_WIDTH), alexShape, alexColour, glowColour, false, 1.0f, metalTexture, fireTexture));
 	shapes.push_back(Shape(vec3(STAGE_WIDTH, 10.0f, -STAGE_WIDTH), theoShape, theoColour, glowColour, false, 1.0f, metalTexture, fireTexture));
@@ -385,7 +389,7 @@ int main(int argc, char* argv[])
 		CAMERA_OFFSET + shapes[2].mPosition,
 		CAMERA_OFFSET + shapes[3].mPosition
 	};
-
+	
 	// Camera parameters for view transform
 	vec3 cameraPosition = vec3(0.0f, 20.0f, 20.0f);
 	vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
@@ -398,8 +402,9 @@ int main(int argc, char* argv[])
 	mat4 viewMatrix = lookAt(cameraPosition,  // eye
 		cameraPosition + cameraLookAt,  // center
 		cameraUp); // up
-
 	shaderManager.setMat4("viewMatrix", viewMatrix);
+
+	
 
 	// Set up lighting
 	vec3 lightPosition = LIGHT_OFFSET;
@@ -459,7 +464,7 @@ int main(int argc, char* argv[])
 			shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 		shadowShaderManager.setFloat("farPlane", far_plane);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
-		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
+		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, tileTexture, cameraPosition);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
@@ -475,7 +480,7 @@ int main(int argc, char* argv[])
 		shaderManager.setFloat("farPlane", far_plane);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, tileTexture);
+		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, tileTexture, cameraPosition);
 
 		// End Frame
 		glfwSwapBuffers(window);
@@ -1218,11 +1223,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	}
 }
 
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture) {
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture, vec3 cameraPos) {
 
+	
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tileTexture);
-
+	
 	//Draw Tiles
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
 	for (int i = -GRID_SIZE / 2 / FLOOR_SCALE; i <= GRID_SIZE / 2 / FLOOR_SCALE; i++) {
@@ -1234,7 +1240,6 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 	}
 	// Draw grid
 	glBindVertexArray(createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 0.0f)));
-
 	for (int i = -GRID_SIZE / 2; i <= GRID_SIZE / 2; i++) {
 		mat4 gridMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, i)) * scale(mat4(1.0f), vec3(100.0f, 0.02f, 0.02f));
 		shaderManager.setMat4("worldMatrix", gridMatrix);
@@ -1245,6 +1250,52 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 		shaderManager.setMat4("worldMatrix", gridMatrix);
 		glDrawArrays(renderingMode, 0, 36);
 	}
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//Draw Time
+	mat4 timeT = translate(mat4(1.0f), vec3(cameraPos.x+10, cameraPos.y+16, cameraPos.z-25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0.1f));
+	shaderManager.setMat4("worldMatrix", timeT);
+	glDrawArrays(renderingMode, 0, 36);
+	mat4 timeI = translate(mat4(1.0f), vec3(cameraPos.x + 12, cameraPos.y + 16, cameraPos.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0.1f));
+	shaderManager.setMat4("worldMatrix", timeI);
+	glDrawArrays(renderingMode, 0, 36);
+
+
+
+
+
+
+
 
 	// Draw coordinate axes
 	glBindVertexArray(xLineColour);

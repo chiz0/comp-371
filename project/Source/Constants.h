@@ -41,3 +41,8 @@ constexpr char* TEXTURE_PATH_TILE = "../Assets/Textures/tile.jpg";
 constexpr char* TEXTURE_PATH_METAL = "../Assets/Textures/metal.jpg";
 constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";
 constexpr char* TEXTURE_PATH_FIRE = "../Assets/Textures/fire.jpg";
+constexpr char* TEXTURE_PATH_T = "../Assets/Textures/LetterT.jpg";
+constexpr char* TEXTURE_PATH_I = "../Assets/Textures/LetterI.jpg";
+constexpr char* TEXTURE_PATH_M = "../Assets/Textures/LetterM.jpg";
+constexpr char* TEXTURE_PATH_E = "../Assets/Textures/LetterE.jpg";
+
