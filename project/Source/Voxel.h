@@ -22,12 +22,12 @@ using namespace glm;
 
 class Voxel {
 public:
-	// Functions
-    Voxel(vec3 position);	// Default constructor
+    // Functions
+    Voxel(vec3 position);    // Default constructor
 
-    void draw(GLenum* renderingMode, ShaderManager* shaderProgram);			// Draw voxel to world
+    void draw(GLenum* renderingMode, ShaderManager* shaderProgram);            // Draw voxel to world
 
-	// Properties
+    // Properties
     mat4 anchorMatrix = mat4(1.0f);
     vec3 displayPosition;
     quat displayOrientation = vec3(0);

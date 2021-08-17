@@ -62,16 +62,45 @@ void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {
             if (testCollision()) {
                 eventQueue->push_back({ LEVEL_SUCCESS, 0 });
                 state = SUCCESS;
+                timer = -1;
             }
             else {
                 eventQueue->push_back({ LEVEL_FAILED, 0 });
-                state = FAILED;
+                state = FAILURE;
+                timer = 0;
             }
         }
         break;
     }
     case SUCCESS: {
+        speed = INITIAL_WALL_SPEED;
         _position.z += speed * dt;
+        timer += dt;
+        if (timer >= 0) {
+            for (auto it = begin(voxels); it != end(voxels); ++it) {
+                if (it->_position.x + offset.x + (offset.x * (it->_position.y + offset.y) * ANIMATE_DESTRUCTION_LINE_INTERVAL) <= timer * ANIMATE_DESTRUCTION_VOXEL_INTERVAL || abs(it->_position.x - offset.x) + (offset.x * (it->_position.y + offset.y) * ANIMATE_DESTRUCTION_LINE_INTERVAL) <= timer * ANIMATE_DESTRUCTION_VOXEL_INTERVAL) {
+                    if (it->displayPosition.x > 0) {
+                        it->displayPosition.x += sqrt(abs(it->_position.x)) * ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
+                    }
+                    else if (it->displayPosition.x < 0) {
+                        it->displayPosition.x -= sqrt(abs(it->_position.x)) * ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
+                    }
+                    it->displayPosition.y -= powf((20 - it->_position.y), 2) * 0.03 * ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
+                }
+            }
+        }
+        if (timer >= 5) {
+            destroyFlag = true;
+        }
+        break;
+    }
+    case FAILURE: {
+        speed += 1 * dt;
+        _position.z += speed * dt;
+        timer += dt;
+        if (timer >= 10) {
+            destroyFlag = true;
+        }
         break;
     }
     }

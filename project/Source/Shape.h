@@ -31,7 +31,8 @@ public:
     // Properties
     double timer = 0;
     vector<Voxel> voxels;
-    vector<vector<vector<bool>>> map3D;
+    vector<vector<vector<bool>>> origMap3D;
+    vector<vector<vector<bool>>> currentMap3D;
     vec3 centerOffset;
     bool userInputResponse = false;
     enum {
@@ -39,7 +40,7 @@ public:
         IDLE,
         ANIMATE_CREATION,
         ANIMATE_DESTRUCTION,
-        ANIMATE_ROTATE
+        ANIMATE_ROTATE,
     } state = INITIALIZED;
     vec3 _position;
     quat _orientation = quat();
@@ -50,10 +51,12 @@ public:
     const float ANIMATE_CREATION_MOVE_SPEED = 20.0f;
     const int ANIMATE_CREATION_VOXEL_SPREAD = 10;
     const float ANIMATE_ROTATE_SPEED = 10.0f;
+    const float ANIMATE_DESTRUCTION_MOVE_SPEED = 0.5f;
 
 private:
     // Functions
     void init(vector<ivec3> description);
+    void transposeMap(Event event);
     void randomRightAngleRotations();
 
     // Properties

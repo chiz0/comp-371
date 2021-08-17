@@ -40,7 +40,7 @@ public:
         IDLE,
         ANIMATE_CREATION,
         ANIMATE_DESTRUCTION,
-        FAILED,
+        FAILURE,
         SUCCESS
     } state = INITIALIZED;
     vec3 _position;
@@ -53,4 +53,7 @@ public:
     const float ANIMATE_CREATION_MOVE_SPEED = 50.0f;
     const float ANIMATE_CREATION_VOXEL_INTERVAL = 3.0f;
     const float ANIMATE_CREATION_SIMULTANEOUS_ROWS = 3.0f;
+    const float ANIMATE_DESTRUCTION_MOVE_SPEED = 2.0f;
+    const float ANIMATE_DESTRUCTION_VOXEL_INTERVAL = 15.0f;
+    const float ANIMATE_DESTRUCTION_LINE_INTERVAL = 0.8f;
 };
