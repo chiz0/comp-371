@@ -49,8 +49,6 @@ public:
     vec3 _scale = vec3(1.0f);
     vec3 _colour;
     int _texture;
-    int _height;
-    int _width;
     float speed = 0;
     Emitter* particleEmitter;
     const float ANIMATE_CREATION_VOXEL_FALL_HEIGHT = 30.0f;

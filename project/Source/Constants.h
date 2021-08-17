@@ -31,11 +31,16 @@ constexpr float SHADOW_WIDTH = 1024.0f;						// Width of the viewport used by th
 constexpr float SHADOW_HEIGHT = 1024.0f;					// Height of the viewport used by the shadow shader
 constexpr float NEAR_PLANE = 0.01f;							// How close to the camera something may be drawn
 constexpr float FAR_PLANE = 100.0f;							// How far away to draw objects
+
+// Particle values
 constexpr float GRAVITY = 4.0f;								// Downward force applied to some particles
 constexpr float BURST_SCALE = 0.3f;							// How large each burst particle should be
 constexpr float FLAME_RISE = 1.0f;							// How quickly flames should accelerate upward from the origin
 constexpr float FLAME_SCALE = 0.2f;							// How large each flame particle should be
+constexpr int DEFAULT_BURST_AMOUNT = 50;					// How many particles should be in a default burst
+constexpr float DEFAULT_BURST_FORCE = 10.0f;				// How powerful a default burst should be
 
+// Wall speed values
 constexpr float INITIAL_WALL_SPEED = 1.5f;					// The starting speed of walls moving towards objects
 constexpr float DIFFICULTY_SPEED_GROWTH = 0.1f;				// How much to increment the wall speed as difficulty increases
 constexpr float DIFFICULTY_SPEED_MAX = 4.0f;				// How much to increment the wall speed as difficulty increases

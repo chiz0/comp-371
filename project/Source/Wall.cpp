@@ -5,10 +5,8 @@ Wall::Wall(vec3 position, Shape* shape, vec3 colour, int texture) : _position(po
     hole = projection;
 
     offset = vec2(projection.size() / 2 + PADDING, projection[0].size() / 2 + PADDING);
-    _width = projection.size() + 2 * PADDING;
-    _height = projection[0].size() + 2 * PADDING;
-    for (int i = 0; i < _width; i++) {
-        for (int j = 0; j < _height; j++) {
+    for (int i = 0; i < projection.size() + 2 * PADDING; i++) {
+        for (int j = 0; j < projection[0].size() + 2 * PADDING; j++) {
             if (i < PADDING || j < PADDING || i >= PADDING + projection.size() || j >= PADDING + projection[0].size() || i - PADDING >= 0 && j - PADDING >= 0 && !projection[i - PADDING][j - PADDING]) {
                 voxels.push_back(Voxel(vec3(i - offset.x, j - offset.y, 0)));
             }
@@ -64,8 +62,8 @@ void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {
                 eventQueue->push_back({ LEVEL_SUCCESS, 0 });
                 state = SUCCESS;
                 timer = -1;
-                particleEmitter->EmitBurst(_position + vec3(_width / 2, _height, 0.0f), 50, 10.0f);
-                particleEmitter->EmitBurst(_position + vec3(-_width / 2, _height, 0.0f), 50, 10.0f);
+                particleEmitter->EmitBurst(_position + vec3(hole.size() / 2 * PADDING, hole[0].size() + 2 * PADDING, 0.0f), DEFAULT_BURST_AMOUNT, DEFAULT_BURST_FORCE);
+                particleEmitter->EmitBurst(_position + vec3(-((int)hole.size() / 2 * PADDING), hole[0].size() + 2 * PADDING, 0.0f), DEFAULT_BURST_AMOUNT, DEFAULT_BURST_FORCE);
             }
             else {
                 eventQueue->push_back({ LEVEL_FAILED, 0 });
