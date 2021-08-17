@@ -12,7 +12,7 @@ vector<Shape> shapes;
 vector<Shape> owChunks[30];
 vector<Model> mobs[30];
 
-vector<struct coordinates> grassHillShape{
+vector<ivec3> grassHillShape{
 			{0,0,0},
 			{ 8, 1, 0 },
 			{ 9, 1, 0 },
@@ -618,7 +618,7 @@ vector<struct coordinates> grassHillShape{
 
 };
 
-vector<struct coordinates> treeTrunk{
+vector<ivec3> treeTrunk{
 	{ 0, 0, 0 },
 	{ 0, 1, 0 },
 	{ 0, 2, 0 },
@@ -626,7 +626,7 @@ vector<struct coordinates> treeTrunk{
 	{ 0, 4, 0 }
 };
 
-vector <struct coordinates> treeLeaves{
+vector <ivec3> treeLeaves{
 	{ 0, 0, 0 },
 	{ 1, 0, 0 },
 	{ -1, 0, 0 },
@@ -687,7 +687,7 @@ vector <struct coordinates> treeLeaves{
 	{ 0, 2,  -1 }
 };
 
-vector<struct coordinates> rockFormation{
+vector<ivec3> rockFormation{
 	{ 0, 0, 0 },
 	{ 0, 1, 0 },
 	{ 0, 2, 0 },
@@ -698,13 +698,13 @@ vector<struct coordinates> rockFormation{
 	{ 1, 0, 0 },
 };
 
-vector<struct coordinates> cutPlanks{
+vector<ivec3> cutPlanks{
 	{ 0, 0, 0 },
 	{ 0, 0, 1 },
 	{ 0, 0, -1 },
 };
 
-vector<struct coordinates> cave {
+vector<ivec3> cave {
 	{ 0, 0, 0 },
 	{ 0, 0, 1 },
 	{ 0, 0, 2 },
@@ -758,8 +758,8 @@ vector<struct coordinates> cave {
 	{ 4, 1, 2 },
 }; 
 
-vector<struct coordinates> generatePortal(){
-	vector<struct coordinates> portal;
+vector<ivec3> generatePortal(){
+	vector<ivec3> portal;
 	for (int i = 0; i < 9; i++) {
 		portal.push_back({i,0,0});
 		portal.push_back({ i,8,0 });
