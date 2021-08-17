@@ -16,20 +16,28 @@ constexpr float SCALE_RATE = 0.2f;                      // The rate at which mod
 constexpr float ROTATE_RATE = 20;                       // The rate at which models rotate
 constexpr float TRANSLATE_RATE = 2.0f;                  // The rate at which models move left, right, up, and down
 constexpr float CAMERA_JUMP_SPEED = 8.0f;               // The speed at which a camera moves from model to model
-constexpr float CAMERA_ANGULAR_SPEED = 5.0f;           // The speed at which the camera rotates
-constexpr float CAMERA_SPEED = 2.0f;					// Speed of camera zooming
+constexpr float CAMERA_ANGULAR_SPEED = 60.0f;           // The speed at which the camera rotates
+constexpr float CAMERA_SPEED = 10.0f;					// Speed of camera zooming
 constexpr vec3 CAMERA_OFFSET = vec3(-2.0f, 2.0f, 10.0f);// The default position of the camera relative to a model
 constexpr float FIELD_OF_VIEW = 70.0f;					// The starting zoom level of the camera
-constexpr float LIGHT_AMBIENT_STRENGTH = 0.75f;			// Intensity of the ambient light
-constexpr float LIGHT_DIFFUSE_STRENGTH = 0.4f;			// Intensity of the diffuse light
-constexpr float LIGHT_SPECULAR_STRENGTH = 0.2f;			// Intensity of the specular light
+constexpr float LIGHT_AMBIENT_STRENGTH = 0.1f;			// Intensity of the ambient light
+constexpr float LIGHT_DIFFUSE_STRENGTH = 0.5f;			// Intensity of the diffuse light
+constexpr float LIGHT_SPECULAR_STRENGTH = 0.7f;			// Intensity of the specular light
 constexpr float SHININESS = 4.0f;						// Shininess coefficient of specular light
-constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 50.0f, 10.0f);	// Where, relative to the focused object, to place the light source
+constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 30.0f, 0.0f);	// Where, relative to the focused object, to place the light source
 constexpr float VIEW_WIDTH = 1024.0f;
 constexpr float VIEW_HEIGHT = 768.0f;
 constexpr float SHADOW_WIDTH = 1024.0f;
 constexpr float SHADOW_HEIGHT = 1024.0f;
+constexpr float NEAR_PLANE = 0.01f;
+constexpr float FAR_PLANE = 100.0f;
+constexpr float GRAVITY = 4.0f;
+constexpr float BURST_SCALE = 0.3f;
+constexpr float BURST_DISTANCE_FROM_CAMERA = 1.0f;
+constexpr float FLAME_RISE = 1.0f;
+constexpr float FLAME_SCALE = 0.2f;
 
+// SHADERS
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
 constexpr char FRAGMENT_SHADER_FILEPATH[] = "../Source/TexturedFrag.glsl";
 
@@ -37,10 +45,12 @@ constexpr char SHADOW_VERTEX_SHADER_FILEPATH[] = "../Source/ShadowVert.glsl";
 constexpr char SHADOW_FRAGMENT_SHADER_FILEPATH[] = "../Source/ShadowFrag.glsl";
 constexpr char SHADOW_DEPTH_SHADER_FILEPATH[] = "../Source/ShadowDepth.glsl";
 
+// TEXTURES
 constexpr char* TEXTURE_PATH_TILE = "../Assets/Textures/tile.jpg";
 constexpr char* TEXTURE_PATH_METAL = "../Assets/Textures/metal.jpg";
 constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";
 constexpr char* TEXTURE_PATH_FIRE = "../Assets/Textures/fire.jpg";
+constexpr char* TEXTURE_PATH_PARTICLE = "../Assets/Textures/particle.jpg";
 constexpr char* TEXTURE_PATH_GRASS = "../Assets/Textures/block/grass_block_top.png";
 constexpr char* TEXTURE_PATH_WATER = "../Assets/Textures/block/light_blue_concrete.png";
 constexpr char* TEXTURE_PATH_LOG = "../Assets/Textures/block/oak_log.png";
@@ -54,6 +64,7 @@ constexpr char* TEXTURE_PATH_NETHERRACK = "../Assets/Textures/block2/netherrack.
 constexpr char* TEXTURE_PATH_LAVA = "../Assets/Textures/block/lava_still.png";
 constexpr char* TEXTURE_PATH_ENDSTONE = "../Assets/Textures/block2/end_stone_bricks.png";
 
+// MODELS
 constexpr char* MODEL_PATH_COW = "../Assets/Models/Cow/cow+mooshroom.obj";
 constexpr char* MODEL_PATH_BLAZE = "../Assets/Models/Blaze/untitled.obj";
 constexpr char* MODEL_PATH_CHICKEN = "../Assets/Models/Chicken/chicken.obj";
@@ -68,3 +79,7 @@ constexpr char* MODEL_PATH_SPIDER = "../Assets/Models/Spider/spider.obj";
 constexpr char* MODEL_PATH_WITHERSKELETON = "../Assets/Models/Wither Skeleton/skeleton+skeleton_stray+wither_skeleton.obj";
 constexpr char* MODEL_PATH_ZOMBIE = "../Assets/Models/Zombie/zombie.obj";
 constexpr char* MODEL_PATH_CYLINDER = "../Assets/Models/CYLINDER/cylinder.obj";
+
+// AUDIO
+constexpr char* AUDIO_PATH_MUSIC = "../Assets/Audio/mii.ogg";
+constexpr char* AUDIO_PATH_WOW = "../Assets/Audio/wow.ogg";

@@ -15,10 +15,7 @@ Shape::Shape(vec3 position, vector<coordinates> description, int vao, int glowVa
 			projection[remappedCoordinates.x + WALL_SIZE / 2][remappedCoordinates.y + WALL_SIZE / 2] = true;
 		}
 	}
-
-	//BuildGlow(description);
-
-
+	
 	if (hasWall) {
 		// Create wall voxels
 		for (int i = 0; i < WALL_SIZE; i++) {

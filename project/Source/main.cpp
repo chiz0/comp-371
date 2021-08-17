@@ -1,4 +1,4 @@
-// COMP 371 Assignment 3
+// COMP 371 Final project
 // Spiral Staircase (Section DD Team 3)
 // 
 // Badele, Theodor (40129466)
@@ -37,6 +37,8 @@
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
 #include <glm/gtx/string_cast.hpp> 
+#include <time.h>
+#include <irrKlang.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -49,6 +51,11 @@
 #include "Coordinates.h"
 #include "ControlState.h"
 #include "Wall.h"
+#include "Emitter.h"
+
+using namespace glm;
+using namespace std;
+using namespace irrklang;
 #include "texture.h"
 #include "OBJloader.h"    //For loading .obj files
 #include "OBJloaderV2.h"  //For loading .obj files using a polygon list format
@@ -81,6 +88,8 @@ int main(int argc, char* argv[])
 {
 	if (!initContext()) return -1;
 
+	srand(time(NULL));
+
 	// glfw: initialize and configure
 	// ------------------------------
 	glfwInit();
@@ -96,12 +105,11 @@ int main(int argc, char* argv[])
 	ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
 	ShaderManager shadowShaderManager = ShaderManager(SHADOW_VERTEX_SHADER_FILEPATH, SHADOW_FRAGMENT_SHADER_FILEPATH, SHADOW_DEPTH_SHADER_FILEPATH);
 
+
 	// configure depth map FBO
 	// -----------------------
 	unsigned int depthMapFBO;
-	unsigned int depthMapRBO;
 	glGenFramebuffers(1, &depthMapFBO);
-	glGenRenderbuffers(1, &depthMapRBO);
 	// create depth cubemap texture
 	unsigned int depthCubemap;
 	glGenTextures(1, &depthCubemap);
@@ -115,23 +123,22 @@ int main(int argc, char* argv[])
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	// attach depth texture as FBO's depth buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthMapRBO);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	//Shader Configuration
 	shaderManager.use();
 	shaderManager.setInt("depthMap", 1);
-
 
 	//load the texture
 	int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
 	int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
 	int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
 	int fireTexture = loadTexture("fireTexture", TEXTURE_PATH_FIRE);
+	int particleTexture = loadTexture("particleTexture", TEXTURE_PATH_PARTICLE);
+
 	int grassTexture = loadTexture("grassTexture", TEXTURE_PATH_GRASS);
 	int waterTexture = loadTexture("waterTexture", TEXTURE_PATH_WATER);
 	int logTexture = loadTexture("logTexture", TEXTURE_PATH_LOG);
@@ -152,9 +159,9 @@ int main(int argc, char* argv[])
 	int windowWidth, windowHeight;
 
 	float fieldOfView = FIELD_OF_VIEW;
-	mat4 projectionMatrix = perspective(radians(fieldOfView),            // field of view in degrees
-		VIEW_WIDTH / VIEW_HEIGHT,  // aspect ratio
-		0.01f, 100.0f);   // near and far (near > 0)
+	mat4 projectionMatrix = perspective(radians(fieldOfView),   // field of view in degrees
+		VIEW_WIDTH / VIEW_HEIGHT,								// aspect ratio
+		NEAR_PLANE, FAR_PLANE);									// near and far (near > 0)
 
 	glfwSetWindowSizeCallback(window, &windowSizeCallback);
 
@@ -330,9 +337,22 @@ int main(int argc, char* argv[])
 	// Register keypress event callback
 	glfwSetKeyCallback(window, &keyCallback);
 
-	float near_plane = 0.01f;
-	float far_plane = 100.0f;
 
+	mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
+
+	int particleVAO = createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f));
+	Emitter emitter = Emitter(particleVAO);
+	vec3 flameLocation = vec3(0.0f, 10.0f, 10.0f);
+
+	// Sound settings
+	ISoundEngine* soundEngine = createIrrKlangDevice();
+
+	if (!soundEngine)
+	{
+		cout << ("WARNING: Could not start sound engine") << endl;
+	}
+
+	soundEngine->play2D(AUDIO_PATH_MUSIC, true);
 
 	// Entering Game Loop
 	while (!glfwWindowShouldClose(window))
@@ -345,32 +365,32 @@ int main(int argc, char* argv[])
 
 		lightbulb.mPosition = lightPosition;
 
+		emitter.EmitFlame(flameLocation, 1, 1.0f, particleTexture);
+
 		// Clear Depth Buffer Bit
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// 0. create depth cubemap transformation matrices
 		// -----------------------------------------------
-		glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
-		std::vector<glm::mat4> shadowTransforms;
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPosition, lightPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		mat4 shadowTransforms[6] = {
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f)),
+			shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f))
+		};
 
 		// 1. render scene to depth cubemap
 		// --------------------------------
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-		glBindRenderbuffer(GL_RENDERBUFFER, depthMapRBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		shadowShaderManager.use();
 		
-
 		for (unsigned int i = 0; i < 6; ++i)
 			shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
-		shadowShaderManager.setFloat("farPlane", far_plane);
+		shadowShaderManager.setFloat("farPlane", FAR_PLANE);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
 
 		if (cameraPosition.z >= 399.4) {
@@ -383,10 +403,7 @@ int main(int argc, char* argv[])
 			drawScene(shadowShaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
 		}
 
-		
-
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 		// 2. render scene as normal 
 		// -------------------------
@@ -399,7 +416,7 @@ int main(int argc, char* argv[])
 		// set lighting uniforms
 		shaderManager.setVec3("lightPosition", lightPosition);
 		shaderManager.setVec3("viewPos", cameraPosition);
-		shaderManager.setFloat("farPlane", far_plane);
+		shaderManager.setFloat("farPlane", FAR_PLANE);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 		if (cameraPosition.z >= 399.4) {
@@ -411,6 +428,9 @@ int main(int argc, char* argv[])
 		else {
 			drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
 		}
+		// Update and draw particles
+		emitter.Update(dt);
+		emitter.Draw(shaderManager);
 
 		
 
@@ -425,20 +445,16 @@ int main(int argc, char* argv[])
 		//Light position as we move the camera
 		if (cameraPosition.z >= 100.0f && cameraPosition.z < 140.0f) {
 			if (((int)(cameraHorizontalAngle / 180.0f) % 2) == 1 || ((int)(cameraHorizontalAngle / 180.0f) % 2) == -1) {
-				far_plane = 75.0f;
 				lightPosition = vec3(00.0f, 50.0f, 199.0f);
 			}
 			else {
-				far_plane = 100.0f;
 				lightPosition = LIGHT_OFFSET;
 			}
 		}
 		else if (cameraPosition.z < 100.0f) {
-			far_plane = 100.0f;
 			lightPosition = LIGHT_OFFSET;
 		}
 		else if (cameraPosition.z >= 140.0f) {
-			far_plane = 75.0f;
 			lightPosition = vec3(00.0f, 50.0f, 199.0f);
 		}
 
@@ -452,9 +468,6 @@ int main(int argc, char* argv[])
 		else {
 			glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
 		}
-
-
-
 
 		// If shift is held, double camera speed
 		bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
@@ -478,7 +491,6 @@ int main(int argc, char* argv[])
 
 		lastMousePosX = mousePosX;
 		lastMousePosY = mousePosY;
-
 
 		// Lock the camera rotation to be only when the middle and right button are pressed
 		if (lastMouseLeftState == GLFW_RELEASE && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
@@ -534,20 +546,22 @@ int main(int argc, char* argv[])
 			moveCameraToDestination = true;
 
 			fieldOfView = FIELD_OF_VIEW;
-			glm::mat4 projectionMatrix = glm::perspective(radians(fieldOfView),  // field of view in degrees
+			mat4 projectionMatrix = perspective(radians(fieldOfView),  // field of view in degrees
 				VIEW_WIDTH / VIEW_HEIGHT,      // aspect ratio
-				0.01f, 100.0f);       // near and far (near > 0)
+				NEAR_PLANE, FAR_PLANE);       // near and far (near > 0)
 
 			shaderManager.setMat4("projectionMatrix", projectionMatrix);
 		}
 
 		// Clamp vertical angle to [-85, 85] degrees
-		cameraVerticalAngle = std::max(-85.0f, std::min(85.0f, cameraVerticalAngle));
-		if (cameraHorizontalAngle > 360)
+		cameraVerticalAngle = clamp(cameraVerticalAngle, -85.0f, 85.0f);
+
+		// Hacky modulus operation
+		while (cameraHorizontalAngle > 360)
 		{
 			cameraHorizontalAngle -= 360;
 		}
-		else if (cameraHorizontalAngle < 0)
+		while (cameraHorizontalAngle < -360)
 		{
 			cameraHorizontalAngle += 360;
 		}
@@ -556,8 +570,6 @@ int main(int argc, char* argv[])
 		float phi = radians(cameraVerticalAngle);
 
 		cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-		vec3 cameraSideVector = cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
-		normalize(cameraSideVector);
 
 		// Select shapes via 1-4 keys
 		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
@@ -667,6 +679,10 @@ int main(int argc, char* argv[])
 			renderingMode = GL_POINTS;
 		}
 
+		if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
+			emitter.EmitBurst(cameraPosition + cameraLookAt * BURST_DISTANCE_FROM_CAMERA, 100, 5.0f, particleTexture);
+			soundEngine->play2D(AUDIO_PATH_WOW);
+		}
 
 		// Reshuffle shape
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
@@ -687,7 +703,7 @@ int main(int argc, char* argv[])
 				cameraPosition = cameraDestination;
 				moveCameraToDestination = false;
 			}
-			cameraPosition += cameraDelta * CAMERA_JUMP_SPEED * dt;
+			cameraPosition += cameraDelta * glm::min(CAMERA_JUMP_SPEED * dt, 1.0f);
 
 			// Reset camera orientation
 			cameraLookAt.x = 0.0f; cameraLookAt.y = 0.0f; cameraLookAt.z = -1.0f;
@@ -705,30 +721,10 @@ int main(int argc, char* argv[])
 			viewMatrix = lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
 		}
 		else {
-			int newx;
-			int newy;
-			int newz;
-			if (cameraPosition.x < 0) {
-				newx = cameraPosition.x * -1;
-			}
-			else
-				newx = cameraPosition.x;
-			if (cameraPosition.y < 0)
-			{
-				newy = cameraPosition.y * -1;
-			}
-			else
-				newy = cameraPosition.y;
-			if (cameraPosition.z < 0)
-			{
-				newz = cameraPosition.z * -1;
-			}
-			else
-				newz = cameraPosition.z;
-			float radius = sqrt(pow(newx, 2) + pow(newy, 2) + pow(newz, 2));
-			vec3 position = vec3{ 0,1,0 } - radius * cameraLookAt;
+			float radius = sqrt(pow(cameraPosition.x, 2) + pow(cameraPosition.y, 2) + pow(cameraPosition.z, 2));
+			vec3 position = vec3(0.0f, 1.0f, 0.0f) - radius * cameraLookAt;
 			viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
-			shaderManager.setVec3("cameraPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+			shaderManager.setVec3("cameraPosition", cameraPosition);
 		}
 		shaderManager.setMat4("viewMatrix", viewMatrix);
 
@@ -1118,7 +1114,7 @@ bool initContext() {     // Initialize GLFW and OpenGL version
 #endif
 
 	// Create Window and rendering context using GLFW, resolution is 1024x768
-	window = glfwCreateWindow(VIEW_WIDTH, VIEW_HEIGHT, "COMP 371 - Assignment 2 by Spiral Staircase", NULL, NULL);
+	window = glfwCreateWindow(VIEW_WIDTH, VIEW_HEIGHT, "COMP 371 - Final project by Spiral Staircase", NULL, NULL);
 	if (window == NULL)
 	{
 		cerr << "Failed to create GLFW window" << endl;
@@ -1149,9 +1145,9 @@ void windowSizeCallback(GLFWwindow* window, int width, int height) {
 	GLint shaderProgram = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &shaderProgram);
 
-	mat4 projectionMatrix = glm::perspective(radians(*controlState.fieldOfView),            // field of view in degrees
+	mat4 projectionMatrix = perspective(radians(*controlState.fieldOfView),            // field of view in degrees
 		(float)width / (float)height,  // aspect ratio
-		0.01f, 200.0f);   // near and far (near > 0)
+		NEAR_PLANE, FAR_PLANE);   // near and far (near > 0)
 
 	GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
@@ -1293,12 +1289,7 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 			}
 		}
 	}
-
 	
-
-	//for (Wall wall : walls) {
-		//wall.Draw(renderingMode, shaderManager);
-	//}
 	shaderManager.setBool("ignoreLighting", true);
 	lightbulb.Draw(renderingMode, shaderManager);
 	shaderManager.setBool("ignoreLighting", false);

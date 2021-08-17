@@ -94,7 +94,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../ThirdParty/glew-2.1.0/include;../ThirdParty/FreeImage-3170/Source;../ThirdParty/glfw-3.3/include;../ThirdParty/glm;../ThirdParty/assimp/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../ThirdParty/glew-2.1.0/include;../ThirdParty/FreeImage-3170/Source;../ThirdParty/glfw-3.3/include;../ThirdParty/glm;../ThirdParty/assimp/include;../ThirdParty/irrKlang-1.6.0/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,13 +114,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../ThirdParty/glew-2.1.0/include;../ThirdParty/FreeImage-3170/Source;../ThirdParty/glfw-3.3/include;../ThirdParty/glm;../ThirdParty/assimp/include;../ThirdParty/stb_image</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../ThirdParty/glew-2.1.0/include;../ThirdParty/FreeImage-3170/Source;../ThirdParty/glfw-3.3/include;../ThirdParty/glm;../ThirdParty/assimp/include;../ThirdParty/stb_image;../ThirdParty/irrKlang-64bit-1.6.0/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../ThirdParty/FreeImage-3170/lib/win32;../ThirdParty/glfw-3.3/lib/win64/lib-vc2019;../ThirdParty/glew-2.1.0/lib/win64;../ThirdParty/assimp/lib/Release</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;opengl32.lib;glew32s.lib;glfw3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../ThirdParty/FreeImage-3170/lib/win32;../ThirdParty/glfw-3.3/lib/win64/lib-vc2019;../ThirdParty/glew-2.1.0/lib/win64;../ThirdParty/assimp/lib/Release;../ThirdParty/irrKlang-64bit-1.6.0/lib/Winx64-visualStudio</AdditionalLibraryDirectories>
+      <AdditionalDependencies>FreeImage.lib;opengl32.lib;glew32s.lib;glfw3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <BuildLog>
       <Path>
@@ -187,6 +187,9 @@
     <None Include="..\Source\TexturedVert.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\BurstParticle.cpp" />
+    <ClCompile Include="..\Source\Emitter.cpp" />
+    <ClCompile Include="..\Source\FlameParticle.cpp" />
     <ClCompile Include="..\Source\main.cpp" />
     <ClCompile Include="..\Source\Mesh.cpp" />
     <ClCompile Include="..\Source\Model.cpp" />
@@ -198,6 +201,9 @@
   <ItemGroup>
     <ClInclude Include="..\Source\ControlState.h" />
     <ClInclude Include="..\Source\Coordinates.h" />
+    <ClInclude Include="..\Source\BurstParticle.h" />
+    <ClInclude Include="..\Source\Emitter.h" />
+    <ClInclude Include="..\Source\FlameParticle.h" />
     <ClInclude Include="..\Source\Mesh.h" />
     <ClInclude Include="..\Source\Model.h" />
     <ClInclude Include="..\Source\ShaderManager.h" />
