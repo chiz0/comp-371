@@ -8,6 +8,8 @@ Shape::Shape(vec3 position, vector<ivec3> description, vec3 colour, int texture)
 }
 
 Shape::Shape(vec3 position, int voxelCount, vec3 colour, int texture) : _position(position), _colour(colour), _texture(texture) {
+	if (voxelCount <= 0) { voxelCount = 1; };
+
 	ivec3 offset((int)(ceil((float)voxelCount / 2.0f)));
 	vector<vector<vector<bool>>> map(voxelCount, vector<vector<bool>>(voxelCount, vector<bool>(voxelCount, false)));
 
@@ -61,7 +63,7 @@ void Shape::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
 	glBindTexture(GL_TEXTURE_2D, _texture);
 	shaderProgram->setVec3("colour", _colour);
 	shaderProgram->setInt("textureSampler", 0);
-	mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(_orientation) * scale(mat4(1.0f), _scale);
+	mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(displayOrientation) * scale(mat4(1.0f), _scale);
 	for (auto it = begin(voxels); it != end(voxels); ++it) {
 		it->anchorMatrix = worldMatrix;
 		it->draw(renderingMode, shaderProgram);
@@ -114,16 +116,19 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
 	}
 	case ANIMATE_ROTATE: {
 		userInputResponse = false;
-		bool rotationPositive = rotateAnimationRemaining > 0;
-
-		float angle = rotationPositive ? ANIMATE_ROTATE_SPEED : -ANIMATE_ROTATE_SPEED;
-		rotateAnimationRemaining -= angle;
-		_orientation = normalize(angleAxis(radians(angle), rotateAnimationAxis) * _orientation);
-
-		if (rotationPositive && rotateAnimationRemaining <= 0.0f || !rotationPositive && rotateAnimationRemaining >= 0) {
+		bool finished = true;
+		if (displayOrientation != _orientation) {
+			finished = false;
+			slerpProgress += ANIMATE_ROTATE_SPEED * dt;
+			slerpProgress = slerpProgress > 1 ? 1 : slerpProgress;
+			displayOrientation = slerp(previousOrientation, _orientation, slerpProgress);
+			if (slerpProgress >= 1 || slerpProgress < 0) {
+				displayOrientation = _orientation;
+				finished = true;
+			}
+		}
+		if (finished) {
 			state = IDLE;
-			rotateAnimationRemaining = 0.0f;
-			rotateAnimationAxis = vec3(0.0f);
 		}
 		break;
 	}
@@ -137,44 +142,51 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
 void Shape::processEvent(Event event) {
 	if (userInputResponse) {
 		switch (event) {
-			
-			case INPUT_UP: {
-				rotateAnimationRemaining = -90.0f;
-				rotateAnimationAxis = vec3(1.0f, 0.0f, 0.0f);
-				state = ANIMATE_ROTATE;
-				break;
-			}
-			case INPUT_DOWN: {
-				rotateAnimationRemaining = 90.0f;
-				rotateAnimationAxis = vec3(1.0f, 0.0f, 0.0f);
-				state = ANIMATE_ROTATE;
-				break;
-			}
-			case INPUT_LEFT: {
-				rotateAnimationRemaining = 90.0f;
-				rotateAnimationAxis = vec3(0.0f, 1.0f, 0.0f);
-				state = ANIMATE_ROTATE;
-				break;
-			}
-			case INPUT_RIGHT: {
-				rotateAnimationRemaining = -90.0f;
-				rotateAnimationAxis = vec3(0.0f, 1.0f, 0.0f);
-				state = ANIMATE_ROTATE;
-				break;
-			}
+
+		case INPUT_UP: {
+			previousOrientation = _orientation;
+			slerpProgress = 0.0f;
+			_orientation = angleAxis(radians(-90.0f), vec3(1, 0, 0)) * _orientation;
+			state = ANIMATE_ROTATE;
+			break;
+		}
+		case INPUT_DOWN: {
+			previousOrientation = _orientation;
+			slerpProgress = 0.0f;
+			_orientation = angleAxis(radians(90.0f), vec3(1, 0, 0)) * _orientation;
+			state = ANIMATE_ROTATE;
+			break;
+		}
+		case INPUT_LEFT: {
+			previousOrientation = _orientation;
+			slerpProgress = 0.0f;
+			_orientation = angleAxis(radians(-90.0f), vec3(0, 1, 0)) * _orientation;
+			state = ANIMATE_ROTATE;
+			break;
+		}
+		case INPUT_RIGHT: {
+			previousOrientation = _orientation;
+			slerpProgress = 0.0f;
+			_orientation = angleAxis(radians(90.0f), vec3(0, 1, 0)) * _orientation;
+			state = ANIMATE_ROTATE;
+			break;
+		}
 		}
 	}
 }
 
 vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
-	
-	vector<vector<vector<bool>>> useMap = map3D;
 
-	/*
+	vector<vector<vector<bool>>> useMap = map3D;
+	vec3 eulerOrientation = eulerAngles(_orientation);
+	eulerOrientation.x = degrees(eulerOrientation.x);
+	eulerOrientation.y = degrees(eulerOrientation.y);
+	eulerOrientation.z = degrees(eulerOrientation.z);
+
 	if (currentRotation) {
-		
+
 		vector<vector<vector<bool>>> tempMap;
-		if (_orientation.x > 89 && _orientation.x < 91) {
+		if (eulerOrientation.x > 89 && eulerOrientation.x < 91) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0][0].size(), vector<bool>(useMap[0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -185,7 +197,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (_orientation.x > 179 && _orientation.x < 181) {
+		else if (eulerOrientation.x > 179 && eulerOrientation.x < 181) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -196,7 +208,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (_orientation.x > 269 && _orientation.x < 271) {
+		else if (eulerOrientation.x > 269 && eulerOrientation.x < 271) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0][0].size(), vector<bool>(useMap[0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -208,7 +220,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			useMap = tempMap;
 		}
 
-		if (_orientation.y > 89 && _orientation.y < 91) {
+		if (eulerOrientation.y > 89 && eulerOrientation.y < 91) {
 			tempMap = vector<vector<vector<bool>>>(useMap[0][0].size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap.size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -219,7 +231,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (_orientation.y > 179 && _orientation.y < 181) {
+		else if (eulerOrientation.y > 179 && eulerOrientation.y < 181) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -230,7 +242,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (_orientation.y > 269 && _orientation.y < 271) {
+		else if (eulerOrientation.y > 269 && eulerOrientation.y < 271) {
 			tempMap = vector<vector<vector<bool>>>(useMap[0][0].size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap.size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -242,7 +254,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			useMap = tempMap;
 		}
 
-		if (_orientation.z > 89 && _orientation.z < 91) {
+		if (eulerOrientation.z > 89 && eulerOrientation.z < 91) {
 			tempMap = vector<vector<vector<bool>>>(useMap[0].size(), vector<vector<bool>>(useMap.size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -253,7 +265,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (_orientation.z > 179 && _orientation.z < 181) {
+		else if (eulerOrientation.z > 179 && eulerOrientation.z < 181) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -264,7 +276,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (_orientation.z > 269 && _orientation.z < 271) {
+		else if (eulerOrientation.z > 269 && eulerOrientation.z < 271) {
 			tempMap = vector<vector<vector<bool>>>(useMap[0].size(), vector<vector<bool>>(useMap.size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -275,9 +287,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		
 	}
-	*/
 
 	vector<vector<bool>> map2D(useMap.size(), vector<bool>(useMap[0].size(), false));
 
@@ -338,8 +348,9 @@ void Shape::init(vector<ivec3> description) {
 }
 
 void Shape::randomRightAngleRotations() {
-	_orientation *= angleAxis((rand() % 4) * 90.0f, vec3(1.0f, 0.0f, 0.0f));
-	_orientation *= angleAxis((rand() % 4) * 90.0f, vec3(0.0f, 1.0f, 0.0f));
-	_orientation *= angleAxis((rand() % 4) * 90.0f, vec3(0.0f, 0.0f, 1.0f));
+	_orientation = angleAxis(radians((rand() % 4) * 90.0f), vec3(1.0f, 0.0f, 0.0f)) * _orientation;
+	_orientation = angleAxis(radians((rand() % 4) * 90.0f), vec3(0.0f, 1.0f, 0.0f)) * _orientation;
+	_orientation = angleAxis(radians((rand() % 4) * 90.0f), vec3(0.0f, 0.0f, 1.0f)) * _orientation;
 	_orientation = normalize(_orientation);
+	displayOrientation = _orientation;
 }

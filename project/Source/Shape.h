@@ -46,11 +46,17 @@ public:
     vec3 _scale = vec3(1.0f);
     vec3 _colour;
     int _texture;
+    quat displayOrientation = quat();
+    const float ANIMATE_CREATION_MOVE_SPEED = 20.0f;
+    const int ANIMATE_CREATION_VOXEL_SPREAD = 10;
+    const float ANIMATE_ROTATE_SPEED = 10.0f;
 
 private:
     // Functions
     void init(vector<ivec3> description);
     void randomRightAngleRotations();
-    float rotateAnimationRemaining = 0.0f;
-    vec3 rotateAnimationAxis = vec3(0.0f);
+
+    // Properties
+    quat previousOrientation = quat();
+    float slerpProgress = 0.0f;
 };

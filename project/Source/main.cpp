@@ -264,30 +264,25 @@ int main(int argc, char* argv[])
 		for (Event event : currentFrameEvents) {
 			switch (event) {
 			case GAME_START: {
-				eventQueue.push_back({ CREATE_SHAPE, 0 });
+				eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
 				break;
 			}
 
-			case CREATE_SHAPE: {
+			case CREATE_SHAPE_AND_WALL: {
 				vec3 shapeColour = vec3((float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f);
 				Shape* newShape = new Shape(vec3(0), currentDifficulty, shapeColour, metalTexture);
 				shapes.push_back(newShape);
 				selectedShape = 0;
-				eventQueue.push_back({ CREATE_WALL, 0 });
+				Wall* newWall = new Wall(vec3(0, 0, -WALL_DISTANCE), shapes[selectedShape], vec3(1), brickTexture);
+				walls.push_back(newWall);
+				newWall->speed = currentWallSpeed;
+				gameEntities.push_back(newWall);
 				break;
 			}
 
 			case DISPLAY_SHAPE: {
 				Shape* newShape = shapes.at(selectedShape);
 				gameEntities.push_back(newShape);
-				break;
-			}
-
-			case CREATE_WALL: {
-				Wall* newWall = new Wall(vec3(0, 0, -WALL_DISTANCE), shapes[selectedShape], vec3(1), brickTexture);
-				walls.push_back(newWall);
-				newWall->speed = currentWallSpeed;
-				gameEntities.push_back(newWall);
 				break;
 			}
 
@@ -303,37 +298,31 @@ int main(int argc, char* argv[])
 
 			case LEVEL_FAILED: {
 				cout << "Failure...\n";
-				eventQueue.push_back({ DESTROY_WALL, 0 });
-				eventQueue.push_back({ DESTROY_SHAPE, 0 });
+				eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 0 });
 				soundEngine->play2D(AUDIO_PATH_BRUH, false);
 				break;
 			}
 
 			case LEVEL_SUCCESS: {
 				cout << "Success!\n";
-				eventQueue.push_back({ DESTROY_WALL, 2 });
-				eventQueue.push_back({ DESTROY_SHAPE, 2 });
+				eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 2 });
 				currentDifficulty++;
 				currentWallSpeed += currentWallSpeed >= 4 ? 0 : 0.1f;
 				soundEngine->play2D(AUDIO_PATH_WOW, false);
 				break;
 			}
 
-			case DESTROY_WALL: {
-				for (Wall* wall : walls) {
-					wall->destroyFlag = true;
-				}
-				
-				break;
-			}
-
-			case DESTROY_SHAPE: {
+			case DESTROY_SHAPE_AND_WALL: {
 				for (Shape* shape : shapes) {
 					shape->destroyFlag = true;
 				}
 				selectedShape = -1;
 				shapes.clear();
-				eventQueue.push_back({ CREATE_SHAPE, 2 });
+				for (Wall* wall : walls) {
+					wall->destroyFlag = true;
+				}
+				walls.clear();
+				eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 2 });
 				break;
 			}
 
@@ -396,14 +385,14 @@ int main(int argc, char* argv[])
 		// Update and draw particles
 		emitter.Update(dt);
 		emitter.Draw(shaderManager);
-		
+
 		shaderManager.use();
 
 		// End Frame
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		
+
 		cameraFirstPerson = false;
 
 		double mousePosX, mousePosY;
