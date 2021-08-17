@@ -84,8 +84,7 @@ void Wall::processEvent(Event event) {
 bool Wall::testCollision() {
     vector<vector<bool>> projection = _shape->getWallProjection(true);
     bool pass = false;
-
-    /*
+    
     if (hole.size() == projection.size() && hole[0].size() == projection[0].size()) {
         pass = true;
         for (int i = 0; i < projection.size(); i++) {
@@ -96,11 +95,6 @@ bool Wall::testCollision() {
                 }
             }
         }
-    }
-    */
-
-    if (round(_shape->_orientation.x) == 0 && round(_shape->_orientation.y) == 0 && round(_shape->_orientation.z) == 0) {
-        pass = true;
     }
 
     return pass;

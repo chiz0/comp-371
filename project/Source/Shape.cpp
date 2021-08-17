@@ -178,7 +178,9 @@ void Shape::processEvent(Event event) {
 vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 
 	vector<vector<vector<bool>>> useMap = map3D;
+	
 	vec3 eulerOrientation = eulerAngles(_orientation);
+
 	eulerOrientation.x = degrees(eulerOrientation.x);
 	eulerOrientation.y = degrees(eulerOrientation.y);
 	eulerOrientation.z = degrees(eulerOrientation.z);
@@ -186,7 +188,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 	if (currentRotation) {
 
 		vector<vector<vector<bool>>> tempMap;
-		if (eulerOrientation.x > 89 && eulerOrientation.x < 91) {
+		if (eulerOrientation.x > 89 && eulerOrientation.x < 91 || eulerOrientation.x > -271 && eulerOrientation.x < -269) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0][0].size(), vector<bool>(useMap[0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -197,7 +199,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (eulerOrientation.x > 179 && eulerOrientation.x < 181) {
+		else if (eulerOrientation.x > 179 && eulerOrientation.x < 181 || eulerOrientation.x > -181 && eulerOrientation.x < -179) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -208,7 +210,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (eulerOrientation.x > 269 && eulerOrientation.x < 271) {
+		else if (eulerOrientation.x > 269 && eulerOrientation.x < 271 || eulerOrientation.x > -91 && eulerOrientation.x < -89) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0][0].size(), vector<bool>(useMap[0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -220,7 +222,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			useMap = tempMap;
 		}
 
-		if (eulerOrientation.y > 89 && eulerOrientation.y < 91) {
+		if (eulerOrientation.y > 89 && eulerOrientation.y < 91 || eulerOrientation.y > -271 && eulerOrientation.y < -269) {
 			tempMap = vector<vector<vector<bool>>>(useMap[0][0].size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap.size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -231,7 +233,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (eulerOrientation.y > 179 && eulerOrientation.y < 181) {
+		else if (eulerOrientation.y > 179 && eulerOrientation.y < 181 || eulerOrientation.y > -181 && eulerOrientation.y < -179) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -242,7 +244,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (eulerOrientation.y > 269 && eulerOrientation.y < 271) {
+		else if (eulerOrientation.y > 269 && eulerOrientation.y < 271 || eulerOrientation.y > -91 && eulerOrientation.y < -89) {
 			tempMap = vector<vector<vector<bool>>>(useMap[0][0].size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap.size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -254,7 +256,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			useMap = tempMap;
 		}
 
-		if (eulerOrientation.z > 89 && eulerOrientation.z < 91) {
+		if (eulerOrientation.z > 89 && eulerOrientation.z < 91 || eulerOrientation.z > -271 && eulerOrientation.z < -269) {
 			tempMap = vector<vector<vector<bool>>>(useMap[0].size(), vector<vector<bool>>(useMap.size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -265,7 +267,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (eulerOrientation.z > 179 && eulerOrientation.z < 181) {
+		else if (eulerOrientation.z > 179 && eulerOrientation.z < 181 || eulerOrientation.z > -181 && eulerOrientation.z < -179) {
 			tempMap = vector<vector<vector<bool>>>(useMap.size(), vector<vector<bool>>(useMap[0].size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
@@ -276,7 +278,7 @@ vector<vector<bool>> Shape::getWallProjection(bool currentRotation) {
 			}
 			useMap = tempMap;
 		}
-		else if (eulerOrientation.z > 269 && eulerOrientation.z < 271) {
+		else if (eulerOrientation.z > 269 && eulerOrientation.z < 271 || eulerOrientation.z > -91 && eulerOrientation.z < -89) {
 			tempMap = vector<vector<vector<bool>>>(useMap[0].size(), vector<vector<bool>>(useMap.size(), vector<bool>(useMap[0][0].size(), false)));
 			for (int i = 0; i < tempMap.size(); i++) {
 				for (int j = 0; j < tempMap[i].size(); j++) {
