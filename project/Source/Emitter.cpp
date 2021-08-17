@@ -1,7 +1,13 @@
 #include "Emitter.h"
 
+Emitter::Emitter(int VAO, int burstTexture, int flameTexture) : particleVAO(VAO), defaultBurstTexture(burstTexture), defaultFlameTexture(flameTexture)
+{
+}
+
 void Emitter::EmitBurst(vec3 position, int particleCount, float force, int texture)
 {
+	int tex = texture == -1 ? defaultBurstTexture : texture;
+
 	for (int i = 0; i < particleCount; i++) {
 		float dirX = rand() % 10 / 10.0f - 0.5f;
 		float dirY = rand() % 10 / 10.0f - 0.5f;
@@ -15,13 +21,15 @@ void Emitter::EmitBurst(vec3 position, int particleCount, float force, int textu
 			vec3(dirX, dirY, dirZ) * force,		// Direction
 			vec3(colourR, colourG, colourB),	// Colour
 			rand() % 30 / 10.0f + 1.0f,			// Lifespan
-			texture								// Texture
+			tex									// Texture
 		));
 	}
 }
 
 void Emitter::EmitFlame(vec3 position, int particleCount, float force, int texture)
 {
+	int tex = texture == -1 ? defaultFlameTexture : texture;
+
 	for (int i = 0; i < particleCount; i++) {
 		float dirX = rand() % 20 / 10.0f - 1.0f;
 		float dirY = rand() % 5 / 5.0f;
@@ -35,13 +43,9 @@ void Emitter::EmitFlame(vec3 position, int particleCount, float force, int textu
 			vec3(dirX, dirY, dirZ) * force,		// Direction
 			vec3(colourR, colourG, colourB),	// Colour
 			rand() % 30 / 10.0f + 1.0f,			// Lifespan
-			texture								// Texture
+			tex									// Texture
 		));
 	}
-}
-
-Emitter::Emitter(int VAO) : particleVAO(VAO)
-{
 }
 
 void Emitter::Update(float dt)

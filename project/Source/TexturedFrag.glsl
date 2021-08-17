@@ -9,8 +9,6 @@ uniform float specularLight;
 uniform float shininess;
 uniform bool ignoreLighting;
 uniform sampler2D textureSampler;
-uniform bool texToggle;
-uniform bool showShadows;
 
 uniform samplerCube depthMap;
 uniform vec3 viewPos;
@@ -60,7 +58,7 @@ void main()
 	if (ignoreLighting == false) {
 
 		// calculate shadow mapping
-		float shadow = showShadows ? ShadowCalculation(FragPos) : 0.0;
+		float shadow = ShadowCalculation(FragPos);
 
 		vec3 lightDirection = normalize(lightPosition - FragPos);
 
@@ -74,12 +72,5 @@ void main()
 	}
 	
 	vec4 textureColor = texture( textureSampler, vertexUV );
-	if(texToggle==true)
-	{
-		FragColor = vec4(lightTotal, 1.0f) * textureColor * vec4(baseColour, 1.0f);
-	}
-	else
-	{
-		FragColor = vec4(lightTotal, 1.0f) * vec4(baseColour, 1.0f);
-	}
+	FragColor = vec4(lightTotal, 1.0f) * textureColor * vec4(baseColour, 1.0f);
 }

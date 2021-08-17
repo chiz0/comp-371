@@ -13,6 +13,7 @@
 #include "ShaderManager.h"
 #include "Voxel.h"
 #include "Shape.h"
+#include "Emitter.h"
 
 using namespace glm;
 using namespace std;
@@ -48,7 +49,10 @@ public:
     vec3 _scale = vec3(1.0f);
     vec3 _colour;
     int _texture;
+    int _height;
+    int _width;
     float speed = 0;
+    Emitter* particleEmitter;
     const float ANIMATE_CREATION_VOXEL_FALL_HEIGHT = 30.0f;
     const float ANIMATE_CREATION_MOVE_SPEED = 50.0f;
     const float ANIMATE_CREATION_VOXEL_INTERVAL = 3.0f;

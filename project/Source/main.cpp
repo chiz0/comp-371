@@ -133,7 +133,6 @@ int main(int argc, char* argv[])
     int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
     int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
     int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
-    int fireTexture = loadTexture("fireTexture", TEXTURE_PATH_FIRE);
     int particleTexture = loadTexture("particleTexture", TEXTURE_PATH_PARTICLE);
 
     int grassTexture = loadTexture("grassTexture", TEXTURE_PATH_GRASS);
@@ -173,13 +172,7 @@ int main(int argc, char* argv[])
     GLenum renderingMode = GL_TRIANGLES;
     glBindTexture(GL_TEXTURE_2D, metalTexture);
 
-    vec3 groundColour = vec3(1.0f, 1.0f, 0.0f);
-    // Colour of the shapes
-    vec3 overworldColour = vec3(1.0f, 1.0f, 1.0f);
-
-    // Lightbulb colour
-    vec3 lightbulbColour = vec3(1.0f, 1.0f, 1.0f);
-    vec3 glowColour = vec3(1.0f, 1.0f, 1.0f);
+    vec3 whiteColour = vec3(1.0f, 1.0f, 0.0f);
 
     ///////// DESIGN MODELS HERE /////////
 
@@ -188,101 +181,91 @@ int main(int argc, char* argv[])
         {0, 0, 0}
     };
 
-    Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, lightbulbColour, metalTexture);
+    Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, whiteColour, metalTexture);
 
 
     //Land 
     for (int chunk = 0; chunk < 30; chunk++) {
 
         if (chunk >= 20) {
-            owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, endStoneTexture));
-
+            owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, whiteColour, endStoneTexture));
         }
         else if (chunk >= 10) {
-            owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, netherrackTexture));
-
+            owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, whiteColour, netherrackTexture));
         }
         else {
-            owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, grassTexture));
-
+            owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, whiteColour, grassTexture));
         }
     }
 
     pushMobs();
 
     //Trees for the first Chunk
-    owChunks[0].push_back(Shape(vec3(13, 4, 0), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-16, 4, 0), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-7, 2, 1), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(19, 5, 4), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-19, 5, 6), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(10, 2, 8), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(19, 5, 12), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-9, 2, 12), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(8, 2, 17), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-18, 4, 18), treeTrunk, overworldColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(18, 5, 19), treeTrunk, overworldColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(13, 4, 0), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(-16, 4, 0), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(-7, 2, 1), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(19, 5, 4), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(-19, 5, 6), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(10, 2, 8), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(19, 5, 12), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(-9, 2, 12), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(8, 2, 17), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(-18, 4, 18), treeTrunk, whiteColour, logTexture));
+    owChunks[0].push_back(Shape(vec3(18, 5, 19), treeTrunk, whiteColour, logTexture));
 
-    owChunks[0].push_back(Shape(vec3(13, 9, 0), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-16, 9, 0), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-7, 7, 1), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(19, 10, 4), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-19, 10, 6), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(10, 7, 8), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(19, 10, 12), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-9, 7, 12), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(8, 7, 17), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-18, 9, 18), treeLeaves, overworldColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(18, 10, 19), treeLeaves, overworldColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(13, 9, 0), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(-16, 9, 0), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(-7, 7, 1), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(19, 10, 4), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(-19, 10, 6), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(10, 7, 8), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(19, 10, 12), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(-9, 7, 12), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(8, 7, 17), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(-18, 9, 18), treeLeaves, whiteColour, leavesTexture));
+    owChunks[0].push_back(Shape(vec3(18, 10, 19), treeLeaves, whiteColour, leavesTexture));
 
     //Cut down planks + trees for the 2nd chunk
-    owChunks[1].push_back(Shape(vec3(-18, 5, 39), treeTrunk, overworldColour, logTexture));
-    owChunks[1].push_back(Shape(vec3(-18, 10, 39), treeLeaves, overworldColour, leavesTexture));
-    owChunks[1].push_back(Shape(vec3(19, 5, 26), treeTrunk, overworldColour, logTexture));
-    owChunks[1].push_back(Shape(vec3(19, 10, 26), treeLeaves, overworldColour, leavesTexture));
-    owChunks[1].push_back(Shape(vec3(14, 5, 36), treeTrunk, overworldColour, logTexture));
-    owChunks[1].push_back(Shape(vec3(14, 10, 36), treeLeaves, overworldColour, leavesTexture));
+    owChunks[1].push_back(Shape(vec3(-18, 5, 39), treeTrunk, whiteColour, logTexture));
+    owChunks[1].push_back(Shape(vec3(-18, 10, 39), treeLeaves, whiteColour, leavesTexture));
+    owChunks[1].push_back(Shape(vec3(19, 5, 26), treeTrunk, whiteColour, logTexture));
+    owChunks[1].push_back(Shape(vec3(19, 10, 26), treeLeaves, whiteColour, leavesTexture));
+    owChunks[1].push_back(Shape(vec3(14, 5, 36), treeTrunk, whiteColour, logTexture));
+    owChunks[1].push_back(Shape(vec3(14, 10, 36), treeLeaves, whiteColour, leavesTexture));
 
-    owChunks[1].push_back(Shape(vec3(0, 1, 36), cutPlanks, overworldColour, planksTexture));
-    owChunks[1].push_back(Shape(vec3(10, 3, 29), cutPlanks, overworldColour, planksTexture));
-    owChunks[1].push_back(Shape(vec3(-13, 4, 32), cutPlanks, overworldColour, planksTexture));
-    owChunks[1].push_back(Shape(vec3(-8, 2, 21), cutPlanks, overworldColour, planksTexture));
+    owChunks[1].push_back(Shape(vec3(0, 1, 36), cutPlanks, whiteColour, planksTexture));
+    owChunks[1].push_back(Shape(vec3(10, 3, 29), cutPlanks, whiteColour, planksTexture));
+    owChunks[1].push_back(Shape(vec3(-13, 4, 32), cutPlanks, whiteColour, planksTexture));
+    owChunks[1].push_back(Shape(vec3(-8, 2, 21), cutPlanks, whiteColour, planksTexture));
 
     //Rock formation + trees
-    owChunks[2].push_back(Shape(vec3(-18, 5, 59), treeTrunk, overworldColour, logTexture));
-    owChunks[2].push_back(Shape(vec3(-18, 10, 59), treeLeaves, overworldColour, leavesTexture));
-    owChunks[2].push_back(Shape(vec3(19, 5, 46), treeTrunk, overworldColour, logTexture));
-    owChunks[2].push_back(Shape(vec3(19, 10, 46), treeLeaves, overworldColour, leavesTexture));
-    owChunks[2].push_back(Shape(vec3(14, 5, 56), treeTrunk, overworldColour, logTexture));
-    owChunks[2].push_back(Shape(vec3(14, 10, 56), treeLeaves, overworldColour, leavesTexture));
+    owChunks[2].push_back(Shape(vec3(-18, 5, 59), treeTrunk, whiteColour, logTexture));
+    owChunks[2].push_back(Shape(vec3(-18, 10, 59), treeLeaves, whiteColour, leavesTexture));
+    owChunks[2].push_back(Shape(vec3(19, 5, 46), treeTrunk, whiteColour, logTexture));
+    owChunks[2].push_back(Shape(vec3(19, 10, 46), treeLeaves, whiteColour, leavesTexture));
+    owChunks[2].push_back(Shape(vec3(14, 5, 56), treeTrunk, whiteColour, logTexture));
+    owChunks[2].push_back(Shape(vec3(14, 10, 56), treeLeaves, whiteColour, leavesTexture));
 
-    owChunks[2].push_back(Shape(vec3(0, 1, 56), rockFormation, overworldColour, rockTexture));
-    owChunks[2].push_back(Shape(vec3(10, 3, 49), rockFormation, overworldColour, rockTexture));
-    owChunks[2].push_back(Shape(vec3(-13, 4, 52), rockFormation, overworldColour, rockTexture));
-    owChunks[2].push_back(Shape(vec3(-8, 2, 41), rockFormation, overworldColour, rockTexture));
+    owChunks[2].push_back(Shape(vec3(0, 1, 56), rockFormation, whiteColour, rockTexture));
+    owChunks[2].push_back(Shape(vec3(10, 3, 49), rockFormation, whiteColour, rockTexture));
+    owChunks[2].push_back(Shape(vec3(-13, 4, 52), rockFormation, whiteColour, rockTexture));
+    owChunks[2].push_back(Shape(vec3(-8, 2, 41), rockFormation, whiteColour, rockTexture));
 
     // Cave and ores chunk 8
-    owChunks[7].push_back(Shape(vec3(11.9f, 3.1, 152.1), cave, overworldColour, rockTexture));
-    owChunks[7].push_back(Shape(vec3(19, 5, 156), rockFormation, overworldColour, ironTexture));
-    owChunks[7].push_back(Shape(vec3(8, 2, 149), rockFormation, overworldColour, ironTexture));
-    owChunks[7].push_back(Shape(vec3(-13, 4, 152), rockFormation, overworldColour, ironTexture));
-    owChunks[7].push_back(Shape(vec3(-8, 2, 141), rockFormation, overworldColour, ironTexture));
+    owChunks[7].push_back(Shape(vec3(11.9f, 3.1, 152.1), cave, whiteColour, rockTexture));
+    owChunks[7].push_back(Shape(vec3(19, 5, 156), rockFormation, whiteColour, ironTexture));
+    owChunks[7].push_back(Shape(vec3(8, 2, 149), rockFormation, whiteColour, ironTexture));
+    owChunks[7].push_back(Shape(vec3(-13, 4, 152), rockFormation, whiteColour, ironTexture));
+    owChunks[7].push_back(Shape(vec3(-8, 2, 141), rockFormation, whiteColour, ironTexture));
 
     //chunk 9;
-    owChunks[8].push_back(Shape(vec3(-19, 5, 176), rockFormation, overworldColour, diamondTexture));
-    owChunks[8].push_back(Shape(vec3(-8, 2, 169), rockFormation, overworldColour, diamondTexture));
-    owChunks[8].push_back(Shape(vec3(13, 4, 172), rockFormation, overworldColour, diamondTexture));
-    owChunks[8].push_back(Shape(vec3(8, 2, 161), rockFormation, overworldColour, diamondTexture));
+    owChunks[8].push_back(Shape(vec3(-19, 5, 176), rockFormation, whiteColour, diamondTexture));
+    owChunks[8].push_back(Shape(vec3(-8, 2, 169), rockFormation, whiteColour, diamondTexture));
+    owChunks[8].push_back(Shape(vec3(13, 4, 172), rockFormation, whiteColour, diamondTexture));
+    owChunks[8].push_back(Shape(vec3(8, 2, 161), rockFormation, whiteColour, diamondTexture));
 
     //chunck 10
-    owChunks[9].push_back(Shape(vec3(-4, 5, 199), generatePortal(), overworldColour, obsidianTexture));
-
-
-
-    int focusedShape = 0;                   // The shape currently being viewed and manipulated
-    bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
-    bool showTexture = true;
-    bool showShadow = true;
+    owChunks[9].push_back(Shape(vec3(-4, 5, 199), generatePortal(), whiteColour, obsidianTexture));
 
     // Persistent game variables
     vector<Event> currentFrameEvents;
@@ -346,7 +329,7 @@ int main(int argc, char* argv[])
 
     mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
-    Emitter emitter = Emitter(cubeVAO);
+    Emitter emitter = Emitter(cubeVAO, particleTexture, particleTexture);
 
     // Sound settings
     ISoundEngine* soundEngine = createIrrKlangDevice();
@@ -362,9 +345,6 @@ int main(int argc, char* argv[])
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
     {
-        shaderManager.setBool("texToggle", showTexture);
-        shaderManager.setBool("showShadows", showShadow);
-
         // Frame time
         double now = glfwGetTime();
         double dt = now - lastFrameTime;
@@ -405,6 +385,7 @@ int main(int argc, char* argv[])
                 Wall* newWall = new Wall(vec3(0, 0, -WALL_DISTANCE), shapes[selectedShape], vec3(1), brickTexture);
                 walls.push_back(newWall);
                 newWall->speed = currentWallSpeed;
+                newWall->particleEmitter = &emitter;
                 gameEntities.push_back(newWall);
                 break;
             }
@@ -436,7 +417,7 @@ int main(int argc, char* argv[])
                 cout << "Success!\n";
                 eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 3 });
                 currentDifficulty++;
-                currentWallSpeed += currentWallSpeed >= 4 ? 0 : 0.1f;
+                currentWallSpeed += currentWallSpeed >= DIFFICULTY_SPEED_MAX ? 0 : DIFFICULTY_SPEED_GROWTH;
                 soundEngine->play2D(AUDIO_PATH_WOW, false);
                 break;
             }
@@ -602,13 +583,6 @@ int main(int argc, char* argv[])
         float phi = radians(cameraVerticalAngle);
 
         cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-
-
-        if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
-            emitter.EmitBurst(cameraPosition + cameraLookAt * BURST_DISTANCE_FROM_CAMERA, 100, 5.0f, particleTexture);
-            soundEngine->play2D(AUDIO_PATH_WOW);
-        }
-
 
         //Antonio's part
         float radius = sqrt(pow(cameraPosition.x, 2) + pow(cameraPosition.y, 2) + pow(cameraPosition.z, 2));

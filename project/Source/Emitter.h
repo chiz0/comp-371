@@ -16,9 +16,9 @@ using namespace std;
 
 class Emitter {
 public:
-	Emitter(int VAO);
-	void EmitBurst(vec3 position, int particleCount, float force, int texture);
-	void EmitFlame(vec3 position, int particleCount, float force, int texture);
+	Emitter(int VAO, int burstTexture, int flameTexture);
+	void EmitBurst(vec3 position, int particleCount, float force, int texture = -1);
+	void EmitFlame(vec3 position, int particleCount, float force, int texture = -1);
 	void Update(float dt);
 	void Draw(ShaderManager shaderManager);
 
@@ -26,4 +26,6 @@ private:
 	vector<BurstParticle> burstParticles;
 	vector<FlameParticle> flameParticles;
 	int particleVAO;
+	int defaultBurstTexture;
+	int defaultFlameTexture;
 };
