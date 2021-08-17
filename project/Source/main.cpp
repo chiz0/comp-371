@@ -141,6 +141,9 @@ int main(int argc, char* argv[])
 	int ironTexture = loadTexture("ironTexture", TEXTURE_PATH_IRON);
 	int diamondTexture = loadTexture("diamondTexture", TEXTURE_PATH_DIAMOND);
 	int obsidianTexture = loadTexture("obsidianTexture", TEXTURE_PATH_OBSIDIAN);
+	int netherrackTexture = loadTexture("netherrackTexture", TEXTURE_PATH_NETHERRACK);
+	int lavaTexture = loadTexture("lavaTexture", TEXTURE_PATH_LAVA);
+	int endStoneTexture = loadTexture("endStoneTexture", TEXTURE_PATH_ENDSTONE);
 
 
 	// Other camera parameters
@@ -196,8 +199,20 @@ int main(int argc, char* argv[])
 
 
 	//Land 
-	for (int chunk = 0; chunk < 10; chunk++) {
-		owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, glowColour, false, 1.0f, grassTexture, fireTexture));
+	for (int chunk = 0; chunk < 30; chunk++) {
+
+		if (chunk>=20) {
+			owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, glowColour, false, 1.0f, endStoneTexture, fireTexture));
+
+		}
+		else if (chunk >= 10) {
+			owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, glowColour, false, 1.0f, netherrackTexture, fireTexture));
+
+		}
+		else {
+			owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, glowColour, false, 1.0f, grassTexture, fireTexture));
+
+		}
 	}
 
 	pushMobs();
@@ -266,7 +281,8 @@ int main(int argc, char* argv[])
 	owChunks[8].push_back(Shape(vec3(13, 4, 172), rockFormation, overworldColour, glowColour, false, 1.0f, diamondTexture, fireTexture));
 	owChunks[8].push_back(Shape(vec3(8, 2, 161), rockFormation, overworldColour, glowColour, false, 1.0f, diamondTexture, fireTexture));
 
-
+	//chunck 10
+	owChunks[9].push_back(Shape(vec3(-4, 5, 199), generatePortal(), overworldColour, glowColour, false, 1.0f, obsidianTexture, fireTexture));
 
 
 
@@ -282,7 +298,7 @@ int main(int argc, char* argv[])
 	};
 
 	// Camera parameters for view transform
-	vec3 cameraPosition = vec3(0.0f, 20.0f, 90.0f);
+	vec3 cameraPosition = vec3(0.0f, 20.0f, 180.0f);
 	vec3 cameraLookAt(0.0f, 1.0f, 0.0f);
 	vec3 cameraUp(0.0f, 1.0f, 0.0f);
 	vec3 cameraDestination = cameraPosition;
@@ -356,7 +372,16 @@ int main(int argc, char* argv[])
 			shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 		shadowShaderManager.setFloat("farPlane", far_plane);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
-		drawScene(shadowShaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z,cameraHorizontalAngle);
+
+		if (cameraPosition.z >= 399.4) {
+			drawScene(shadowShaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
+		}
+		else if (cameraPosition.z >= 199.4) {
+			drawScene(shadowShaderManager, renderingMode, shapes, lightbulb, lavaTexture, cameraPosition.z, cameraHorizontalAngle);
+		}
+		else {
+			drawScene(shadowShaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
+		}
 
 		
 
@@ -377,7 +402,15 @@ int main(int argc, char* argv[])
 		shaderManager.setFloat("farPlane", far_plane);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
+		if (cameraPosition.z >= 399.4) {
+			drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
+		}
+		else if (cameraPosition.z >= 199.4) {
+			drawScene(shaderManager, renderingMode, shapes, lightbulb, lavaTexture, cameraPosition.z, cameraHorizontalAngle);
+		}
+		else {
+			drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
+		}
 
 		
 
@@ -389,11 +422,11 @@ int main(int argc, char* argv[])
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			glfwSetWindowShouldClose(window, true);
 
-
+		//Light position as we move the camera
 		if (cameraPosition.z >= 100.0f && cameraPosition.z < 140.0f) {
 			if (((int)(cameraHorizontalAngle / 180.0f) % 2) == 1 || ((int)(cameraHorizontalAngle / 180.0f) % 2) == -1) {
 				far_plane = 75.0f;
-				lightPosition = vec3(00.0f, 50.0f, 200.0f);
+				lightPosition = vec3(00.0f, 50.0f, 199.0f);
 			}
 			else {
 				far_plane = 100.0f;
@@ -406,8 +439,21 @@ int main(int argc, char* argv[])
 		}
 		else if (cameraPosition.z >= 140.0f) {
 			far_plane = 75.0f;
-			lightPosition = vec3(00.0f, 50.0f, 200.0f);
+			lightPosition = vec3(00.0f, 50.0f, 199.0f);
 		}
+
+		//sky color as we move the camera
+		if (cameraPosition.z>=400) {
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		}
+		else if (cameraPosition.z >= 200) {
+			glClearColor(0.40f, 0.208f, 0.222f, 1.0f);
+		}
+		else {
+			glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
+		}
+
+
 
 
 		// If shift is held, double camera speed
@@ -1189,7 +1235,27 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
 	for (int i = -20 / 2 / FLOOR_SCALE; i <= 20 / 2 / FLOOR_SCALE; i++) {
 		for (int j = 0 / 2 / FLOOR_SCALE; j <= GRID_SIZE / 2 / FLOOR_SCALE; j++) {
-			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, 1.0f, j * FLOOR_SCALE + (int)(cameraPosition/20-2)*20)) * scale(mat4(1.0f), vec3(FLOOR_SCALE, 0.01f, FLOOR_SCALE));
+			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, 1.0f, j * FLOOR_SCALE + (int)(cameraPosition/20-2)*20)) * scale(mat4(1.0f), vec3(FLOOR_SCALE, 0.1f, FLOOR_SCALE));
+			shaderManager.setMat4("worldMatrix", tileMatrix);
+			glDrawArrays(renderingMode, 0, 36);
+		}
+	}
+
+	//Water Wall
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	for (int i = -GRID_SIZE / 2 / FLOOR_SCALE; i <= GRID_SIZE / 2 / FLOOR_SCALE; i++) {
+		for (int j = -GRID_SIZE / 2 / FLOOR_SCALE; j <= GRID_SIZE / 2 / FLOOR_SCALE; j++) {
+			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, j * FLOOR_SCALE , 199.4f)) * scale(mat4(1.0f), vec3(FLOOR_SCALE,FLOOR_SCALE , 0.1f));
+			shaderManager.setMat4("worldMatrix", tileMatrix);
+			glDrawArrays(renderingMode, 0, 36);
+		}
+	}
+
+	//Lava Wall
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	for (int i = -GRID_SIZE / 2 / FLOOR_SCALE; i <= GRID_SIZE / 2 / FLOOR_SCALE; i++) {
+		for (int j = -GRID_SIZE / 2 / FLOOR_SCALE; j <= GRID_SIZE / 2 / FLOOR_SCALE; j++) {
+			mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, j * FLOOR_SCALE, 399.4f)) * scale(mat4(1.0f), vec3(FLOOR_SCALE, FLOOR_SCALE, 0.1f));
 			shaderManager.setMat4("worldMatrix", tileMatrix);
 			glDrawArrays(renderingMode, 0, 36);
 		}
@@ -1217,7 +1283,7 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 	else
 	{
 		for (int i = (int)(cameraPosition / 20); i > (int)(cameraPosition / 20) - 3; i--) {
-			if (i >= 0 && i < 10) {
+			if (i >= 0 && i < 30) {
 				for (Shape shape : owChunks[i]) {
 					shape.Draw(renderingMode, shaderManager);
 				}

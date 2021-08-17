@@ -15,6 +15,7 @@ using namespace std;
 
 struct Vertex {
     vec3 Position;
+    vec3 Colour;
     vec3 Normal;
     vec2 TexCoords;
 };

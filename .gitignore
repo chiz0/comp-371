@@ -4,7 +4,6 @@
 *.pdb
 *.suo
 *.idb
-*.obj
 *.lastbuildstate
 *.ipch
 *.log
