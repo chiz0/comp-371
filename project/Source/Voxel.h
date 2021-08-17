@@ -12,21 +12,27 @@
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "ShaderManager.h"
 
 using namespace glm;
 
+
 class Voxel {
 public:
 	// Functions
-	Voxel(vec3 position, vec3 localScale = vec3(1.0f, 1.0f, 1.0f));	// Default constructor
-	void Draw(GLenum renderingMode, ShaderManager shader);			// Draw voxel to world
+    Voxel(vec3 position);	// Default constructor
+
+    void draw(GLenum* renderingMode, ShaderManager* shaderProgram);			// Draw voxel to world
 
 	// Properties
-	mat4 mAnchor = mat4(1.0f);
-	vec3 mPosition;
-	vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
-	vec3 mScaleVector = vec3(1.0f, 1.0f, 1.0f);
-	float mScale = 1.0f;
+    mat4 anchorMatrix = mat4(1.0f);
+    vec3 displayPosition;
+    quat displayOrientation = vec3(0);
+    vec3 displayScale = vec3(1.0f);
+    vec3 _position; // Used by Shape class to determine final position during animation
+    vec3 _orientation = vec3(0); // Used by Shape class to determine final orientation during animation
+    vec3 _scale = vec3(1.0f); // Used by Shape class to determine final scale during animation
 };

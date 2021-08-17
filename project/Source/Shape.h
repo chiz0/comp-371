@@ -1,49 +1,62 @@
 #pragma once
 
-#include <list>
 #include <vector>
 
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "Constants.h"
-#include "Coordinates.h"
+#include "GameObject.h"
 #include "ShaderManager.h"
 #include "Voxel.h"
 
 using namespace glm;
 using namespace std;
 
-class Shape {
-public:
-	// Functions
-	Shape(vec3 position, vector<coordinates> description, int vao, int glowVao, bool hasWall, float scalarScale, int texture, int glowTexture);
-	void BuildGlow(vector<coordinates> description);
-	void Draw(GLenum renderingMode, ShaderManager shader);
-	void DrawGlow(GLenum renderingMode, ShaderManager shader);
-	void Reshuffle();
-	void ResetPosition();
 
-	// Properties
-	bool showWall;
-	int voxelCount = 0;
-	bool projection[WALL_SIZE][WALL_SIZE] = { 0 };
-	vector<struct coordinates> mDescription;
-	vector<Voxel> voxels;
-	vector<Voxel> wallVoxels;
-	vector<Voxel> glowVoxels;
-	vec3 mPosition;
-	vec3 mOrientation = vec3(0.0f, 0.0f, 0.0f);
-	float mScale = 1.0f;
-	int mvao;
-	int mGlowVao;
-	vec3 defaultOrientation = vec3(0.0f, 0.0f, 0.0f);
-	vec3 defaultPosition;
-	float defaultScale = 1.0f;
-	int texture;
-	int glowTexture;
+class Shape : public GameObject {
+public:
+    // Functions
+    Shape(vec3 position, vector<ivec3> description, vec3 colour, int texture);
+    Shape(vec3 position, int voxelCount, vec3 colour, int texture);
+
+    void draw(GLenum* renderingMode, ShaderManager* shaderProgram);
+    void update(vector<ScheduledEvent>* eventQueue, double dt);
+    void processEvent(Event event);
+    vector<vector<bool>> getWallProjection(bool currentRotation);
+
+    // Properties
+    double timer = 0;
+    vector<Voxel> voxels;
+    vector<vector<vector<bool>>> map3D;
+    vec3 centerOffset;
+    bool userInputResponse = false;
+    enum {
+        INITIALIZED,
+        IDLE,
+        ANIMATE_CREATION,
+        ANIMATE_DESTRUCTION,
+        ANIMATE_ROTATE
+    } state = INITIALIZED;
+    vec3 _position;
+    quat _orientation = quat();
+    vec3 _scale = vec3(1.0f);
+    vec3 _colour;
+    int _texture;
+    quat displayOrientation = quat();
+    const float ANIMATE_CREATION_MOVE_SPEED = 20.0f;
+    const int ANIMATE_CREATION_VOXEL_SPREAD = 10;
+    const float ANIMATE_ROTATE_SPEED = 10.0f;
 
 private:
-	bool isEdge(bool shapeMap[WALL_SIZE][WALL_SIZE][WALL_SIZE], coordinates fromShape, int dx, int dy, int dz);
+    // Functions
+    void init(vector<ivec3> description);
+    void randomRightAngleRotations();
+
+    // Properties
+    quat previousOrientation = quat();
+    float slerpProgress = 0.0f;
 };

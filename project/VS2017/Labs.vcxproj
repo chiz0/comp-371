@@ -200,6 +200,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\ControlState.h" />
+    <ClInclude Include="..\Source\ScheduledEvent.h" />
     <ClInclude Include="..\Source\Coordinates.h" />
     <ClInclude Include="..\Source\BurstParticle.h" />
     <ClInclude Include="..\Source\Emitter.h" />

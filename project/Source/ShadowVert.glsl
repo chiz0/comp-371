@@ -6,4 +6,4 @@ uniform mat4 worldMatrix;
 void main()
 {
 	gl_Position = worldMatrix * vec4(aPos, 1.0);
-} 
+}
