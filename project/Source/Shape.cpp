@@ -348,9 +348,9 @@ void Shape::init(vector<ivec3> description) {
 }
 
 void Shape::randomRightAngleRotations() {
+	_orientation = normalize(_orientation);
 	_orientation = angleAxis(radians((rand() % 4) * 90.0f), vec3(1.0f, 0.0f, 0.0f)) * _orientation;
 	_orientation = angleAxis(radians((rand() % 4) * 90.0f), vec3(0.0f, 1.0f, 0.0f)) * _orientation;
 	_orientation = angleAxis(radians((rand() % 4) * 90.0f), vec3(0.0f, 0.0f, 1.0f)) * _orientation;
-	_orientation = normalize(_orientation);
 	displayOrientation = _orientation;
 }
