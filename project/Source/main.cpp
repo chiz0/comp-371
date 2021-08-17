@@ -390,7 +390,7 @@ int main(int argc, char* argv[])
 		
 		for (unsigned int i = 0; i < 6; ++i)
 			shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
-		shadowShaderManager.setFloat("farPlane", far_plane);
+		shadowShaderManager.setFloat("farPlane", FAR_PLANE);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
 
 		if (cameraPosition.z >= 399.4) {
@@ -445,20 +445,16 @@ int main(int argc, char* argv[])
 		//Light position as we move the camera
 		if (cameraPosition.z >= 100.0f && cameraPosition.z < 140.0f) {
 			if (((int)(cameraHorizontalAngle / 180.0f) % 2) == 1 || ((int)(cameraHorizontalAngle / 180.0f) % 2) == -1) {
-				far_plane = 75.0f;
 				lightPosition = vec3(00.0f, 50.0f, 199.0f);
 			}
 			else {
-				far_plane = 100.0f;
 				lightPosition = LIGHT_OFFSET;
 			}
 		}
 		else if (cameraPosition.z < 100.0f) {
-			far_plane = 100.0f;
 			lightPosition = LIGHT_OFFSET;
 		}
 		else if (cameraPosition.z >= 140.0f) {
-			far_plane = 75.0f;
 			lightPosition = vec3(00.0f, 50.0f, 199.0f);
 		}
 

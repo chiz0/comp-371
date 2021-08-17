@@ -114,12 +114,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../ThirdParty/glew-2.1.0/include;../ThirdParty/FreeImage-3170/Source;../ThirdParty/glfw-3.3/include;../ThirdParty/glm;../ThirdParty/assimp/include;../ThirdParty/stb_image</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../ThirdParty/glew-2.1.0/include;../ThirdParty/FreeImage-3170/Source;../ThirdParty/glfw-3.3/include;../ThirdParty/glm;../ThirdParty/assimp/include;../ThirdParty/stb_image;../ThirdParty/irrKlang-64bit-1.6.0/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../ThirdParty/FreeImage-3170/lib/win32;../ThirdParty/glfw-3.3/lib/win64/lib-vc2019;../ThirdParty/glew-2.1.0/lib/win64;../ThirdParty/assimp/lib/Release;../ThirdParty/irrKlang-1.6.0/lib/Win32-visualStudio</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../ThirdParty/FreeImage-3170/lib/win32;../ThirdParty/glfw-3.3/lib/win64/lib-vc2019;../ThirdParty/glew-2.1.0/lib/win64;../ThirdParty/assimp/lib/Release;../ThirdParty/irrKlang-64bit-1.6.0/lib/Winx64-visualStudio</AdditionalLibraryDirectories>
       <AdditionalDependencies>FreeImage.lib;opengl32.lib;glew32s.lib;glfw3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <BuildLog>
