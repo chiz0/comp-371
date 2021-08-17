@@ -64,7 +64,7 @@ int createVertexArrayObjectColoured(vec3 frontBackColour, vec3 topBottomColour, 
 int createVertexArrayObjectSingleColoured(vec3 colour);
 int createVertexArrayObjectTextured(vec3 colour);
 int loadTexture(string name, char* path);
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture, int TTexture,int ITexture,int MTexture,int ETexture, vec3 cameraPosition);
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int Textures[10],int TexturesNum[10], vec3 cameraPosition);
 
 bool initContext();
 
@@ -142,7 +142,23 @@ int main(int argc, char* argv[])
 	int ITexture = loadTexture("ITexture", TEXTURE_PATH_I);
 	int MTexture = loadTexture("MTexture", TEXTURE_PATH_M);
 	int ETexture = loadTexture("ETexture", TEXTURE_PATH_E);
-
+	int LTexture = loadTexture("LTexture", TEXTURE_PATH_L);
+	int VTexture = loadTexture("VTexture", TEXTURE_PATH_V);
+	int STexture = loadTexture("STexture", TEXTURE_PATH_S);
+	int ColonTexture = loadTexture("ColonTexture", TEXTURE_PATH_COLON);
+	int HeartTexture = loadTexture("HeartTexture", TEXTURE_PATH_HEART);
+	int Texture1 = loadTexture("HeartTexture", TEXTURE_PATH_1);
+	int Texture2 = loadTexture("HeartTexture", TEXTURE_PATH_2);
+	int Texture3 = loadTexture("HeartTexture", TEXTURE_PATH_3);
+	int Texture4 = loadTexture("HeartTexture", TEXTURE_PATH_4);
+	int Texture5 = loadTexture("HeartTexture", TEXTURE_PATH_5);
+	int Texture6 = loadTexture("HeartTexture", TEXTURE_PATH_6);
+	int Texture7 = loadTexture("HeartTexture", TEXTURE_PATH_7);
+	int Texture8 = loadTexture("HeartTexture", TEXTURE_PATH_8);
+	int Texture9 = loadTexture("HeartTexture", TEXTURE_PATH_9);
+	int Texture0 = loadTexture("HeartTexture", TEXTURE_PATH_0);
+	int Textures[10] = { TTexture, ITexture,MTexture,ETexture,LTexture, VTexture, STexture,ColonTexture,HeartTexture, tileTexture };
+	int TexturesNum[10] = { Texture0, Texture1, Texture2,Texture3,Texture4,Texture5,Texture6,Texture7,Texture8,Texture9 };
 	// Other camera parameters
 	float cameraHorizontalAngle = 90.0f;
 	float cameraVerticalAngle = 0.0f;
@@ -468,7 +484,7 @@ int main(int argc, char* argv[])
 			shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 		shadowShaderManager.setFloat("farPlane", far_plane);
 		shadowShaderManager.setVec3("lightPosition", lightPosition);
-		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, tileTexture, TTexture,ITexture,MTexture, ETexture, cameraPosition);
+		drawScene(shadowShaderManager, renderingMode, shapes, walls, lightbulb, Textures,TexturesNum, cameraPosition);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
@@ -484,7 +500,7 @@ int main(int argc, char* argv[])
 		shaderManager.setFloat("farPlane", far_plane);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb, tileTexture,TTexture,ITexture, MTexture, ETexture, cameraPosition);
+		drawScene(shaderManager, renderingMode, shapes, walls, lightbulb,Textures,TexturesNum,cameraPosition);
 
 		// End Frame
 		glfwSwapBuffers(window);
@@ -1227,11 +1243,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	}
 }
 
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int tileTexture, int TTexture, int ITexture, int MTexture, int ETexture, vec3 cameraPosition) {
+void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, vector<Wall> walls, Shape lightbulb, int Textures[10], int TexturesNum[10], vec3 cameraPosition) {
 
 	
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tileTexture);
+	glBindTexture(GL_TEXTURE_2D, Textures[9]);
 	
 	//Draw Tiles
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
@@ -1284,34 +1300,164 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> 
 
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, TTexture);
+	glBindTexture(GL_TEXTURE_2D, Textures[0]);
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
 	//Draw Time
 	//T
-	mat4 timeT = translate(mat4(1.0f), vec3(cameraPosition.x + 10, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setBool("ignoreLighting", true);
+	mat4 timeT = translate(mat4(1.0f), vec3(cameraPosition.x + 6, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
 	shaderManager.setMat4("worldMatrix", timeT);
 	glDrawArrays(renderingMode, 0, 36);
+	shaderManager.setBool("ignoreLighting", true);
 	//I
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, ITexture);
+	glBindTexture(GL_TEXTURE_2D, Textures[1]);
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-	mat4 timeI = translate(mat4(1.0f), vec3(cameraPosition.x + 12, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	mat4 timeI = translate(mat4(1.0f), vec3(cameraPosition.x + 8, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
 	shaderManager.setMat4("worldMatrix", timeI);
 	glDrawArrays(renderingMode, 0, 36);
+	shaderManager.setBool("ignoreLighting", true);
 	//M
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, MTexture);
+	glBindTexture(GL_TEXTURE_2D, Textures[2]);
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-	mat4 timeM = translate(mat4(1.0f), vec3(cameraPosition.x + 14, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	mat4 timeM = translate(mat4(1.0f), vec3(cameraPosition.x + 10, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
 	shaderManager.setMat4("worldMatrix", timeM);
 	glDrawArrays(renderingMode, 0, 36);
+	shaderManager.setBool("ignoreLighting", true);
 	//E
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, ETexture);
+	glBindTexture(GL_TEXTURE_2D, Textures[3]);
 	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-	mat4 timeE = translate(mat4(1.0f), vec3(cameraPosition.x + 16, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	mat4 timeE = translate(mat4(1.0f), vec3(cameraPosition.x + 12, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
 	shaderManager.setMat4("worldMatrix", timeE);
 	glDrawArrays(renderingMode, 0, 36);
+	shaderManager.setBool("ignoreLighting", true);
+	//Colon
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[7]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 timeColon = translate(mat4(1.0f), vec3(cameraPosition.x + 14, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", timeColon);
+	glDrawArrays(renderingMode, 0, 36);
+	shaderManager.setBool("ignoreLighting", true);
+	//0
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, TexturesNum[0]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 time0 = translate(mat4(1.0f), vec3(cameraPosition.x + 16, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", time0);
+	glDrawArrays(renderingMode, 0, 36);
+	shaderManager.setBool("ignoreLighting", true);
+	//Colon
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[7]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 timeColon2 = translate(mat4(1.0f), vec3(cameraPosition.x + 18, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", timeColon2);
+	glDrawArrays(renderingMode, 0, 36);
+	shaderManager.setBool("ignoreLighting", true);
+	//0
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, TexturesNum[0]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 time0x = translate(mat4(1.0f), vec3(cameraPosition.x + 20, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", time0x);
+	glDrawArrays(renderingMode, 0, 36);
+	shaderManager.setBool("ignoreLighting", true);
+	//0
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, TexturesNum[0]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 time0y = translate(mat4(1.0f), vec3(cameraPosition.x + 22, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", time0y);
+	glDrawArrays(renderingMode, 0, 36);
+	shaderManager.setBool("ignoreLighting", true);
+	//Bar
+	glBindVertexArray(createVertexArrayObjectSingleColoured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 bar = translate(mat4(1.0f), vec3(cameraPosition.x, cameraPosition.y + 16, cameraPosition.z - 25.2)) * scale(mat4(1.0f), vec3(48.0f, 2.8f, 0));
+	shaderManager.setMat4("worldMatrix", bar);
+	glDrawArrays(renderingMode, 0, 36);
+	
+
+	//L
+	shaderManager.setBool("ignoreLighting", true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[4]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 livesL = translate(mat4(1.0f), vec3(cameraPosition.x - 22, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", livesL);
+	glDrawArrays(renderingMode, 0, 36);
+	//I
+	shaderManager.setBool("ignoreLighting", true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[1]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 livesI = translate(mat4(1.0f), vec3(cameraPosition.x - 20, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", livesI);
+	glDrawArrays(renderingMode, 0, 36);
+	//V
+	shaderManager.setBool("ignoreLighting", true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[5]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 livesV = translate(mat4(1.0f), vec3(cameraPosition.x - 18, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", livesV);
+	glDrawArrays(renderingMode, 0, 36);
+	//E
+	shaderManager.setBool("ignoreLighting", true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[3]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 livesE = translate(mat4(1.0f), vec3(cameraPosition.x - 16, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", livesE);
+	glDrawArrays(renderingMode, 0, 36);
+	//S
+	shaderManager.setBool("ignoreLighting", true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[6]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 livesS = translate(mat4(1.0f), vec3(cameraPosition.x - 14, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", livesS);
+	glDrawArrays(renderingMode, 0, 36);
+	//Colon
+	shaderManager.setBool("ignoreLighting", true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[7]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 livesColon = translate(mat4(1.0f), vec3(cameraPosition.x - 12, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", livesColon);
+	glDrawArrays(renderingMode, 0, 36);
+	//Heart1
+	shaderManager.setBool("ignoreLighting", true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[8]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 Heart1 = translate(mat4(1.0f), vec3(cameraPosition.x - 10, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", Heart1);
+	glDrawArrays(renderingMode, 0, 36);
+	//Heart1
+	shaderManager.setBool("ignoreLighting", true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[8]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 Heart2 = translate(mat4(1.0f), vec3(cameraPosition.x - 8, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", Heart2);
+	glDrawArrays(renderingMode, 0, 36);
+	//Heart1
+	shaderManager.setBool("ignoreLighting", true);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Textures[8]);
+	glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
+	mat4 Heart3 = translate(mat4(1.0f), vec3(cameraPosition.x - 6, cameraPosition.y + 16, cameraPosition.z - 25)) * scale(mat4(1.0f), vec3(2.0f, 2.0f, 0));
+	shaderManager.setMat4("worldMatrix", Heart3);
+	glDrawArrays(renderingMode, 0, 36);
+
+
+	shaderManager.setBool("ignoreLighting", false);
+
+
+
 	
 
 
