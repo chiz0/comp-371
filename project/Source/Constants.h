@@ -5,9 +5,9 @@
 using namespace glm;
 using namespace std;
 
-constexpr int GRID_SIZE = 100;							// The world exists in an nxn grid
+constexpr int GRID_SIZE = 200;							// The world exists in an nxn grid
 constexpr int WALL_SIZE = 12;                           // How many unit cubes in nxn should the wall be
-constexpr int FLOOR_SCALE = 25;							// How large a single floor tile is
+constexpr int FLOOR_SCALE = 5;							// How large a single floor tile is
 constexpr float WALL_THICKNESS = 0.1f;                  // How thick is the wall
 constexpr int WALL_DISTANCE = 10;						// How far from the model should its wall be
 constexpr int MODEL_COUNT = 4;                          // How many models are present in the world
@@ -37,6 +37,7 @@ constexpr float BURST_DISTANCE_FROM_CAMERA = 1.0f;
 constexpr float FLAME_RISE = 1.0f;
 constexpr float FLAME_SCALE = 0.2f;
 
+// SHADERS
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
 constexpr char FRAGMENT_SHADER_FILEPATH[] = "../Source/TexturedFrag.glsl";
 
@@ -44,14 +45,41 @@ constexpr char SHADOW_VERTEX_SHADER_FILEPATH[] = "../Source/ShadowVert.glsl";
 constexpr char SHADOW_FRAGMENT_SHADER_FILEPATH[] = "../Source/ShadowFrag.glsl";
 constexpr char SHADOW_DEPTH_SHADER_FILEPATH[] = "../Source/ShadowDepth.glsl";
 
-constexpr char PARTICLE_VERTEX_SHADER_FILEPATH[] = "../Source/ParticleVertex.glsl";
-constexpr char PARTICLE_FRAGMENT_SHADER_FILEPATH[] = "../Source/ParticleFragment.glsl";
-
+// TEXTURES
 constexpr char* TEXTURE_PATH_TILE = "../Assets/Textures/tile.jpg";
 constexpr char* TEXTURE_PATH_METAL = "../Assets/Textures/metal.jpg";
 constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";
 constexpr char* TEXTURE_PATH_FIRE = "../Assets/Textures/fire.jpg";
 constexpr char* TEXTURE_PATH_PARTICLE = "../Assets/Textures/particle.jpg";
+constexpr char* TEXTURE_PATH_GRASS = "../Assets/Textures/block/grass_block_top.png";
+constexpr char* TEXTURE_PATH_WATER = "../Assets/Textures/block/light_blue_concrete.png";
+constexpr char* TEXTURE_PATH_LOG = "../Assets/Textures/block/oak_log.png";
+constexpr char* TEXTURE_PATH_LEAVES = "../Assets/Textures/block/green_concrete.png";
+constexpr char* TEXTURE_PATH_PLANKS = "../Assets/Textures/block/oak_planks - copia.png";
+constexpr char* TEXTURE_PATH_ROCK = "../Assets/Textures/block/cobblestone.png";
+constexpr char* TEXTURE_PATH_IRON = "../Assets/Textures/block/iron_ore.png";
+constexpr char* TEXTURE_PATH_DIAMOND = "../Assets/Textures/block/diamond_ore.png";
+constexpr char* TEXTURE_PATH_OBSIDIAN = "../Assets/Textures/block/obsidian.png";
+constexpr char* TEXTURE_PATH_NETHERRACK = "../Assets/Textures/block2/netherrack.png";
+constexpr char* TEXTURE_PATH_LAVA = "../Assets/Textures/block/lava_still.png";
+constexpr char* TEXTURE_PATH_ENDSTONE = "../Assets/Textures/block2/end_stone_bricks.png";
 
+// MODELS
+constexpr char* MODEL_PATH_COW = "../Assets/Models/Cow/cow+mooshroom.obj";
+constexpr char* MODEL_PATH_BLAZE = "../Assets/Models/Blaze/untitled.obj";
+constexpr char* MODEL_PATH_CHICKEN = "../Assets/Models/Chicken/chicken.obj";
+constexpr char* MODEL_PATH_CREEPER = "../Assets/Models/Creeper/creeper.obj";
+constexpr char* MODEL_PATH_DRAGON= "../Assets/Models/Dragon/enderdragon.obj";
+constexpr char* MODEL_PATH_ENDERMAN = "../Assets/Models/Enderman/enderman.obj";
+constexpr char* MODEL_PATH_HORSE = "../Assets/Models/Horse/horse+zombiehorse+skeltonhorse+mule+donkey.obj";
+constexpr char* MODEL_PATH_PIG = "../Assets/Models/Pig/pig.obj";
+constexpr char* MODEL_PATH_SHEEP = "../Assets/Models/Sheep/sheep.obj";
+constexpr char* MODEL_PATH_SKELETON = "../Assets/Models/Skeleton/skeleton+skeleton_stray+wither_skeleton.obj";
+constexpr char* MODEL_PATH_SPIDER = "../Assets/Models/Spider/spider.obj";
+constexpr char* MODEL_PATH_WITHERSKELETON = "../Assets/Models/Wither Skeleton/skeleton+skeleton_stray+wither_skeleton.obj";
+constexpr char* MODEL_PATH_ZOMBIE = "../Assets/Models/Zombie/zombie.obj";
+constexpr char* MODEL_PATH_CYLINDER = "../Assets/Models/CYLINDER/cylinder.obj";
+
+// AUDIO
 constexpr char* AUDIO_PATH_MUSIC = "../Assets/Audio/mii.ogg";
 constexpr char* AUDIO_PATH_WOW = "../Assets/Audio/wow.ogg";

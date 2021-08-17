@@ -4,7 +4,6 @@
 *.pdb
 *.suo
 *.idb
-*.obj
 *.lastbuildstate
 *.ipch
 *.log
@@ -22,3 +21,4 @@ project/ThirdParty/irrKlang-1.6.0/examples
 project/ThirdParty/irrKlang-1.6.0/examples.net
 project/ThirdParty/irrKlang-1.6.0/media
 project/ThirdParty/irrKlang-1.6.0/doc
+project/Build
