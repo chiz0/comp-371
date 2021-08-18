@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
 
 
 	//Land 
-	for (int chunk = 0; chunk < 30; chunk++) {
+	for (int chunk = 0; chunk < 29; chunk++) {
 
 		if (chunk>=20) {
 			owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, glowColour, false, 1.0f, endStoneTexture, fireTexture));
@@ -343,7 +343,9 @@ int main(int argc, char* argv[])
 
 	//Chunk 19
 	owChunks[18].push_back(Shape(vec3(-18, 4, 360), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[18].push_back(Shape(vec3(-18, 10, 360), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
 	owChunks[18].push_back(Shape(vec3(18, 5, 361), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[18].push_back(Shape(vec3(18, 10, 361), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
 	owChunks[18].push_back(Shape(vec3(-18, 5, 379), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
 	owChunks[18].push_back(Shape(vec3(-18, 10, 379), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
 	owChunks[18].push_back(Shape(vec3(19, 5, 366), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
@@ -367,7 +369,7 @@ int main(int argc, char* argv[])
 	};
 
 	// Camera parameters for view transform
-	vec3 cameraPosition = vec3(0.0f, 20.0f, 260.0f);
+	vec3 cameraPosition = vec3(0.0f, 20.0f, 402.0f);
 	vec3 cameraLookAt(0.0f, 1.0f, 0.0f);
 	vec3 cameraUp(0.0f, 1.0f, 0.0f);
 	vec3 cameraDestination = cameraPosition;
