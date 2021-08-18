@@ -339,8 +339,10 @@ int main(int argc, char* argv[])
         cout << ("WARNING: Could not start sound engine") << endl;
     }
 
-    soundEngine->play2D(AUDIO_PATH_MUSIC, true);
+    ISound* bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
 
+    int world = 0;
+    int level = 0;
 
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
@@ -429,6 +431,39 @@ int main(int argc, char* argv[])
                 shapes.clear();
                 walls.clear();
                 eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 2 });
+                
+                // TODO: Finalise implementation of world progress
+                level++;
+                if (level >= LEVELS_PER_WORLD) {
+                    bgMusic->stop();
+                    bgMusic->drop();
+                    // Move to next world
+                    soundEngine->play2D(AUDIO_PATH_CHIMES);
+                    level = 0;
+                    world++;
+                    if (world >= WORLDS) {
+                        // End the game, VICTORY!
+                        eventQueue.push_back({ EXIT_PROGRAM, 5 });
+                    }
+                    else {
+                        switch (world) {
+                        case 0:
+                            // Overworld
+                            bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
+                            break;
+                        case 1:
+                            // Nether
+                            bgMusic = soundEngine->play2D(AUDIO_PATH_NETHER, true, false, true);
+                            break;
+                        case 2:
+                            // Nether
+                            bgMusic = soundEngine->play2D(AUDIO_PATH_END, true, false, true);
+                            break;
+                        default:
+                            cout << "INVALID WORLD ID " + world;
+                        }
+                    }
+                }
                 break;
             }
 
@@ -597,6 +632,7 @@ int main(int argc, char* argv[])
     // Shutdown GLFW
     glfwTerminate();
 
+    soundEngine->drop();
     return 0;
 }
 
