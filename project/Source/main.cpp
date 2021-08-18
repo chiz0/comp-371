@@ -586,17 +586,6 @@ int main(int argc, char* argv[])
             lightPosition = vec3(00.0f, 50.0f, 199.0f);
         }
 
-        //sky color as we move the camera
-        if (cameraPosition.z >= 400) {
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        }
-        else if (cameraPosition.z >= 200) {
-            glClearColor(0.40f, 0.208f, 0.222f, 1.0f);
-        }
-        else {
-            glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
-        }
-
         // If shift is held, double camera speed
         bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
         float currentCameraSpeed = (fastCam) ? CAMERA_SPEED * 2 : CAMERA_SPEED;
