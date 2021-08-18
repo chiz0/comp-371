@@ -409,8 +409,7 @@ int main(int argc, char* argv[])
             case LEVEL_FAILED: {
                 cout << "Failure...\n";
                 eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 0 });
-                soundEngine->play2D(AUDIO_PATH_EXPLOSION, false);
-                soundEngine->play2D(AUDIO_PATH_BRUH, false);
+                soundEngine->play2D(AUDIO_PATH_IMPACT, false);
                 break;
             }
 
@@ -419,7 +418,8 @@ int main(int argc, char* argv[])
                 eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 3 });
                 currentDifficulty++;
                 currentWallSpeed += currentWallSpeed >= DIFFICULTY_SPEED_MAX ? 0 : DIFFICULTY_SPEED_GROWTH;
-                soundEngine->play2D(AUDIO_PATH_WOW, false);
+                soundEngine->play2D(AUDIO_PATH_LAUNCH, false);
+                soundEngine->play2D(AUDIO_PATH_BLAST, false);
                 break;
             }
 
