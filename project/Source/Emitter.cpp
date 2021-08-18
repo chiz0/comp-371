@@ -13,15 +13,26 @@ void Emitter::EmitBurst(vec3 position, int particleCount, float force, int textu
 		float dirY = rand() % 10 / 10.0f - 0.5f;
 		float dirZ = rand() % 10 / 10.0f - 0.5f;
 
-		float colourR = rand() % 100 / 100.0f;
-		float colourG = rand() % 100 / 100.0f;
-		float colourB = rand() % 100 / 100.0f;
+		float colourR = rand() % 50 / 100.0f + 0.5f;
+		float colourG = rand() % 50 / 100.0f + 0.5f;
+		float colourB = rand() % 50 / 100.0f + 0.5f;
+
+		float rotX = rand() % 3600 / 10.0f;
+		float rotY = rand() % 3600 / 10.0f;
+		float rotZ = rand() % 3600 / 10.0f;
+
+		quat rotation = normalize(quat());
+		rotation *= angleAxis(radians(rotX), vec3(1.0f, 0.0f, 0.0f));
+		rotation *= angleAxis(radians(rotY), vec3(0.0f, 1.0f, 0.0f));
+		rotation *= angleAxis(radians(rotZ), vec3(0.0f, 0.0f, 1.0f));
+
 		burstParticles.push_back(BurstParticle(
 			position,							// Starting location
 			vec3(dirX, dirY, dirZ) * force,		// Direction
 			vec3(colourR, colourG, colourB),	// Colour
 			rand() % 30 / 10.0f + 1.0f,			// Lifespan
-			tex									// Texture
+			tex,								// Texture
+			rotation
 		));
 	}
 }

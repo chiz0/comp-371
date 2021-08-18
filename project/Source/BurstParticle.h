@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>  // GLM is an optimized math library with syntax to similar to OpenGL Shading Language
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "Constants.h"
 #include "ShaderManager.h"
@@ -15,7 +17,7 @@ using namespace std;
 
 class BurstParticle {
 public:
-	BurstParticle(vec3 position, vec3 velocity, vec3 colour, float duration, int texture);
+	BurstParticle(vec3 position, vec3 velocity, vec3 colour, float duration, int texture, quat rotation);
 	void Draw(ShaderManager shaderManager);
 	void Update(float dt);
 	bool isDead();
@@ -26,4 +28,5 @@ private:
 	vec3 mColour;
 	float mDuration;
 	int mTexture;
+	quat mRotation;
 };

@@ -439,38 +439,42 @@ int main(int argc, char* argv[])
                 // TODO: Finalise implementation of world progress
                 level++;
                 if (level >= LEVELS_PER_WORLD) {
-                    bgMusic->stop();
-                    bgMusic->drop();
-                    // Move to next world
-                    soundEngine->play2D(AUDIO_PATH_CHIMES);
-                    level = 0;
-                    world++;
-                    if (world >= WORLDS) {
-                        // End the game, VICTORY!
-                        eventQueue.push_back({ EXIT_PROGRAM, 5 });
-                    }
-                    else {
-                        switch (world) {
-                        case 0:
-                            // Overworld
-                            bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
-                            break;
-                        case 1:
-                            // Nether
-                            bgMusic = soundEngine->play2D(AUDIO_PATH_NETHER, true, false, true);
-                            break;
-                        case 2:
-                            // Nether
-                            bgMusic = soundEngine->play2D(AUDIO_PATH_END, true, false, true);
-                            break;
-                        default:
-                            cout << "INVALID WORLD ID " + world;
-                        }
-
-                        glClearColor(worldSkyColours[world].x, worldSkyColours[world].y, worldSkyColours[world].z, worldSkyColours[world].a);
-                    }
+                    eventQueue.push_back({ WORLD_TRANSITION, 5 });
                 }
                 break;
+            }
+
+            case WORLD_TRANSITION: {
+                bgMusic->stop();
+                bgMusic->drop();
+                // Move to next world
+                soundEngine->play2D(AUDIO_PATH_CHIMES);
+                level = 0;
+                world++;
+                if (world >= WORLDS) {
+                    // End the game, VICTORY!
+                    eventQueue.push_back({ EXIT_PROGRAM, 5 });
+                }
+                else {
+                    switch (world) {
+                    case 0:
+                        // Overworld
+                        bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
+                        break;
+                    case 1:
+                        // Nether
+                        bgMusic = soundEngine->play2D(AUDIO_PATH_NETHER, true, false, true);
+                        break;
+                    case 2:
+                        // Nether
+                        bgMusic = soundEngine->play2D(AUDIO_PATH_END, true, false, true);
+                        break;
+                    default:
+                        cout << "INVALID WORLD ID " + world;
+                    }
+
+                    glClearColor(worldSkyColours[world].x, worldSkyColours[world].y, worldSkyColours[world].z, worldSkyColours[world].a);
+                }
             }
 
             case EXIT_PROGRAM: {

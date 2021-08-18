@@ -12,7 +12,8 @@ enum Event {
     DESTROY_SHAPE_AND_WALL,
     LEVEL_FAILED,
     LEVEL_SUCCESS,
-    DISPLAY_SHAPE
+    DISPLAY_SHAPE,
+    WORLD_TRANSITION
 };
 
 struct ScheduledEvent {
