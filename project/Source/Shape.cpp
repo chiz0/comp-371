@@ -78,6 +78,7 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
         for (Voxel& voxel : voxels) {
             voxel.displayPosition.x += (rand() % ANIMATE_CREATION_VOXEL_SPREAD) - (ANIMATE_CREATION_VOXEL_SPREAD / 2);
             voxel.displayPosition.y += (rand() % ANIMATE_CREATION_VOXEL_SPREAD) - (ANIMATE_CREATION_VOXEL_SPREAD / 2);
+            voxel.displayPosition.z += (rand() % ANIMATE_CREATION_VOXEL_SPREAD) - (ANIMATE_CREATION_VOXEL_SPREAD / 2);
         }
         state = ANIMATE_CREATION;
         break;
@@ -108,6 +109,17 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
             else {
                 voxel.displayPosition.y = voxel._position.y;
             }
+            if (voxel.displayPosition.z < voxel._position.z - ANIMATE_CREATION_MOVE_SPEED * dt) {
+                voxel.displayPosition.z += ANIMATE_CREATION_MOVE_SPEED * dt;
+                finished = false;
+            }
+            else if (voxel.displayPosition.z > voxel._position.z + ANIMATE_CREATION_MOVE_SPEED * dt) {
+                voxel.displayPosition.z -= ANIMATE_CREATION_MOVE_SPEED * dt;
+                finished = false;
+            }
+            else {
+                voxel.displayPosition.z = voxel._position.z;
+            }
         }
         if (finished) {
             state = IDLE;
@@ -136,25 +148,22 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
         userInputResponse = false;
         timer += dt;
         for (Voxel& voxel : voxels) {
-            if (voxel._position.x == 0 && voxel._position.y == 0 && voxel._position.z == 0) {
-                voxel.displayPosition.z -= ANIMATE_DESTRUCTION_MOVE_SPEED * timer * 0.5;
-            }
             if (voxel._position.x < 0) {
                 voxel.displayPosition.x -= ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
             }
-            else if (voxel._position.x > 0) {
+            else if (voxel._position.x >= 0) {
                 voxel.displayPosition.x += ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
             }
             if (voxel._position.y < 0) {
                 voxel.displayPosition.y -= ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
             }
-            else if (voxel._position.y > 0) {
+            else if (voxel._position.y >= 0) {
                 voxel.displayPosition.y += ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
             }
             if (voxel._position.z < 0) {
                 voxel.displayPosition.z -= ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
             }
-            else if (voxel._position.z > 0) {
+            else if (voxel._position.z >= 0) {
                 voxel.displayPosition.z += ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
             }
         }
