@@ -94,10 +94,6 @@ int main(int argc, char* argv[])
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-
-    // Black background
-    glClearColor(0.529f, 0.808f, 0.922f, 1.0f);
-
     // We can set the shader once, since we have only one
     ShaderManager shaderManager = ShaderManager(VERTEX_SHADER_FILEPATH, FRAGMENT_SHADER_FILEPATH);
     ShaderManager shadowShaderManager = ShaderManager(SHADOW_VERTEX_SHADER_FILEPATH, SHADOW_FRAGMENT_SHADER_FILEPATH, SHADOW_DEPTH_SHADER_FILEPATH);
@@ -344,6 +340,14 @@ int main(int argc, char* argv[])
     int world = 0;
     int level = 0;
 
+    vec4 worldSkyColours[WORLDS] = {
+        vec4(0.529f, 0.808f, 0.922f, 1.0f),
+        vec4(0.40f, 0.208f, 0.222f, 1.0f),
+        vec4(0.0f, 0.0f, 0.0f, 1.0f)
+    };
+
+    glClearColor(worldSkyColours[0].x, worldSkyColours[0].y, worldSkyColours[0].z, worldSkyColours[0].a);
+
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -462,6 +466,8 @@ int main(int argc, char* argv[])
                         default:
                             cout << "INVALID WORLD ID " + world;
                         }
+
+                        glClearColor(worldSkyColours[world].x, worldSkyColours[world].y, worldSkyColours[world].z, worldSkyColours[world].a);
                     }
                 }
                 break;
