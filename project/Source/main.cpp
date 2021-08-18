@@ -440,7 +440,7 @@ int main(int argc, char* argv[])
                 level++;
                 if (level >= LEVELS_PER_WORLD) {
                     level = 0;
-                    eventQueue.push_back({ WORLD_TRANSITION, 5 });
+                    eventQueue.push_back({ WORLD_TRANSITION, 1 });
                 }
                 break;
             }
