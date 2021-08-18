@@ -45,6 +45,7 @@ public:
         SUCCESS
     } state = INITIALIZED;
     vec3 _position;
+    vec3 displayPosition;
     vec3 _orientation = vec3(0);
     vec3 _scale = vec3(1.0f);
     vec3 _colour;

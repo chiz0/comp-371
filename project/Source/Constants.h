@@ -41,7 +41,8 @@ constexpr int DEFAULT_BURST_AMOUNT = 50;					// How many particles should be in 
 constexpr float DEFAULT_BURST_FORCE = 10.0f;				// How powerful a default burst should be
 
 // Wall speed values
-constexpr float INITIAL_WALL_SPEED = 1.5f;					// The starting speed of walls moving towards objects
+constexpr float INITIAL_WALL_SPEED = 2.0f;					// The starting speed of walls moving towards objects
+constexpr int STARTING_DIFFICULTY = 9;                      // The starting number of cubes in the shape
 constexpr float DIFFICULTY_SPEED_GROWTH = 0.1f;				// How much to increment the wall speed as difficulty increases
 constexpr float DIFFICULTY_SPEED_MAX = 4.0f;				// How much to increment the wall speed as difficulty increases
 
@@ -92,3 +93,4 @@ constexpr char* MODEL_PATH_CYLINDER = "../Assets/Models/CYLINDER/cylinder.obj";
 constexpr char* AUDIO_PATH_MUSIC = "../Assets/Audio/mii.ogg";
 constexpr char* AUDIO_PATH_WOW = "../Assets/Audio/wow.ogg";
 constexpr char* AUDIO_PATH_BRUH = "../Assets/Audio/bruh.ogg";
+constexpr char* AUDIO_PATH_EXPLOSION = "../Assets/Audio/explosion.ogg";

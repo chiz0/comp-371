@@ -22,7 +22,7 @@ void Wall::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
     shaderProgram->setVec3("colour", _colour);
     shaderProgram->setInt("textureSampler", 0);
     quat orientationQuat(_orientation);
-    mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(orientationQuat) * scale(mat4(1.0f), _scale);
+    mat4 worldMatrix = translate(mat4(1.0f), displayPosition) * toMat4(orientationQuat) * scale(mat4(1.0f), _scale);
     for (auto it = begin(voxels); it != end(voxels); ++it) {
         it->anchorMatrix = worldMatrix;
         it->draw(renderingMode, shaderProgram);
@@ -35,6 +35,7 @@ void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {
         for (auto it = begin(voxels); it != end(voxels); ++it) {
             it->displayPosition.y += ANIMATE_CREATION_VOXEL_FALL_HEIGHT + ANIMATE_CREATION_VOXEL_INTERVAL * (it->_position.x + offset.x + (offset.x * 2 * (it->_position.y + offset.y)) / ANIMATE_CREATION_SIMULTANEOUS_ROWS);
         }
+        displayPosition = _position;
         state = ANIMATE_CREATION;
         break;
     }
@@ -53,6 +54,7 @@ void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {
             eventQueue->push_back({DISPLAY_SHAPE, 0});
             state = IDLE;
         }
+        displayPosition = _position;
         break;
     }
     case IDLE: {
@@ -71,6 +73,7 @@ void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {
                 timer = 0;
             }
         }
+        displayPosition = _position;
         break;
     }
     case SUCCESS: {
@@ -93,12 +96,22 @@ void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {
         if (timer >= 5) {
             destroyFlag = true;
         }
+        displayPosition = _position;
         break;
     }
     case FAILURE: {
-        speed += 1 * dt;
-        _position.z += speed * dt;
         timer += dt;
+        speed += 1 * dt;
+        displayPosition = _position;
+        if (timer >= 0 && timer < 1) {
+            if (timer < 0.2 && (int)(timer * 10) % 1 == 0) {
+                displayPosition.x += ((rand() % 10) - 4.5f) / 40 * sqrt(speed);
+                displayPosition.y += ((rand() % 10) - 4.5f) / 40 * sqrt(speed);
+            }
+        }
+        else {
+            _position.z += speed * dt;
+        }
         if (timer >= 10) {
             destroyFlag = true;
         }

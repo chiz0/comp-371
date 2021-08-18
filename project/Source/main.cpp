@@ -272,7 +272,7 @@ int main(int argc, char* argv[])
     vector<Shape*> shapes;
     vector<Wall*> walls;
     int selectedShape = -1;
-    int currentDifficulty = 6;
+    int currentDifficulty = STARTING_DIFFICULTY;
     float currentWallSpeed = INITIAL_WALL_SPEED;
 
     // Only use one VAO (set colours with uniform)
@@ -409,6 +409,7 @@ int main(int argc, char* argv[])
             case LEVEL_FAILED: {
                 cout << "Failure...\n";
                 eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 0 });
+                soundEngine->play2D(AUDIO_PATH_EXPLOSION, false);
                 soundEngine->play2D(AUDIO_PATH_BRUH, false);
                 break;
             }
