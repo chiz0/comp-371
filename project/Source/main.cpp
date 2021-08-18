@@ -439,6 +439,7 @@ int main(int argc, char* argv[])
                 // TODO: Finalise implementation of world progress
                 level++;
                 if (level >= LEVELS_PER_WORLD) {
+                    level = 0;
                     eventQueue.push_back({ WORLD_TRANSITION, 5 });
                 }
                 break;
@@ -449,7 +450,6 @@ int main(int argc, char* argv[])
                 bgMusic->drop();
                 // Move to next world
                 soundEngine->play2D(AUDIO_PATH_CHIMES);
-                level = 0;
                 world++;
                 if (world >= WORLDS) {
                     // End the game, VICTORY!
@@ -475,6 +475,7 @@ int main(int argc, char* argv[])
 
                     glClearColor(worldSkyColours[world].x, worldSkyColours[world].y, worldSkyColours[world].z, worldSkyColours[world].a);
                 }
+                break;
             }
 
             case EXIT_PROGRAM: {
