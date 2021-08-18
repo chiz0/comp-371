@@ -16,11 +16,11 @@ constexpr float SCALE_RATE = 0.2f;                      // The rate at which mod
 constexpr float ROTATE_RATE = 20;                       // The rate at which models rotate
 constexpr float TRANSLATE_RATE = 2.0f;                  // The rate at which models move left, right, up, and down
 constexpr float CAMERA_JUMP_SPEED = 8.0f;               // The speed at which a camera moves from model to model
-constexpr float CAMERA_ANGULAR_SPEED = 60.0f;           // The speed at which the camera rotates
-constexpr float CAMERA_SPEED = 10.0f;					// Speed of camera zooming
+constexpr float CAMERA_ANGULAR_SPEED = 5.0f;           // The speed at which the camera rotates
+constexpr float CAMERA_SPEED = 2.0f;					// Speed of camera zooming
 constexpr vec3 CAMERA_OFFSET = vec3(-2.0f, 2.0f, 10.0f);// The default position of the camera relative to a model
 constexpr float FIELD_OF_VIEW = 70.0f;					// The starting zoom level of the camera
-constexpr float LIGHT_AMBIENT_STRENGTH = 0.1f;			// Intensity of the ambient light
+constexpr float LIGHT_AMBIENT_STRENGTH = 0.75f;			// Intensity of the ambient light
 constexpr float LIGHT_DIFFUSE_STRENGTH = 0.5f;			// Intensity of the diffuse light
 constexpr float LIGHT_SPECULAR_STRENGTH = 0.7f;			// Intensity of the specular light
 constexpr float SHININESS = 4.0f;						// Shininess coefficient of specular light
@@ -63,10 +63,15 @@ constexpr char* TEXTURE_PATH_OBSIDIAN = "../Assets/Textures/block/obsidian.png";
 constexpr char* TEXTURE_PATH_NETHERRACK = "../Assets/Textures/block2/netherrack.png";
 constexpr char* TEXTURE_PATH_LAVA = "../Assets/Textures/block/lava_still.png";
 constexpr char* TEXTURE_PATH_ENDSTONE = "../Assets/Textures/block2/end_stone_bricks.png";
+constexpr char* TEXTURE_PATH_WARPWOOD = "../Assets/Textures/block2/warped_stem.png";
+constexpr char* TEXTURE_PATH_WARPLEAVES = "../Assets/Textures/block2/warped_wart_block.png";
+constexpr char* TEXTURE_PATH_WARPPLANKS = "../Assets/Textures/block2/warped_door_top.png";
+constexpr char* TEXTURE_PATH_NETHERBRICKS = "../Assets/Textures/block2/nether_bricks.png";
+constexpr char* TEXTURE_PATH_ENDPORTAL = "../Assets/Textures/block2/end_portal_frame_top.png";
 
 // MODELS
 constexpr char* MODEL_PATH_COW = "../Assets/Models/Cow/cow+mooshroom.obj";
-constexpr char* MODEL_PATH_BLAZE = "../Assets/Models/Blaze/untitled.obj";
+constexpr char* MODEL_PATH_BLAZE = "../Assets/Models/Blaze/blaze.obj";
 constexpr char* MODEL_PATH_CHICKEN = "../Assets/Models/Chicken/chicken.obj";
 constexpr char* MODEL_PATH_CREEPER = "../Assets/Models/Creeper/creeper.obj";
 constexpr char* MODEL_PATH_DRAGON= "../Assets/Models/Dragon/enderdragon.obj";
@@ -79,6 +84,12 @@ constexpr char* MODEL_PATH_SPIDER = "../Assets/Models/Spider/spider.obj";
 constexpr char* MODEL_PATH_WITHERSKELETON = "../Assets/Models/Wither Skeleton/skeleton+skeleton_stray+wither_skeleton.obj";
 constexpr char* MODEL_PATH_ZOMBIE = "../Assets/Models/Zombie/zombie.obj";
 constexpr char* MODEL_PATH_CYLINDER = "../Assets/Models/CYLINDER/cylinder.obj";
+constexpr char* MODEL_PATH_PIGLIN = "../Assets/Models/Piglin/piglin.obj";
+constexpr char* MODEL_PATH_ZOGLIN = "../Assets/Models/Zoglin/zoglin.obj";
+constexpr char* MODEL_PATH_HOGLIN = "../Assets/Models/Zoglin/hoglin.obj";
+constexpr char* MODEL_PATH_BLOCK = "../Assets/Models/Block/mega_brick.obj";
+constexpr char* MODEL_PATH_GHAST = "../Assets/Models/Ghast/ghast.obj";
+
 
 // AUDIO
 constexpr char* AUDIO_PATH_MUSIC = "../Assets/Audio/mii.ogg";

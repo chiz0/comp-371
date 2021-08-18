@@ -203,6 +203,7 @@
     <ClInclude Include="..\Source\Coordinates.h" />
     <ClInclude Include="..\Source\BurstParticle.h" />
     <ClInclude Include="..\Source\Emitter.h" />
+    <ClInclude Include="..\Source\Environment.h" />
     <ClInclude Include="..\Source\FlameParticle.h" />
     <ClInclude Include="..\Source\Mesh.h" />
     <ClInclude Include="..\Source\Model.h" />

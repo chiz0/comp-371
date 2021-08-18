@@ -151,6 +151,11 @@ int main(int argc, char* argv[])
 	int netherrackTexture = loadTexture("netherrackTexture", TEXTURE_PATH_NETHERRACK);
 	int lavaTexture = loadTexture("lavaTexture", TEXTURE_PATH_LAVA);
 	int endStoneTexture = loadTexture("endStoneTexture", TEXTURE_PATH_ENDSTONE);
+	int warpWoodTexture = loadTexture("warpWoodTexture", TEXTURE_PATH_WARPWOOD);
+	int warpLeavesTexture = loadTexture("warpLeavesTexture", TEXTURE_PATH_WARPLEAVES);
+	int warpPlanksTexture = loadTexture("warpPlanksTexture", TEXTURE_PATH_WARPPLANKS);
+	int netherBricksTexture = loadTexture("netherBricksTexture", TEXTURE_PATH_NETHERBRICKS);
+	int endPortalTexture = loadTexture("endPortalTexture", TEXTURE_PATH_ENDPORTAL);
 
 
 	// Other camera parameters
@@ -213,8 +218,10 @@ int main(int argc, char* argv[])
 
 		}
 		else if (chunk >= 10) {
-			owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, glowColour, false, 1.0f, netherrackTexture, fireTexture));
+			if (chunk!=14&&chunk!=15) {
+				owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, glowColour, false, 1.0f, netherrackTexture, fireTexture));
 
+			}
 		}
 		else {
 			owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, overworldColour, glowColour, false, 1.0f, grassTexture, fireTexture));
@@ -292,6 +299,61 @@ int main(int argc, char* argv[])
 	owChunks[9].push_back(Shape(vec3(-4, 5, 199), generatePortal(), overworldColour, glowColour, false, 1.0f, obsidianTexture, fireTexture));
 
 
+	//chunk 11
+	owChunks[10].push_back(Shape(vec3(13, 4, 202), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(-16, 4, 202), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(-7, 2, 203), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(19, 5, 206), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(-19, 5, 208), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(10, 2, 210), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(19, 5, 214), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(-9, 2, 214), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(8, 2, 219), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	
+	owChunks[10].push_back(Shape(vec3(13, 9, 202), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(-16, 9, 202), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(-7, 7, 203), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(19, 10, 206), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(-19, 10, 208), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(10, 7, 210), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(19, 10, 214), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(-9, 7, 214), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[10].push_back(Shape(vec3(8, 7, 219), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	
+	//12 chunk
+	owChunks[11].push_back(Shape(vec3(-18, 4, 220), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(18, 5, 221), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(-18, 5, 239), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(-18, 10, 239), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(19, 5, 226), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(19, 10, 226), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(14, 5, 236), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(14, 10, 236), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+
+	owChunks[11].push_back(Shape(vec3(0, 1, 236), cutPlanks, overworldColour, glowColour, false, 1.0f, warpPlanksTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(10, 3, 229), cutPlanks, overworldColour, glowColour, false, 1.0f, warpPlanksTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(-13, 4, 232), cutPlanks, overworldColour, glowColour, false, 1.0f, warpPlanksTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(-8, 2, 221), cutPlanks, overworldColour, glowColour, false, 1.0f, warpPlanksTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(-18, 9, 220), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[11].push_back(Shape(vec3(18, 10, 221), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+
+	//Chunk 15 & 16
+	owChunks[14].push_back(Shape(vec3(7, 1, 280), generateNetherTemple(), overworldColour, glowColour, false, 1.0f, netherBricksTexture, fireTexture));
+	owChunks[15].push_back(Shape(vec3(7, 1, 280), generateNetherTemple(), overworldColour, glowColour, false, 1.0f, netherBricksTexture, fireTexture));
+
+	//Chunk 19
+	owChunks[18].push_back(Shape(vec3(-18, 4, 360), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[18].push_back(Shape(vec3(18, 5, 361), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[18].push_back(Shape(vec3(-18, 5, 379), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[18].push_back(Shape(vec3(-18, 10, 379), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[18].push_back(Shape(vec3(19, 5, 366), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[18].push_back(Shape(vec3(19, 10, 366), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+	owChunks[18].push_back(Shape(vec3(14, 5, 376), treeTrunk, overworldColour, glowColour, false, 1.0f, warpWoodTexture, fireTexture));
+	owChunks[18].push_back(Shape(vec3(14, 10, 376), treeLeaves, overworldColour, glowColour, false, 1.0f, warpLeavesTexture, fireTexture));
+
+	//Chunk 20
+	owChunks[19].push_back(Shape(vec3(-4, 5, 399), generatePortal(), overworldColour, glowColour, false, 1.0f, endPortalTexture, fireTexture));
+
 
 	int focusedShape = 0;                   // The shape currently being viewed and manipulated
 	bool moveCameraToDestination = false;   // Tracks whether the camera is currently moving to a point
@@ -305,7 +367,7 @@ int main(int argc, char* argv[])
 	};
 
 	// Camera parameters for view transform
-	vec3 cameraPosition = vec3(0.0f, 20.0f, 180.0f);
+	vec3 cameraPosition = vec3(0.0f, 20.0f, 260.0f);
 	vec3 cameraLookAt(0.0f, 1.0f, 0.0f);
 	vec3 cameraUp(0.0f, 1.0f, 0.0f);
 	vec3 cameraDestination = cameraPosition;
@@ -561,7 +623,7 @@ int main(int argc, char* argv[])
 		{
 			cameraHorizontalAngle -= 360;
 		}
-		while (cameraHorizontalAngle < -360)
+		while (cameraHorizontalAngle < 0)
 		{
 			cameraHorizontalAngle += 360;
 		}
