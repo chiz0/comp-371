@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
 
     //load the textures
     int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
-    int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
+    int shapeTexture = loadTexture("metalTexture", TEXTURE_PATH_BLOCK);
     int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
     int particleTexture = loadTexture("particleTexture", TEXTURE_PATH_PARTICLE);
     int sunTexture = loadTexture("sunTexture", TEXTURE_PATH_SUN);
@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
     glEnable(GL_DEPTH_TEST);
 
     GLenum renderingMode = GL_TRIANGLES;
-    glBindTexture(GL_TEXTURE_2D, metalTexture);
+    glBindTexture(GL_TEXTURE_2D, shapeTexture);
 
     vec3 whiteColour = vec3(1.0f, 1.0f, 0.0f);
 
@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
         {0, 0, 0}
     };
 
-    Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, whiteColour, metalTexture);
+    Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, whiteColour, shapeTexture);
 
 
     // Create stage
@@ -395,7 +395,7 @@ int main(int argc, char* argv[])
             case CREATE_SHAPE_AND_WALL: {
                 if (!pauseShapeCreation) {
                     vec3 shapeColour = vec3((float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f);
-                    Shape* newShape = new Shape(vec3(0), currentDifficulty, shapeColour, metalTexture);
+                    Shape* newShape = new Shape(vec3(0), currentDifficulty, shapeColour, shapeTexture);
                     shapes.push_back(newShape);
                     selectedShape = 0;
                     Wall* newWall = new Wall(vec3(0, 0, -WALL_DISTANCE), shapes[selectedShape], vec3(1), brickTexture);
