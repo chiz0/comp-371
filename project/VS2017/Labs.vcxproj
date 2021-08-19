@@ -190,6 +190,7 @@
     <ClCompile Include="..\Source\BurstParticle.cpp" />
     <ClCompile Include="..\Source\Emitter.cpp" />
     <ClCompile Include="..\Source\FlameParticle.cpp" />
+    <ClCompile Include="..\Source\Sun.cpp" />
     <ClCompile Include="..\Source\TerrainComponent.cpp" />
     <ClCompile Include="..\Source\main.cpp" />
     <ClCompile Include="..\Source\Mesh.cpp" />
@@ -203,6 +204,8 @@
   <ItemGroup>
     <ClInclude Include="..\Source\ControlState.h" />
     <ClInclude Include="..\Source\Environment.h" />
+    <ClInclude Include="..\Source\GameObject.h" />
+    <ClInclude Include="..\Source\Sun.h" />
     <ClInclude Include="..\Source\TerrainComponent.h" />
     <ClInclude Include="..\Source\ScheduledEvent.h" />
     <ClInclude Include="..\Source\Coordinates.h" />

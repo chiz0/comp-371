@@ -127,11 +127,13 @@ int main(int argc, char* argv[])
     shaderManager.use();
     shaderManager.setInt("depthMap", 1);
 
-    //load the texture
+    //load the textures
     int tileTexture = loadTexture("tileTexture", TEXTURE_PATH_TILE);
     int metalTexture = loadTexture("metalTexture", TEXTURE_PATH_METAL);
     int brickTexture = loadTexture("brickTexture", TEXTURE_PATH_BRICK);
     int particleTexture = loadTexture("particleTexture", TEXTURE_PATH_PARTICLE);
+    int sunTexture = loadTexture("sunTexture", TEXTURE_PATH_SUN);
+    int moonTexture = loadTexture("moonTexture", TEXTURE_PATH_MOON);
 
     int grassTexture = loadTexture("grassTexture", TEXTURE_PATH_GRASS);
     int waterTexture = loadTexture("waterTexture", TEXTURE_PATH_WATER);
@@ -278,6 +280,10 @@ int main(int argc, char* argv[])
 
     pushMobs(stage);
 
+    // Add sun
+    Sun* sun = new Sun(sunTexture, moonTexture);
+    stage->attachSun(sun);
+
     // Persistent game variables
     vector<Event> currentFrameEvents;
     vector<Shape*> shapes;
@@ -312,11 +318,9 @@ int main(int argc, char* argv[])
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
 
     // Camera parameters for view transform
-    vec3 cameraPosition = vec3(0.0f, 0.0f, 10.0f);
+    vec3 cameraPosition = CAMERA_OFFSET;
     vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
-    vec3 cameraDestination = cameraPosition;
-    bool  cameraFirstPerson = true; // press 1 or 2 to toggle this variable
     shaderManager.setVec3("cameraPosition", cameraPosition);
 
     // Set initial view matrix
@@ -327,8 +331,6 @@ int main(int argc, char* argv[])
     shaderManager.setMat4("viewMatrix", viewMatrix);
 
     // Set up lighting
-    vec3 lightPosition = LIGHT_OFFSET;
-    shaderManager.setVec3("lightPosition", lightPosition);
     shaderManager.setVec3("lightColour", 1.0f, 1.0f, 1.0f);
     shaderManager.setFloat("ambientLight", LIGHT_AMBIENT_STRENGTH);
     shaderManager.setFloat("diffuseLight", LIGHT_DIFFUSE_STRENGTH);
@@ -352,15 +354,6 @@ int main(int argc, char* argv[])
     ISound* bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
 
     int world = 0;
-    int level = 0;
-
-    vec4 worldSkyColours[WORLDS] = {
-        vec4(0.529f, 0.808f, 0.922f, 1.0f),
-        vec4(0.40f, 0.208f, 0.222f, 1.0f),
-        vec4(0.0f, 0.0f, 0.0f, 1.0f)
-    };
-
-    glClearColor(worldSkyColours[0].x, worldSkyColours[0].y, worldSkyColours[0].z, worldSkyColours[0].a);
 
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
@@ -455,15 +448,6 @@ int main(int argc, char* argv[])
                 if (!pauseShapeCreation) {
                     eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 2 });
                 }
-                
-                /*
-                // TODO: Finalise implementation of world progress
-                level++;
-                if (level >= LEVELS_PER_WORLD) {
-                    level = 0;
-                    eventQueue.push_back({ WORLD_TRANSITION, 1 });
-                }
-                */
                 break;
             }
 
@@ -488,7 +472,7 @@ int main(int argc, char* argv[])
                 world++;
                 if (world >= WORLDS) {
                     // End the game, VICTORY!
-                    eventQueue.push_back({ EXIT_PROGRAM, 5 });
+                    eventQueue.push_back({ EXIT_PROGRAM, 2 });
                 }
                 else {
                     switch (world) {
@@ -541,12 +525,12 @@ int main(int argc, char* argv[])
         // 0. create depth cubemap transformation matrices
         // -----------------------------------------------
         mat4 shadowTransforms[6] = {
-            shadowProjection * lookAt(lightPosition, lightPosition + vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
-            shadowProjection * lookAt(lightPosition, lightPosition + vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
-            shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)),
-            shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f)),
-            shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f)),
-            shadowProjection * lookAt(lightPosition, lightPosition + vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f))
+            shadowProjection * lookAt(sun->getLightPosition(), sun->getLightPosition() + vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
+            shadowProjection * lookAt(sun->getLightPosition(), sun->getLightPosition() + vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
+            shadowProjection * lookAt(sun->getLightPosition(), sun->getLightPosition() + vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)),
+            shadowProjection * lookAt(sun->getLightPosition(), sun->getLightPosition() + vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f)),
+            shadowProjection * lookAt(sun->getLightPosition(), sun->getLightPosition() + vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f)),
+            shadowProjection * lookAt(sun->getLightPosition(), sun->getLightPosition() + vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f))
         };
 
         // 1. render scene to depth cubemap
@@ -559,7 +543,6 @@ int main(int argc, char* argv[])
         for (unsigned int i = 0; i < 6; ++i)
             shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
         shadowShaderManager.setFloat("farPlane", FAR_PLANE);
-        shadowShaderManager.setVec3("lightPosition", lightPosition);
 
         // TODO: Merge these DrawScenes
         if (cameraPosition.z >= 399.4) {
@@ -584,8 +567,6 @@ int main(int argc, char* argv[])
 
 
         // set lighting uniforms
-        shaderManager.setVec3("lightPosition", lightPosition);
-        shaderManager.setVec3("viewPos", cameraPosition);
         shaderManager.setFloat("farPlane", FAR_PLANE);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
@@ -611,26 +592,6 @@ int main(int argc, char* argv[])
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        //Light position as we move the camera
-        if (cameraPosition.z >= 100.0f && cameraPosition.z < 140.0f) {
-            if (((int)(cameraHorizontalAngle / 180.0f) % 2) == 1 || ((int)(cameraHorizontalAngle / 180.0f) % 2) == -1) {
-                lightPosition = vec3(00.0f, 50.0f, 199.0f);
-            }
-            else {
-                lightPosition = LIGHT_OFFSET;
-            }
-        }
-        else if (cameraPosition.z < 100.0f) {
-            lightPosition = LIGHT_OFFSET;
-        }
-        else if (cameraPosition.z >= 140.0f) {
-            lightPosition = vec3(00.0f, 50.0f, 199.0f);
-        }
-
-        // If shift is held, double camera speed
-        bool fastCam = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-        float currentCameraSpeed = (fastCam) ? CAMERA_SPEED * 2 : CAMERA_SPEED;
-
         double mousePosX, mousePosY;
         glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
@@ -647,9 +608,6 @@ int main(int argc, char* argv[])
         cameraHorizontalAngle = std::max(60.0f, std::min(cameraHorizontalAngle, 120.0f));
         cameraVerticalAngle = std::max(-30.0f, std::min(cameraVerticalAngle, 15.0f));
 
-        // Clamp vertical angle to [-85, 85] degrees
-        //cameraVerticalAngle = clamp(cameraVerticalAngle, -85.0f, 85.0f);
-
         // Hacky modulus operation
         while (cameraHorizontalAngle > 360)
         {
@@ -665,7 +623,6 @@ int main(int argc, char* argv[])
 
         cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
 
-        //Antonio's part
         float radius = sqrt(pow(cameraPosition.x, 2) + pow(cameraPosition.y, 2) + pow(cameraPosition.z, 2));
         vec3 position = vec3(0.0f, 1.0f, 0.0f) - radius * cameraLookAt;
         viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);

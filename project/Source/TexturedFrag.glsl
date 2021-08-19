@@ -11,7 +11,6 @@ uniform bool ignoreLighting;
 uniform sampler2D textureSampler;
 
 uniform samplerCube depthMap;
-uniform vec3 viewPos;
 uniform float farPlane;
 
 in vec3 vertexColor;
