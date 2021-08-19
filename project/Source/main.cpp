@@ -517,6 +517,7 @@ int main(int argc, char* argv[])
         for (GameObject*& entity : gameEntities) {
             entity->update(&eventQueue, dt);
         }
+        emitter.Update(dt);
 
 
         // Clear Depth Buffer Bit
@@ -556,6 +557,10 @@ int main(int argc, char* argv[])
         }
 
         drawScene(shadowShaderManager, renderingMode, &gameEntities);
+
+        // Update and draw particles
+        emitter.Draw(shadowShaderManager);
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. render scene as normal 
@@ -583,10 +588,7 @@ int main(int argc, char* argv[])
         drawScene(shaderManager, renderingMode, &gameEntities);
 
         // Update and draw particles
-        emitter.Update(dt);
         emitter.Draw(shaderManager);
-
-        shaderManager.use();
 
         // End Frame
         glfwSwapBuffers(window);
