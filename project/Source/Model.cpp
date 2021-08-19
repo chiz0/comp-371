@@ -2,16 +2,18 @@
 
 #include <stb_image.h>
 
-Model::Model(char* path, mat4 pos)
+Model::Model(char* path, mat4 pos, int chunk) : _chunk(chunk)
 {
     loadModel(path);
     position = pos;   
 }
 
-void Model::Draw(ShaderManager shader)
+void Model::Draw(ShaderManager* shader)
 {
-    for (unsigned int i = 0; i < meshes.size(); i++)
+    position = anchorMatrix * position;
+    for (unsigned int i = 0; i < meshes.size(); i++) {
         meshes[i].Draw(shader, position);
+    }
 }
 
 void Model::loadModel(string path)

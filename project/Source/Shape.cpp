@@ -219,6 +219,7 @@ void Shape::processEvent(Event event) {
         }
     }
     switch (event) {
+    case DESTROY_SHAPE_AND_WALL_WORLD_TRANSITION:
     case DESTROY_SHAPE_AND_WALL: {
         state = ANIMATE_DESTRUCTION;
         timer = 0;
