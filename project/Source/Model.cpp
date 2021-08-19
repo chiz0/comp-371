@@ -10,9 +10,9 @@ Model::Model(char* path, mat4 pos, int chunk) : _chunk(chunk)
 
 void Model::Draw(ShaderManager* shader)
 {
-    position = anchorMatrix * position;
+    mat4 localPosition = anchorMatrix * position;
     for (unsigned int i = 0; i < meshes.size(); i++) {
-        meshes[i].Draw(shader, position);
+        meshes[i].Draw(shader, localPosition);
     }
 }
 
