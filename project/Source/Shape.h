@@ -51,7 +51,7 @@ public:
     const float ANIMATE_CREATION_MOVE_SPEED = 20.0f;
     const int ANIMATE_CREATION_VOXEL_SPREAD = 10;
     const float ANIMATE_ROTATE_SPEED = 10.0f;
-    const float ANIMATE_DESTRUCTION_MOVE_SPEED = 0.5f;
+    const float ANIMATE_DESTRUCTION_MOVE_SPEED = 20.0f;
 
 private:
     // Functions

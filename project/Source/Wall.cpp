@@ -21,8 +21,9 @@ void Wall::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
     glBindTexture(GL_TEXTURE_2D, _texture);
     shaderProgram->setVec3("colour", _colour);
     shaderProgram->setInt("textureSampler", 0);
-    quat orientationQuat(_orientation);
-    mat4 worldMatrix = translate(mat4(1.0f), displayPosition) * toMat4(orientationQuat) * scale(mat4(1.0f), _scale);
+    //quat orientationQuat(_orientation);
+    //mat4 worldMatrix = translate(mat4(1.0f), displayPosition) * toMat4(orientationQuat) * scale(mat4(1.0f), _scale);
+    mat4 worldMatrix = translate(mat4(1.0f), displayPosition);
     for (auto it = begin(voxels); it != end(voxels); ++it) {
         it->anchorMatrix = worldMatrix;
         it->draw(renderingMode, shaderProgram);

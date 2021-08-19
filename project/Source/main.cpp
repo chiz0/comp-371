@@ -54,6 +54,8 @@
 #include "ControlState.h"
 #include "Wall.h"
 #include "Emitter.h"
+#include "Stage.h"
+#include "TerrainComponent.h"
 
 
 using namespace glm;
@@ -146,7 +148,7 @@ int main(int argc, char* argv[])
 
 
     // Other camera parameters
-    float cameraHorizontalAngle = 270.0f;
+    float cameraHorizontalAngle = 90.0f;
     float cameraVerticalAngle = 0.0f;
     int windowWidth, windowHeight;
 
@@ -179,89 +181,92 @@ int main(int argc, char* argv[])
 
     Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, whiteColour, metalTexture);
 
+    pushMobs();
 
-    //Land 
+    // Create stage
+    Stage* stage = new Stage(STAGE_STARTING_LOCATION);
+    stage->_scale = vec3(STAGE_INITIAL_SCALE);
+
+    // Landscape
     for (int chunk = 0; chunk < 30; chunk++) {
-
         if (chunk >= 20) {
-            owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, whiteColour, endStoneTexture));
+            stage->attachTerrain(TerrainComponent(DESCRIPTION_GRASS_HILL, whiteColour, endStoneTexture, chunk), vec3(0, 0, chunk * 20));
         }
         else if (chunk >= 10) {
-            owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, whiteColour, netherrackTexture));
+            stage->attachTerrain(TerrainComponent(DESCRIPTION_GRASS_HILL, whiteColour, netherrackTexture, chunk), vec3(0, 0, chunk * 20));
         }
         else {
-            owChunks[chunk].push_back(Shape(vec3(0, 0, chunk * 20), grassHillShape, whiteColour, grassTexture));
+            stage->attachTerrain(TerrainComponent(DESCRIPTION_GRASS_HILL, whiteColour, grassTexture, chunk), vec3(0, 0, chunk * 20));
         }
     }
 
-    pushMobs();
+    // Terrain features
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(13, 4, 0));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(-16, 4, 0));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(-7, 2, 1));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(19, 5, 4));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(-19, 5, 6));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(10, 2, 8));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(19, 5, 12));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(-9, 2, 12));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(8, 2, 17));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(-18, 4, 18));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 0), vec3(18, 5, 19));
 
-    //Trees for the first Chunk
-    owChunks[0].push_back(Shape(vec3(13, 4, 0), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-16, 4, 0), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-7, 2, 1), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(19, 5, 4), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-19, 5, 6), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(10, 2, 8), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(19, 5, 12), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-9, 2, 12), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(8, 2, 17), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(-18, 4, 18), treeTrunk, whiteColour, logTexture));
-    owChunks[0].push_back(Shape(vec3(18, 5, 19), treeTrunk, whiteColour, logTexture));
-
-    owChunks[0].push_back(Shape(vec3(13, 9, 0), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-16, 9, 0), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-7, 7, 1), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(19, 10, 4), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-19, 10, 6), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(10, 7, 8), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(19, 10, 12), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-9, 7, 12), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(8, 7, 17), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(-18, 9, 18), treeLeaves, whiteColour, leavesTexture));
-    owChunks[0].push_back(Shape(vec3(18, 10, 19), treeLeaves, whiteColour, leavesTexture));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(13, 9, 0));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(-16, 9, 0));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(-7, 7, 1));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(19, 10, 4));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(-19, 10, 6));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(10, 7, 8));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(19, 10, 12));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(-9, 7, 12));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(8, 7, 17));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(-18, 9, 18));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 0), vec3(18, 10, 19));
 
     //Cut down planks + trees for the 2nd chunk
-    owChunks[1].push_back(Shape(vec3(-18, 5, 39), treeTrunk, whiteColour, logTexture));
-    owChunks[1].push_back(Shape(vec3(-18, 10, 39), treeLeaves, whiteColour, leavesTexture));
-    owChunks[1].push_back(Shape(vec3(19, 5, 26), treeTrunk, whiteColour, logTexture));
-    owChunks[1].push_back(Shape(vec3(19, 10, 26), treeLeaves, whiteColour, leavesTexture));
-    owChunks[1].push_back(Shape(vec3(14, 5, 36), treeTrunk, whiteColour, logTexture));
-    owChunks[1].push_back(Shape(vec3(14, 10, 36), treeLeaves, whiteColour, leavesTexture));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 1), vec3(-18, 5, 39));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 1), vec3(-18, 10, 39));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 1), vec3(19, 5, 26));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 1), vec3(19, 10, 26));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 1), vec3(14, 5, 36));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 1), vec3(14, 10, 36));
 
-    owChunks[1].push_back(Shape(vec3(0, 1, 36), cutPlanks, whiteColour, planksTexture));
-    owChunks[1].push_back(Shape(vec3(10, 3, 29), cutPlanks, whiteColour, planksTexture));
-    owChunks[1].push_back(Shape(vec3(-13, 4, 32), cutPlanks, whiteColour, planksTexture));
-    owChunks[1].push_back(Shape(vec3(-8, 2, 21), cutPlanks, whiteColour, planksTexture));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_CUT_PLANKS, whiteColour, planksTexture, 1), vec3(0, 1, 36));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_CUT_PLANKS, whiteColour, planksTexture, 1), vec3(10, 3, 29));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_CUT_PLANKS, whiteColour, planksTexture, 1), vec3(-13, 4, 32));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_CUT_PLANKS, whiteColour, planksTexture, 1), vec3(-8, 2, 21));
 
     //Rock formation + trees
-    owChunks[2].push_back(Shape(vec3(-18, 5, 59), treeTrunk, whiteColour, logTexture));
-    owChunks[2].push_back(Shape(vec3(-18, 10, 59), treeLeaves, whiteColour, leavesTexture));
-    owChunks[2].push_back(Shape(vec3(19, 5, 46), treeTrunk, whiteColour, logTexture));
-    owChunks[2].push_back(Shape(vec3(19, 10, 46), treeLeaves, whiteColour, leavesTexture));
-    owChunks[2].push_back(Shape(vec3(14, 5, 56), treeTrunk, whiteColour, logTexture));
-    owChunks[2].push_back(Shape(vec3(14, 10, 56), treeLeaves, whiteColour, leavesTexture));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 2), vec3(-18, 5, 59));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 2), vec3(-18, 10, 59));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 2), vec3(19, 5, 46));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 2), vec3(19, 10, 46));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 2), vec3(14, 5, 56));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 2), vec3(14, 10, 56));
 
-    owChunks[2].push_back(Shape(vec3(0, 1, 56), rockFormation, whiteColour, rockTexture));
-    owChunks[2].push_back(Shape(vec3(10, 3, 49), rockFormation, whiteColour, rockTexture));
-    owChunks[2].push_back(Shape(vec3(-13, 4, 52), rockFormation, whiteColour, rockTexture));
-    owChunks[2].push_back(Shape(vec3(-8, 2, 41), rockFormation, whiteColour, rockTexture));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, rockTexture, 2), vec3(0, 1, 56));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, rockTexture, 2), vec3(10, 3, 49));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, rockTexture, 2), vec3(-13, 4, 52));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, rockTexture, 2), vec3(-8, 2, 41));
 
     // Cave and ores chunk 8
-    owChunks[7].push_back(Shape(vec3(11.9f, 3.1, 152.1), cave, whiteColour, rockTexture));
-    owChunks[7].push_back(Shape(vec3(19, 5, 156), rockFormation, whiteColour, ironTexture));
-    owChunks[7].push_back(Shape(vec3(8, 2, 149), rockFormation, whiteColour, ironTexture));
-    owChunks[7].push_back(Shape(vec3(-13, 4, 152), rockFormation, whiteColour, ironTexture));
-    owChunks[7].push_back(Shape(vec3(-8, 2, 141), rockFormation, whiteColour, ironTexture));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_CAVE, whiteColour, rockTexture, 7), vec3(11.9f, 3.1, 152.1));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, ironTexture, 7), vec3(19, 5, 156));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, ironTexture, 7), vec3(8, 2, 149));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, ironTexture, 7), vec3(-13, 4, 152));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, ironTexture, 7), vec3(-8, 2, 141));
 
     //chunk 9;
-    owChunks[8].push_back(Shape(vec3(-19, 5, 176), rockFormation, whiteColour, diamondTexture));
-    owChunks[8].push_back(Shape(vec3(-8, 2, 169), rockFormation, whiteColour, diamondTexture));
-    owChunks[8].push_back(Shape(vec3(13, 4, 172), rockFormation, whiteColour, diamondTexture));
-    owChunks[8].push_back(Shape(vec3(8, 2, 161), rockFormation, whiteColour, diamondTexture));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, diamondTexture, 8), vec3(-19, 5, 176));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, diamondTexture, 8), vec3(-8, 2, 169));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, diamondTexture, 8), vec3(13, 4, 172));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, diamondTexture, 8), vec3(8, 2, 161));
 
-    //chunck 10
-    owChunks[9].push_back(Shape(vec3(-4, 5, 199), generatePortal(), whiteColour, obsidianTexture));
+    //chunk 10
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_PORTAL, whiteColour, obsidianTexture, 9), vec3(-4, 5, 199));
+
 
     // Persistent game variables
     vector<Event> currentFrameEvents;
@@ -287,6 +292,7 @@ int main(int argc, char* argv[])
 
     // Create entity pointer container
     vector<GameObject*> gameEntities;
+    gameEntities.push_back(stage);
 
     // Initialize random seed
     srand(time(NULL));
@@ -379,6 +385,7 @@ int main(int argc, char* argv[])
         for (Event event : currentFrameEvents) {
             switch (event) {
             case GAME_START: {
+                stage->speed = INITIAL_STAGE_SPEED;
                 eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
                 break;
             }

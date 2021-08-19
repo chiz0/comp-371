@@ -63,7 +63,8 @@ void Shape::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
     glBindTexture(GL_TEXTURE_2D, _texture);
     shaderProgram->setVec3("colour", _colour);
     shaderProgram->setInt("textureSampler", 0);
-    mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(displayOrientation) * scale(mat4(1.0f), _scale);
+    //mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(displayOrientation) * scale(mat4(1.0f), _scale);
+    mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(displayOrientation);
     for (auto it = begin(voxels); it != end(voxels); ++it) {
         it->anchorMatrix = worldMatrix;
         it->draw(renderingMode, shaderProgram);
@@ -149,22 +150,22 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
         timer += dt;
         for (Voxel& voxel : voxels) {
             if (voxel._position.x < 0) {
-                voxel.displayPosition.x -= ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
+                voxel.displayPosition.x -= ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
             else if (voxel._position.x >= 0) {
-                voxel.displayPosition.x += ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
+                voxel.displayPosition.x += ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
             if (voxel._position.y < 0) {
-                voxel.displayPosition.y -= ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
+                voxel.displayPosition.y -= ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
             else if (voxel._position.y >= 0) {
-                voxel.displayPosition.y += ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
+                voxel.displayPosition.y += ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
             if (voxel._position.z < 0) {
-                voxel.displayPosition.z -= ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
+                voxel.displayPosition.z -= ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
             else if (voxel._position.z >= 0) {
-                voxel.displayPosition.z += ANIMATE_DESTRUCTION_MOVE_SPEED * timer;
+                voxel.displayPosition.z += ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
         }
         if (timer >= 2) {

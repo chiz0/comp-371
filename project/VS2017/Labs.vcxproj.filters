@@ -76,6 +76,12 @@
     <ClCompile Include="..\Source\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Stage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\TerrainComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\ShaderManager.h">
@@ -117,7 +123,13 @@
     <ClInclude Include="..\Source\ScheduledEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\GameObject.h">
+    <ClInclude Include="..\Source\Environment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Stage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\TerrainComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
