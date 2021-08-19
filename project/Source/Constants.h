@@ -49,6 +49,7 @@ constexpr vec3 LIGHT_COLOUR_DAY = vec3(1.0f, 1.0f, 1.0f);	// Ambient colour in d
 constexpr vec3 LIGHT_COLOUR_NIGHT = vec3(0.1f, 0.1f, 0.4f);	// Ambient colour in night time
 constexpr vec3 LIGHT_COLOUR_NETHER = vec3(1.0f, 0.3f, 0.3f);// Ambient colour in the nether
 constexpr vec3 LIGHT_COLOUR_END = vec3(1.0f, 1.0f, 1.0f);	// Ambient colour in the end
+constexpr float AMBIENT_BOOST = 10.0f;                      // A value 1.0f - 10.0f to increase the ambient lighting of shapes and walls
 constexpr vec4 worldSkyColours[WORLDS] = {
     vec4(0.529f, 0.808f, 0.922f, 1.0f),                     // Overworld sky colour
     vec4(0.40f, 0.208f, 0.222f, 1.0f),                      // Nether sky colour

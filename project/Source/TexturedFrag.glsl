@@ -12,6 +12,7 @@ uniform sampler2D textureSampler;
 
 uniform samplerCube depthMap;
 uniform float farPlane;
+uniform float ambientBoost = 1.0;
 
 in vec3 vertexColor;
 in vec3 Normal;
@@ -67,7 +68,9 @@ void main()
 
 		vec3 specular = pow(max(dot(viewDirection, reflectDirection), 0.0), shininess) * specularLight * lightColour;
 
-		lightTotal = (ambientLight + (1.0 - shadow) * (diffusion + specular)) * baseColour;
+        float ambient = ambientLight * ambientBoost;
+
+		lightTotal = (ambient + (1.0 - shadow) * (diffusion + specular)) * baseColour;
 	}
 	
 	vec4 textureColor = texture( textureSampler, vertexUV );
