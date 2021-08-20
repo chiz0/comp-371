@@ -68,6 +68,8 @@ using namespace irrklang;
 #include "OBJloader.h"    //For loading .obj files
 #include "OBJloaderV2.h"  //For loading .obj files using a polygon list format
 
+
+
 using namespace glm;
 using namespace std;
 
@@ -180,9 +182,8 @@ int main(int argc, char* argv[])
 
     vec3 whiteColour = vec3(1.0f, 1.0f, 1.0f);
 
-    // Only use one VAO (set colours with uniform)
+    // Create cube VAO
     int cubeVAO = createVertexArrayObjectTextured(vec3(1.0f));
-    glBindVertexArray(cubeVAO);
 
     // Create stage
     Stage* stage = new Stage(STAGE_STARTING_LOCATION, cubeVAO);
@@ -296,7 +297,7 @@ int main(int argc, char* argv[])
     int currentDifficulty = STARTING_DIFFICULTY;
     float currentWallSpeed = INITIAL_WALL_SPEED;
     bool pauseShapeCreation = false;
-
+    int playerScore = 0;
 
     // Create event queue
     vector<ScheduledEvent> eventQueue{
@@ -311,7 +312,7 @@ int main(int argc, char* argv[])
     // Create entity pointer container
     vector<GameObject*> gameEntities;
     gameEntities.push_back(stage);
-
+    gameEntities.push_back(stage1);
     // Initialize random seed
     srand(time(NULL));
 
@@ -342,7 +343,8 @@ int main(int argc, char* argv[])
     shaderManager.setFloat("shininess", SHININESS);
     shaderManager.setInt("depthMap", 1);
 
-
+   
+  
     mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
     // Sound settings
@@ -354,17 +356,59 @@ int main(int argc, char* argv[])
     }
 
     ISound* bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
-
+    //drawnum
     int world = 0;
+   
+    Model Score =Model(MODEL_PATH_L,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x - 8, cameraPosition.y + 8, cameraPosition.z - 23)) *             //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model Time = Model(MODEL_PATH_TIME,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 2, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);   
+    //COLON
+    Model Colon = Model(MODEL_PATH_COLON,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 8, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
 
+
+    // Create digit models
+    char* modelPaths[10] = { MODEL_PATH_ZERO, MODEL_PATH_ONE, MODEL_PATH_TWO, MODEL_PATH_THREE, MODEL_PATH_FOUR, MODEL_PATH_FIVE, MODEL_PATH_SIX, MODEL_PATH_SEVEN, MODEL_PATH_EIGHT, MODEL_PATH_NINE };
+    vector<Model*> models;
+
+    for (int i = 0; i < (sizeof(modelPaths) / sizeof(*modelPaths)); i++) {
+        models.push_back(new Model(modelPaths[i], mat4(1), 0));
+    }
+
+    // Get digit model positions
+    mat4 timeModelPositions[4] = {
+        translate(mat4(1.0f), vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23)),
+        translate(mat4(1.0f), vec3(cameraPosition.x + 9, cameraPosition.y + 8, cameraPosition.z - 23)),
+        translate(mat4(1.0f), vec3(cameraPosition.x + 7, cameraPosition.y + 8, cameraPosition.z - 23)),
+        translate(mat4(1.0f), vec3(cameraPosition.x + 6, cameraPosition.y + 8, cameraPosition.z - 23))
+    };
+
+    mat4 scoreModelPositions[2] = {
+        translate(mat4(1.0f), vec3(cameraPosition.x - 2, cameraPosition.y + 8, cameraPosition.z - 23)),
+        translate(mat4(1.0f), vec3(cameraPosition.x - 3, cameraPosition.y + 8, cameraPosition.z - 23))
+    };
+
+    
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
     {
+        // Default VAO
+        glBindVertexArray(cubeVAO);
+       
         // Frame time
         double now = glfwGetTime();
         double dt = now - lastFrameTime;
         lastFrameTime = now;
-
 
         // Process event queue timers
         for (int i = eventQueue.size() - 1; i >= 0; i--) {
@@ -375,7 +419,7 @@ int main(int argc, char* argv[])
                 eventQueue.erase(eventQueue.begin() + i);
             }
         }
-
+        
         // Delete flagged entities
         for (int i = gameEntities.size() - 1; i >= 0; i--) {
             if (gameEntities.at(i)->destroyFlag) {
@@ -383,13 +427,16 @@ int main(int argc, char* argv[])
                 gameEntities.erase(gameEntities.begin() + i);
             }
         }
-
+        
+      
         // Process current frame events
         for (Event event : currentFrameEvents) {
             switch (event) {
             case GAME_START: {
                 stage->speed = INITIAL_STAGE_SPEED;
                 stage->currentWorld = 0;
+                stage1->speed = 0;
+                stage1->currentWorld = 0;
                 eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
                 break;
             }
@@ -428,6 +475,8 @@ int main(int argc, char* argv[])
             case LEVEL_FAILED: {
                 eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 0 });
                 soundEngine->play2D(AUDIO_PATH_IMPACT, false);
+               
+                cout << playerScore << endl;
                 break;
             }
 
@@ -437,6 +486,8 @@ int main(int argc, char* argv[])
                 currentWallSpeed += currentWallSpeed >= DIFFICULTY_SPEED_MAX ? 0 : DIFFICULTY_SPEED_GROWTH;
                 soundEngine->play2D(AUDIO_PATH_LAUNCH, false);
                 soundEngine->play2D(AUDIO_PATH_BLAST, false);
+                playerScore ++;
+                cout << playerScore << endl;
                 break;
             }
 
@@ -519,8 +570,7 @@ int main(int argc, char* argv[])
         for (GameObject*& entity : gameEntities) {
             entity->update(&eventQueue, dt);
         }
-
-
+      
         // Clear Depth Buffer Bit
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -584,6 +634,34 @@ int main(int argc, char* argv[])
             //drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
         }
         drawScene(shaderManager, renderingMode, &gameEntities);
+        
+        Time.Draw(&shaderManager);
+        Score.Draw(&shaderManager);
+        Colon.Draw(&shaderManager);
+        
+        int timeElapsed = (int)now;
+
+        Model* modelSecondsOnes = models[timeElapsed % 10];
+        Model* modelSecondsTens = models[timeElapsed % 60 / 10 % 10];
+        Model* modelMinutesOnes = models[timeElapsed / 60 % 10];
+        Model* modelMinutesTens = models[timeElapsed / 600 % 10];
+
+        Model* timeToDisplay[4] = { modelSecondsOnes , modelSecondsTens , modelMinutesOnes , modelMinutesTens };
+
+        Model* scoreSingle = models[playerScore % 10];
+        Model* scoreDouble = models[playerScore / 10 % 10];
+
+        Model* scoreToDisplay[2] = { scoreSingle , scoreDouble };
+
+        for (int i = 0; i < sizeof(timeToDisplay) / sizeof(*timeToDisplay); i++) {
+            timeToDisplay[i]->position = timeModelPositions[i];
+            timeToDisplay[i]->Draw(&shaderManager);
+        }
+
+        for (int i = 0; i < sizeof(scoreToDisplay) / sizeof(*scoreToDisplay); i++) {
+            scoreToDisplay[i]->position = scoreModelPositions[i];
+            scoreToDisplay[i]->Draw(&shaderManager);
+        }
 
         // End Frame
         glfwSwapBuffers(window);
@@ -627,7 +705,7 @@ int main(int argc, char* argv[])
         shaderManager.setMat4("viewMatrix", viewMatrix);
 
     }
-
+   
     // Shutdown GLFW
     glfwTerminate();
 

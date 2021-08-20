@@ -95,6 +95,21 @@ constexpr char* TEXTURE_PATH_LAVA = "../Assets/Textures/block/lava_still.png";
 constexpr char* TEXTURE_PATH_ENDSTONE = "../Assets/Textures/block2/end_stone_bricks.png";
 constexpr char* TEXTURE_PATH_ENDSPACE = "../Assets/Textures/block/dragon_egg.png";
 
+//UI
+constexpr char* MODEL_PATH_L = "../Assets/Models/UI/Score/L.obj";
+constexpr char* MODEL_PATH_TIME = "../Assets/Models/UI/Time/Time.obj";
+constexpr char* MODEL_PATH_ZERO = "../Assets/Models/UI/Time/zero.obj";
+constexpr char* MODEL_PATH_COLON = "../Assets/Models/UI/Time/colon.obj";
+constexpr char* MODEL_PATH_ONE = "../Assets/Models/UI/Time/one.obj";
+constexpr char* MODEL_PATH_TWO = "../Assets/Models/UI/Time/two.obj";
+constexpr char* MODEL_PATH_THREE = "../Assets/Models/UI/Time/three.obj";
+constexpr char* MODEL_PATH_FOUR = "../Assets/Models/UI/Time/four.obj";
+constexpr char* MODEL_PATH_FIVE = "../Assets/Models/UI/Time/five.obj";
+constexpr char* MODEL_PATH_SIX = "../Assets/Models/UI/Time/six.obj";
+constexpr char* MODEL_PATH_SEVEN = "../Assets/Models/UI/Time/seven.obj";
+constexpr char* MODEL_PATH_EIGHT = "../Assets/Models/UI/Time/eight.obj";
+constexpr char* MODEL_PATH_NINE = "../Assets/Models/UI/Time/nine.obj";
+
 // MODELS
 constexpr char* MODEL_PATH_COW = "../Assets/Models/Cow/cow+mooshroom.obj";
 constexpr char* MODEL_PATH_BLAZE = "../Assets/Models/Blaze/untitled.obj";

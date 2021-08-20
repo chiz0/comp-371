@@ -6,7 +6,9 @@ Stage::Stage(vec3 position, int defaultVAO) : _position(position), _defaultVAO(d
 
 void Stage::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
     // Draw sun/moon
-    sun->draw(renderingMode, shaderProgram);
+    if (sun != nullptr) {
+        sun->draw(renderingMode, shaderProgram);
+    }
 
     // Calculate anchor matrix
     mat4 worldMatrix = translate(mat4(1.0f), _position) * rotate(mat4(1.0f), radians(_orientation.y), vec3(0.0f, 1.0f, 0.0f)) * scale(mat4(1.0f), _scale);
@@ -84,7 +86,7 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
         _position.z += speed * dt;
         if ((int)(_position.z / _scale.z) % 200 >= 180) {
             eventQueue->push_back({ DESTROY_SHAPE_AND_WALL_WORLD_TRANSITION, 0 });
-            speed = 2 * initialSpeed;
+            speed = 3 * initialSpeed;
         }
         else if ((int)(_position.z / _scale.z) % 200 < 160) {
             state = IDLE;
