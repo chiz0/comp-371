@@ -93,6 +93,7 @@ constexpr char* TEXTURE_PATH_OBSIDIAN = "../Assets/Textures/block/obsidian.png";
 constexpr char* TEXTURE_PATH_NETHERRACK = "../Assets/Textures/block2/netherrack.png";
 constexpr char* TEXTURE_PATH_LAVA = "../Assets/Textures/block/lava_still.png";
 constexpr char* TEXTURE_PATH_ENDSTONE = "../Assets/Textures/block2/end_stone_bricks.png";
+constexpr char* TEXTURE_PATH_ENDSPACE = "../Assets/Textures/block/dragon_egg.png";
 
 // MODELS
 constexpr char* MODEL_PATH_COW = "../Assets/Models/Cow/cow+mooshroom.obj";

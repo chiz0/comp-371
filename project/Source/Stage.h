@@ -43,6 +43,8 @@ public:
         IDLE,
         IDLE_WORLD_TRANSITION
     } state = INITIALIZED;
+    int floorTextures[WORLDS];
+    Voxel floor;
     vec3 _position;
     vec3 _orientation = vec3(0);
     vec3 _scale = vec3(2.0f);

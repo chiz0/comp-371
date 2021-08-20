@@ -148,6 +148,7 @@ int main(int argc, char* argv[])
     int netherrackTexture = loadTexture("netherrackTexture", TEXTURE_PATH_NETHERRACK);
     int lavaTexture = loadTexture("lavaTexture", TEXTURE_PATH_LAVA);
     int endStoneTexture = loadTexture("endStoneTexture", TEXTURE_PATH_ENDSTONE);
+    int endSpaceTexture = loadTexture("endSpaceTexture", TEXTURE_PATH_ENDSPACE);
 
 
     // Other camera parameters
@@ -175,24 +176,16 @@ int main(int argc, char* argv[])
 
     vec3 whiteColour = vec3(1.0f, 1.0f, 1.0f);
 
-    ///////// DESIGN MODELS HERE /////////
-
     // Only use one VAO (set colours with uniform)
     int cubeVAO = createVertexArrayObjectTextured(vec3(1.0f));
     glBindVertexArray(cubeVAO);
 
-
-    //Light
-    vector<ivec3> lightbulbShape{
-        {0, 0, 0}
-    };
-
-    Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, whiteColour, shapeTexture);
-
-
     // Create stage
     Stage* stage = new Stage(STAGE_STARTING_LOCATION, cubeVAO);
     stage->_scale = vec3(STAGE_INITIAL_SCALE);
+    stage->floorTextures[0] = waterTexture;
+    stage->floorTextures[1] = lavaTexture;
+    stage->floorTextures[2] = endSpaceTexture;
 
     // Create particle emitter
     Emitter emitter = Emitter(cubeVAO, particleTexture, particleTexture);
@@ -282,7 +275,6 @@ int main(int argc, char* argv[])
     stage->attachTerrain(TerrainComponent(DESCRIPTION_PORTAL, whiteColour, obsidianTexture, 19), vec3(-4, 5, 399));
 
     // Add mobs
-
     pushMobs(stage);
 
     // Add particles

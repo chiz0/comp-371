@@ -1,6 +1,6 @@
 #include "Stage.h"
 
-Stage::Stage(vec3 position, int defaultVAO) : _position(position), _defaultVAO(defaultVAO) {
+Stage::Stage(vec3 position, int defaultVAO) : _position(position), _defaultVAO(defaultVAO), floor(Voxel(vec3(0.0f))) {
     _orientation = vec3(0, 180, 0);
 }
 
@@ -28,6 +28,16 @@ void Stage::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
             it->anchorMatrix = worldMatrix;
             it->draw(renderingMode, shaderProgram);
         }
+    }
+
+    // Draw floor
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, floorTextures[currentWorld]);
+    int startingChunk = (_position.z - 10) / (20 * _scale.z);
+    int endingChunk = glm::min(startingChunk + FAR_PLANE / (20 * _scale.z), WORLD_SIZE * (currentWorld + 1) / (20 * _scale.z));
+    for (int i = startingChunk; i < endingChunk; i++) {
+        floor.anchorMatrix = translate(worldMatrix, vec3(0.0f, 0.0f, i * 20 + 10)) * scale(mat4(1.0f), vec3(20, 1, 20));
+        floor.draw(renderingMode, shaderProgram);
     }
 
     // Draw models
