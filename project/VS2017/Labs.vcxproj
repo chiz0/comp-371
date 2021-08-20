@@ -5,9 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -23,7 +31,20 @@
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
@@ -36,7 +57,13 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -46,11 +73,19 @@
     <IntDir>$(SolutionDir)/../Build/$(Configuration)/</IntDir>
     <TargetName>$(ProjectName)-$(Configuration)</TargetName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)/../Bin/</OutDir>
     <IntDir>$(SolutionDir)/../Build/$(Configuration)/</IntDir>
     <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -59,13 +94,33 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../ThirdParty/glew-2.1.0/include;../ThirdParty/FreeImage-3170/Source;../ThirdParty/glfw-3.3/include;../ThirdParty/glm;../ThirdParty/Freetype/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../ThirdParty/glew-2.1.0/include;../ThirdParty/FreeImage-3170/Source;../ThirdParty/glfw-3.3/include;../ThirdParty/glm;../ThirdParty/assimp/include;../ThirdParty/irrKlang-1.6.0/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../ThirdParty/FreeImage-3170/lib/win32;../ThirdParty/glew-2.1.0/lib/win32;../ThirdParty/glfw-3.3/lib/win32/lib-vc2017;../ThirdParty/Freetype/release static/vs2015-2019/win32</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;opengl32.lib;glew32s.lib;glfw3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../ThirdParty/FreeImage-3170/lib/win32;../ThirdParty/glew-2.1.0/lib/win32;../ThirdParty/glfw-3.3/lib/win32/lib-vc2017;../ThirdParty/assimp/lib/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>FreeImage.lib;opengl32.lib;glew32s.lib;glfw3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <BuildLog>
+      <Path>
+      </Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../ThirdParty/glew-2.1.0/include;../ThirdParty/FreeImage-3170/Source;../ThirdParty/glfw-3.3/include;../ThirdParty/glm;../ThirdParty/assimp/include;../ThirdParty/stb_image;../ThirdParty/irrKlang-64bit-1.6.0/include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../ThirdParty/FreeImage-3170/lib/win32;../ThirdParty/glfw-3.3/lib/win64/lib-vc2019;../ThirdParty/glew-2.1.0/lib/win64;../ThirdParty/assimp/lib/Release;../ThirdParty/irrKlang-64bit-1.6.0/lib/Winx64-visualStudio</AdditionalLibraryDirectories>
+      <AdditionalDependencies>FreeImage.lib;opengl32.lib;glew32s.lib;glfw3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <BuildLog>
       <Path>
@@ -98,6 +153,32 @@
       </Path>
     </BuildLog>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../ThirdParty/FreeImage-3170/Source;../ThirdParty/glew-2.1.0/include;../ThirdParty/glfw-3.3/include;../ThirdParty/glm</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>../ThirdParty/FreeImage-3170/lib/win32;../ThirdParty/glfw-3.3/lib/win64/lib-vc2019;../ThirdParty/glew-2.1.0/lib/win64;../ThirdParty/assimp/lib/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>FreeImage.lib;opengl32.lib;glew32s.lib;glfw3.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;assimp-vc142-mt.lib;IrrXML.lib;zlib.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:LIBCMT %(AdditionalOptions)</AdditionalOptions>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <BuildLog>
+      <Path>
+      </Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\Source\ShadowDepth.glsl" />
     <None Include="..\Source\ShadowFrag.glsl" />
@@ -106,18 +187,37 @@
     <None Include="..\Source\TexturedVert.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Source\BurstParticle.cpp" />
+    <ClCompile Include="..\Source\Emitter.cpp" />
+    <ClCompile Include="..\Source\FlameParticle.cpp" />
+    <ClCompile Include="..\Source\Sun.cpp" />
+    <ClCompile Include="..\Source\TerrainComponent.cpp" />
     <ClCompile Include="..\Source\main.cpp" />
+    <ClCompile Include="..\Source\Mesh.cpp" />
+    <ClCompile Include="..\Source\Model.cpp" />
     <ClCompile Include="..\Source\ShaderManager.cpp" />
     <ClCompile Include="..\Source\Shape.cpp" />
+    <ClCompile Include="..\Source\Stage.cpp" />
     <ClCompile Include="..\Source\Voxel.cpp" />
     <ClCompile Include="..\Source\Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\ControlState.h" />
+    <ClInclude Include="..\Source\Environment.h" />
+    <ClInclude Include="..\Source\GameObject.h" />
+    <ClInclude Include="..\Source\Sun.h" />
+    <ClInclude Include="..\Source\TerrainComponent.h" />
+    <ClInclude Include="..\Source\ScheduledEvent.h" />
     <ClInclude Include="..\Source\Coordinates.h" />
+    <ClInclude Include="..\Source\BurstParticle.h" />
+    <ClInclude Include="..\Source\Emitter.h" />
+    <ClInclude Include="..\Source\FlameParticle.h" />
+    <ClInclude Include="..\Source\Mesh.h" />
+    <ClInclude Include="..\Source\Model.h" />
     <ClInclude Include="..\Source\ShaderManager.h" />
     <ClInclude Include="..\Source\Shape.h" />
     <ClInclude Include="..\Source\Constants.h" />
+    <ClInclude Include="..\Source\Stage.h" />
     <ClInclude Include="..\Source\Voxel.h" />
     <ClInclude Include="..\Source\Wall.h" />
   </ItemGroup>
