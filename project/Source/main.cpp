@@ -287,6 +287,7 @@ int main(int argc, char* argv[])
     // Add sun
     Sun* sun = new Sun(sunTexture, moonTexture);
     stage->attachSun(sun);
+    stage1->attachSun(sun);
 
     // Persistent game variables
     vector<Event> currentFrameEvents;
@@ -524,7 +525,7 @@ int main(int argc, char* argv[])
             entity->update(&eventQueue, dt);
         }
         emitter.Update(dt);
-
+        pushUi(stage1, cameraPosition, shaderManager, glfwGetTime());
 
         // Clear Depth Buffer Bit
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -638,7 +639,7 @@ int main(int argc, char* argv[])
         shaderManager.setMat4("viewMatrix", viewMatrix);
 
     }
-    pushUi(stage1, cameraPosition, shaderManager, glfwGetTime());
+   
     // Shutdown GLFW
     glfwTerminate();
 
