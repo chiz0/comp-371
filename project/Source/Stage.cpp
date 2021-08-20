@@ -71,7 +71,10 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
         sun->progress = _position.z;
         sun->update(eventQueue, dt);
         for (int i = fires.size() - 1; i >= 0; i--) {
-            if (fires[i].z < _position.z + FAR_PLANE) {
+            // If the fire is within FAR_PLANE and also in the same chunk as the camera, draw it
+            float fireChunk = floorf(fires[i].z / (WORLD_SIZE / _scale.z));
+            float currentChunk = floorf(_position.z / WORLD_SIZE);
+            if (fires[i].z < _position.z + FAR_PLANE && abs(fireChunk - currentChunk) < 0.3f) {
                 particleEmitter->EmitFlame(fires[i], DEFAULT_FLAME_AMOUNT, DEFAULT_FLAME_FORCE);
             }
             // Delete fires as they pass the camera
@@ -99,7 +102,10 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
         sun->update(eventQueue, dt);
 
         for (int i = fires.size() - 1; i >= 0; i--) {
-            if (fires[i].z < _position.z + FAR_PLANE) {
+            // If the fire is within FAR_PLANE and also in the same chunk as the camera, draw it
+            float fireChunk = floorf(fires[i].z / (WORLD_SIZE / _scale.z));
+            float currentChunk = floorf(_position.z / WORLD_SIZE);
+            if (fires[i].z < _position.z + FAR_PLANE && abs(fireChunk - currentChunk) < 0.3f) {
                 particleEmitter->EmitFlame(fires[i], DEFAULT_FLAME_AMOUNT, DEFAULT_FLAME_FORCE);
             }
             // Delete fires as they pass the camera

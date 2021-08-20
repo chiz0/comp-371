@@ -130,6 +130,8 @@ int main(int argc, char* argv[])
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    shadowShaderManager.setFloat("farPlane", FAR_PLANE);
+
     //Shader Configuration
     shaderManager.use();
     shaderManager.setInt("depthMap", 1);
@@ -343,6 +345,7 @@ int main(int argc, char* argv[])
     shaderManager.setFloat("specularLight", LIGHT_SPECULAR_STRENGTH);
     shaderManager.setFloat("shininess", SHININESS);
     shaderManager.setInt("depthMap", 1);
+    shaderManager.setFloat("farPlane", FAR_PLANE);
 
    
   
@@ -435,7 +438,6 @@ int main(int argc, char* argv[])
             switch (event) {
             case INPUT_SPACEBAR: {
                 if (!gameStarted) {
-                    shaderManager.setFloat("ambientLight", LIGHT_AMBIENT_STRENGTH);
                     eventQueue.push_back({ GAME_START, 0 });
                 }
                 gameStarted = true;
@@ -606,18 +608,6 @@ int main(int argc, char* argv[])
 
         for (unsigned int i = 0; i < 6; ++i)
             shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
-        shadowShaderManager.setFloat("farPlane", FAR_PLANE);
-
-        // TODO: Merge these DrawScenes
-        if (cameraPosition.z >= 399.4) {
-            //drawScene(shadowShaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
-        }
-        else if (cameraPosition.z >= 199.4) {
-            //drawScene(shadowShaderManager, renderingMode, shapes, lightbulb, lavaTexture, cameraPosition.z, cameraHorizontalAngle);
-        }
-        else {
-            //drawScene(shadowShaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
-        }
 
         drawScene(shadowShaderManager, renderingMode, &gameEntities);
 
@@ -632,19 +622,8 @@ int main(int argc, char* argv[])
 
 
         // set lighting uniforms
-        shaderManager.setFloat("farPlane", FAR_PLANE);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-        // TODO: Merge these DrawScenes
-        if (cameraPosition.z >= 399.4) {
-            //drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
-        }
-        else if (cameraPosition.z >= 199.4) {
-            //drawScene(shaderManager, renderingMode, shapes, lightbulb, lavaTexture, cameraPosition.z, cameraHorizontalAngle);
-        }
-        else {
-            //drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
-        }
         drawScene(shaderManager, renderingMode, &gameEntities);
         
         
@@ -686,7 +665,7 @@ int main(int argc, char* argv[])
         
         if (!gameStarted) {
             glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
-            shaderManager.setFloat("ambientLight", 1.0f);
+            shaderManager.setFloat("ignoreLighting", true);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, titleTexture);
             shaderManager.setVec3("colour", vec3(1));
@@ -695,10 +674,11 @@ int main(int argc, char* argv[])
             mat4 modelMatrix = translate(mat4(1), vec3(VIEW_WIDTH / 2, VIEW_HEIGHT / 2, 3.0f)) * scale(mat4(1), vec3(VIEW_WIDTH, VIEW_HEIGHT, 0.1f));
             shaderManager.setMat4("worldMatrix", modelMatrix);
             glDrawArrays(renderingMode, 0, 36);
+            shaderManager.setFloat("ignoreLighting", false);
         }
 
         if (gameFinished) {
-            shaderManager.setFloat("ambientLight", 1.0f);
+            shaderManager.setFloat("ignoreLighting", true);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, thankyouTexture);
             shaderManager.setVec3("colour", vec3(1));
@@ -707,6 +687,7 @@ int main(int argc, char* argv[])
             mat4 modelMatrix = translate(mat4(1), vec3(VIEW_WIDTH / 2, VIEW_HEIGHT / 2, 3.0f)) * scale(mat4(1), vec3(VIEW_WIDTH, VIEW_HEIGHT, 0.1f));
             shaderManager.setMat4("worldMatrix", modelMatrix);
             glDrawArrays(renderingMode, 0, 36);
+            shaderManager.setFloat("ignoreLighting", false);
         }
 
         // End Frame
@@ -1108,9 +1089,6 @@ bool initContext() {     // Initialize GLFW and OpenGL version
     }
     glfwMakeContextCurrent(window);
 
-    // The next line disables the mouse cursor
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    // 
     // Initialize GLEW
     glewExperimental = true; // Needed for core profile
     if (glewInit() != GLEW_OK) {
@@ -1210,81 +1188,6 @@ GLuint setupModelVBO(string path, int& vertexCount) {
     vertexCount = vertices.size();
     return VAO;
 }
-
-/*
-void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, Shape lightbulb, int tileTexture, int cameraPosition, float cameraHorizontalAngle) {
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, tileTexture);
-    //Draw Tiles
-    glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-    for (int i = -20 / 2 / FLOOR_SCALE; i <= 20 / 2 / FLOOR_SCALE; i++) {
-        for (int j = 0 / 2 / FLOOR_SCALE; j <= GRID_SIZE / 2 / FLOOR_SCALE; j++) {
-            mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, 1.0f, j * FLOOR_SCALE + (int)(cameraPosition / 20 - 2) * 20)) * scale(mat4(1.0f), vec3(FLOOR_SCALE, 0.1f, FLOOR_SCALE));
-            shaderManager.setMat4("worldMatrix", tileMatrix);
-            glDrawArrays(renderingMode, 0, 36);
-        }
-    }
-
-    //Water Wall
-    glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-    for (int i = -GRID_SIZE / 2 / FLOOR_SCALE; i <= GRID_SIZE / 2 / FLOOR_SCALE; i++) {
-        for (int j = -GRID_SIZE / 2 / FLOOR_SCALE; j <= GRID_SIZE / 2 / FLOOR_SCALE; j++) {
-            mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, j * FLOOR_SCALE, 199.4f)) * scale(mat4(1.0f), vec3(FLOOR_SCALE, FLOOR_SCALE, 0.1f));
-            shaderManager.setMat4("worldMatrix", tileMatrix);
-            glDrawArrays(renderingMode, 0, 36);
-        }
-    }
-
-    //Lava Wall
-    glBindVertexArray(createVertexArrayObjectTextured(vec3(1.0f, 1.0f, 1.0f)));
-    for (int i = -GRID_SIZE / 2 / FLOOR_SCALE; i <= GRID_SIZE / 2 / FLOOR_SCALE; i++) {
-        for (int j = -GRID_SIZE / 2 / FLOOR_SCALE; j <= GRID_SIZE / 2 / FLOOR_SCALE; j++) {
-            mat4 tileMatrix = translate(mat4(1.0f), vec3(i * FLOOR_SCALE, j * FLOOR_SCALE, 399.4f)) * scale(mat4(1.0f), vec3(FLOOR_SCALE, FLOOR_SCALE, 0.1f));
-            shaderManager.setMat4("worldMatrix", tileMatrix);
-            glDrawArrays(renderingMode, 0, 36);
-        }
-    }
-
-    // Draw shapes
-    for (Shape shape : shapes) {
-        shape.Draw(renderingMode, shaderManager);
-    }
-
-    if (((int)(cameraHorizontalAngle / 180.0f) % 2) == 1 || ((int)(cameraHorizontalAngle / 180.0f) % 2) == -1) {
-        for (int i = (int)(cameraPosition / 20); i < (int)(cameraPosition / 20) + 3; i++) {
-            if (i< 30 && i>-1) {
-                for (Shape shape : owChunks[i]) {
-                    shape.Draw(renderingMode, shaderManager);
-                }
-
-                for (Model shape : mobs[i]) {
-                    shape.Draw(shaderManager);
-                }
-            }
-        }
-    }
-    else
-    {
-        for (int i = (int)(cameraPosition / 20); i > (int)(cameraPosition / 20) - 3; i--) {
-            if (i >= 0 && i < 30) {
-                for (Shape shape : owChunks[i]) {
-                    shape.Draw(renderingMode, shaderManager);
-                }
-                for (Model shape : mobs[i]) {
-                    shape.Draw(shaderManager);
-                }
-            }
-        }
-    }
-
-    shaderManager.setBool("ignoreLighting", true);
-    lightbulb.Draw(renderingMode, shaderManager);
-    shaderManager.setBool("ignoreLighting", false);
-
-    glBindVertexArray(0);
-}
-*/
 
 void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObject*>* gameEntities) {
     glActiveTexture(GL_TEXTURE0);
@@ -1520,8 +1423,8 @@ void pushMobs(Stage* stage) {
 void pushParticles(Stage* stage) {
     stage->setFlameParticle(vec3(10.0f, 0.0f, 150.0f));
 
-    stage->setFlameParticle(vec3(10.0f, 0.0f, WORLD_SIZE + 50.0f));
-    stage->setFlameParticle(vec3(-10.0f, 0.0f, WORLD_SIZE + 50.0f));
-    stage->setFlameParticle(vec3(-15.0f, 0.0f, WORLD_SIZE + 150.0f));
-    stage->setFlameParticle(vec3(15.0f, 0.0f, WORLD_SIZE + 75.0f));
+    stage->setFlameParticle(vec3(10.0f, 0.0f, WORLD_SIZE / stage->_scale.z + 50.0f));
+    stage->setFlameParticle(vec3(-10.0f, 0.0f, WORLD_SIZE / stage->_scale.z + 50.0f));
+    stage->setFlameParticle(vec3(-15.0f, 0.0f, WORLD_SIZE / stage->_scale.z + 150.0f));
+    stage->setFlameParticle(vec3(15.0f, 0.0f, WORLD_SIZE / stage->_scale.z + 75.0f));
 }
