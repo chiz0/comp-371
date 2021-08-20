@@ -671,6 +671,8 @@ int main(int argc, char* argv[])
         for (unsigned int i = 0; i < 6; ++i)
             shadowShaderManager.setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 
+        shadowShaderManager.setFloat("farPlane", FAR_PLANE);
+
         drawScene(shadowShaderManager, renderingMode, &gameEntities);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);

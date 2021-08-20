@@ -32,7 +32,7 @@ constexpr float WORLD_SIZE = 400.0f;						// The length on the Z axis of each wo
 // Difficulty values
 constexpr vec3 STAGE_STARTING_LOCATION = { 0, -20, 10 };     // The starting position of the stage origin
 constexpr float STAGE_INITIAL_SCALE = 2.0f;                 // The initial scale for the stage
-constexpr float INITIAL_STAGE_SPEED = 40.0f;                 // The starting speed for the stage moving towards the camera
+constexpr float INITIAL_STAGE_SPEED = 4.0f;                 // The starting speed for the stage moving towards the camera
 constexpr float INITIAL_WALL_SPEED = 2.0f;					// The starting speed of walls moving towards objects
 constexpr int STARTING_DIFFICULTY = 9;                      // The starting number of cubes in the shape
 constexpr float DIFFICULTY_SPEED_GROWTH = 0.1f;				// How much to increment the wall speed as difficulty increases

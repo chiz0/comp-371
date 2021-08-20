@@ -38,7 +38,7 @@ void Stage::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
     int startingChunk = (_position.z - 10) / (20 * _scale.z);
     int endingChunk = glm::min(startingChunk + FAR_PLANE / (20 * _scale.z), WORLD_SIZE * (currentWorld + 1) / (20 * _scale.z));
     for (int i = startingChunk; i < endingChunk; i++) {
-        floor.anchorMatrix = translate(worldMatrix, vec3(0.0f, 0.0f, i * 20 + 10)) * scale(mat4(1.0f), vec3(20, 1, 20));
+        floor.anchorMatrix = translate(worldMatrix, vec3(0.0f, 0.5f, i * 20 + 10)) * scale(mat4(1.0f), vec3(20, 1, 20));
         floor.draw(renderingMode, shaderProgram);
     }
 
