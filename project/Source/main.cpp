@@ -286,8 +286,7 @@ int main(int argc, char* argv[])
 
     // Add sun
     Sun* sun = new Sun(sunTexture, moonTexture);
-    stage->attachSun(sun);
-    stage1->attachSun(sun);
+    stage->sun = sun;
 
     // Persistent game variables
     vector<Event> currentFrameEvents;
