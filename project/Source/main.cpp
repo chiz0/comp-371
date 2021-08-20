@@ -1392,6 +1392,10 @@ void pushMobs(Stage* stage) {
 }
 
 void pushParticles(Stage* stage) {
-    stage->setFlameParticle(vec3(5.0f, 0.0f, 50.0f));
-    stage->setFlameParticle(vec3(-5.0f, 0.0f, 50.0f));
+    stage->setFlameParticle(vec3(10.0f, 0.0f, 150.0f));
+
+    stage->setFlameParticle(vec3(10.0f, 0.0f, WORLD_SIZE + 50.0f));
+    stage->setFlameParticle(vec3(-10.0f, 0.0f, WORLD_SIZE + 50.0f));
+    stage->setFlameParticle(vec3(-15.0f, 0.0f, WORLD_SIZE + 150.0f));
+    stage->setFlameParticle(vec3(15.0f, 0.0f, WORLD_SIZE + 75.0f));
 }
