@@ -26,13 +26,13 @@ public:
     void Move(vec3 translation);
     int _chunk = 0;
     mat4 anchorMatrix=mat4(1.0f);;
-    
+    mat4 position;
+
 private:
     // model data
     vector<Mesh> meshes;
     vector<Texture> textures_loaded;
     string directory;
-    mat4 position;
     
     void loadModel(string path);
     void processNode(aiNode* node, const aiScene* scene);

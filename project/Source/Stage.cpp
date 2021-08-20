@@ -64,7 +64,7 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
         _position.z += speed * dt;
         if ((int)(_position.z / _scale.z) % 200 >= 180) {
             eventQueue->push_back({ DESTROY_SHAPE_AND_WALL_WORLD_TRANSITION, 0 });
-            speed = 2 * initialSpeed;
+            speed = 3 * initialSpeed;
         }
         else if ((int)(_position.z / _scale.z) % 200 < 160) {
             state = IDLE;
