@@ -360,6 +360,35 @@ int main(int argc, char* argv[])
 
     int world = 0;
 
+    stage1->attachModel(Model(MODEL_PATH_TIME,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x - 3, cameraPosition.y + 15, cameraPosition.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    //minutes (max 90)
+    stage1->attachModel(Model(MODEL_PATH_ZERO,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x - 7, cameraPosition.y + 15, cameraPosition.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    //COLON
+    stage1->attachModel(Model(MODEL_PATH_COLON,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x - 8, cameraPosition.y + 15, cameraPosition.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    //Ten seconds
+    stage1->attachModel(Model(MODEL_PATH_ZERO,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x - 9, cameraPosition.y + 15, cameraPosition.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    //seconds
+    stage1->attachModel(Model(MODEL_PATH_ZERO,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x - 10, cameraPosition.y + 15, cameraPosition.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -1398,6 +1427,7 @@ void pushMobs(Stage* stage) {
         glm::scale(mat4(1.0f), vec3(1.0f)), 6));
 
 }
+
 void pushUi(Stage* stage, vec3 cam, ShaderManager shaderManager, int count) {
     shaderManager.setBool("ignoreLighting", true);
     stage->attachModel(Model(MODEL_PATH_L,
@@ -1406,29 +1436,7 @@ void pushUi(Stage* stage, vec3 cam, ShaderManager shaderManager, int count) {
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
         glm::scale(mat4(1.0f), vec3(1.5f)), 3));
     shaderManager.setBool("ignoreLighting", true);
-    stage->attachModel(Model(MODEL_PATH_TIME,
-        glm::translate(mat4(1.0f), vec3(cam.x - 3, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
-    //minutes (max 90)
-    stage->attachModel(Model(MODEL_PATH_ZERO,
-        glm::translate(mat4(1.0f), vec3(cam.x - 7, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
-    //COLON
-    stage->attachModel(Model(MODEL_PATH_COLON,
-        glm::translate(mat4(1.0f), vec3(cam.x - 8, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
-    //Ten seconds
-    stage->attachModel(Model(MODEL_PATH_ZERO,
-        glm::translate(mat4(1.0f), vec3(cam.x - 9, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+   
     /*
     char* models[10] = { MODEL_PATH_ZERO, MODEL_PATH_ONE, MODEL_PATH_TWO, MODEL_PATH_THREE, MODEL_PATH_FOUR, MODEL_PATH_FIVE, MODEL_PATH_SIX, MODEL_PATH_SEVEN, MODEL_PATH_EIGHT, MODEL_PATH_NINE };
     char* modelSecondsOnes = models[count % 10];
@@ -1436,10 +1444,6 @@ void pushUi(Stage* stage, vec3 cam, ShaderManager shaderManager, int count) {
     char* modelMinutesOnes = models[count / 60 % 10];
     char* modelMinutesTens = models[count / 600 % 10];
           */
-    stage->attachModel(Model(MODEL_PATH_ZERO,
-        glm::translate(mat4(1.0f), vec3(cam.x - 10, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    
 
 }
