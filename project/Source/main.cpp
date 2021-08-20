@@ -14,6 +14,10 @@
 //  Theodor
 // 
 //  Alexander
+// - Particle effects
+// - Audio
+// - Quaternion based shape rotations
+// - Dynamic lighting (Day/night & world based lighting)
 //
 //  Antonio
 //
