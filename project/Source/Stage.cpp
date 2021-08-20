@@ -5,8 +5,10 @@ Stage::Stage(vec3 position, int defaultVAO) : _position(position), _defaultVAO(d
 }
 
 void Stage::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
+    // Draw sun/moon
+    sun->draw(renderingMode, shaderProgram);
+
     // Calculate anchor matrix
-    //mat4 worldMatrix = translate(mat4(1.0f), _position) * rotate(mat4(1.0f), radians(_orientation.y), vec3(0.0f, 1.0f, 0.0f)) * scale(mat4(1.0f), _scale);
     mat4 worldMatrix = translate(mat4(1.0f), _position) * rotate(mat4(1.0f), radians(_orientation.y), vec3(0.0f, 1.0f, 0.0f)) * scale(mat4(1.0f), _scale);
 
     // Draw all TerrainComponents and bind texture only if different from previous
@@ -50,6 +52,8 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
             initialSpeed = speed;
             state = IDLE_WORLD_TRANSITION;
         }
+        sun->progress = _position.z;
+        sun->update(eventQueue, dt);
         break;
     }
     case IDLE_WORLD_TRANSITION: {
@@ -65,6 +69,8 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
             speed = initialSpeed;
             state = IDLE;
         }
+        sun->progress = _position.z;
+        sun->update(eventQueue, dt);
         break;
     }
     }
@@ -93,4 +99,8 @@ void Stage::attachTerrain(TerrainComponent terrain, vec3 position) {
 
 void Stage::attachModel(Model model) {
     modelList.push_back(model);
+}
+
+void Stage::attachSun(Sun* newSun) {
+    sun = newSun;
 }

@@ -21,6 +21,7 @@ void Wall::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
     glBindTexture(GL_TEXTURE_2D, _texture);
     shaderProgram->setVec3("colour", _colour);
     shaderProgram->setInt("textureSampler", 0);
+    shaderProgram->setFloat("ambientBoost", AMBIENT_BOOST);
     //quat orientationQuat(_orientation);
     //mat4 worldMatrix = translate(mat4(1.0f), displayPosition) * toMat4(orientationQuat) * scale(mat4(1.0f), _scale);
     mat4 worldMatrix = translate(mat4(1.0f), displayPosition);
@@ -28,6 +29,7 @@ void Wall::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
         it->anchorMatrix = worldMatrix;
         it->draw(renderingMode, shaderProgram);
     }
+    shaderProgram->setFloat("ambientBoost", 1.0f);
 }
 
 void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {

@@ -18,27 +18,16 @@ constexpr float TRANSLATE_RATE = 2.0f;						// The rate at which models move lef
 constexpr float CAMERA_JUMP_SPEED = 8.0f;					// The speed at which a camera moves from model to model
 constexpr float CAMERA_ANGULAR_SPEED = 60.0f;				// The speed at which the camera rotates
 constexpr float CAMERA_SPEED = 10.0f;						// Speed of camera zooming
-constexpr vec3 CAMERA_OFFSET = vec3(0.0f, 0.0f, 0.0f);		// The default position of the camera relative to a model
+constexpr vec3 CAMERA_OFFSET = vec3(0.0f, 0.0f, 10.0f);		// The default position of the camera relative to a model
 constexpr float FIELD_OF_VIEW = 70.0f;						// The starting zoom level of the camera
-constexpr float LIGHT_AMBIENT_STRENGTH = 0.3f;				// Intensity of the ambient light
-constexpr float LIGHT_DIFFUSE_STRENGTH = 0.6f;				// Intensity of the diffuse light
-constexpr float LIGHT_SPECULAR_STRENGTH = 0.9f;				// Intensity of the specular light
-constexpr float SHININESS = 4.0f;							// Shininess coefficient of specular light
-constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 10.0f, 0.0f);		// Where, relative to the focused object, to place the light source
 constexpr float VIEW_WIDTH = 1024.0f;						// Default width of the game window at launch
 constexpr float VIEW_HEIGHT = 768.0f;						// Default height of the game window at launch
 constexpr float SHADOW_WIDTH = 1024.0f;						// Width of the viewport used by the shadow shader
 constexpr float SHADOW_HEIGHT = 1024.0f;					// Height of the viewport used by the shadow shader
 constexpr float NEAR_PLANE = 0.01f;							// How close to the camera something may be drawn
 constexpr float FAR_PLANE = 200.0f;							// How far away to draw objects
-
-// Particle values
-constexpr float GRAVITY = 4.0f;								// Downward force applied to some particles
-constexpr float BURST_SCALE = 0.3f;							// How large each burst particle should be
-constexpr float FLAME_RISE = 1.0f;							// How quickly flames should accelerate upward from the origin
-constexpr float FLAME_SCALE = 0.2f;							// How large each flame particle should be
-constexpr int DEFAULT_BURST_AMOUNT = 100;					// How many particles should be in a default burst
-constexpr float DEFAULT_BURST_FORCE = 10.0f;				// How powerful a default burst should be
+constexpr float SUN_Z_OFFSET = 50.0f;						// How far along the Z axis from the camera should the sun be placed
+constexpr float WORLD_SIZE = 400.0f;						// The length on the Z axis of each world (Overworld, Nether, & End separately)
 
 // Difficulty values
 constexpr vec3 STAGE_STARTING_LOCATION = { 0, -20, 10 };     // The starting position of the stage origin
@@ -48,8 +37,32 @@ constexpr float INITIAL_WALL_SPEED = 2.0f;					// The starting speed of walls mo
 constexpr int STARTING_DIFFICULTY = 9;                      // The starting number of cubes in the shape
 constexpr float DIFFICULTY_SPEED_GROWTH = 0.1f;				// How much to increment the wall speed as difficulty increases
 constexpr float DIFFICULTY_SPEED_MAX = 4.0f;				// How much to increment the wall speed as difficulty increases
-constexpr int LEVELS_PER_WORLD = 10;						// How many walls to clear in each world
-constexpr int WORLDS = 3;
+constexpr int WORLDS = 3;                                   // Number of worlds in the game (overworld, nether, end)
+
+// Lighting
+constexpr float LIGHT_AMBIENT_STRENGTH = 0.1f;				// Intensity of the ambient light
+constexpr float LIGHT_DIFFUSE_STRENGTH = 0.6f;				// Intensity of the diffuse light
+constexpr float LIGHT_SPECULAR_STRENGTH = 0.9f;				// Intensity of the specular light
+constexpr float SHININESS = 4.0f;							// Shininess coefficient of specular light
+constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 10.0f, 10.0f);		// Where, relative to the focused object, to place the light source
+constexpr vec3 LIGHT_COLOUR_DAY = vec3(1.0f, 1.0f, 1.0f);	// Ambient colour in daytime
+constexpr vec3 LIGHT_COLOUR_NIGHT = vec3(0.1f, 0.1f, 0.4f);	// Ambient colour in night time
+constexpr vec3 LIGHT_COLOUR_NETHER = vec3(1.0f, 0.3f, 0.3f);// Ambient colour in the nether
+constexpr vec3 LIGHT_COLOUR_END = vec3(1.0f, 1.0f, 1.0f);	// Ambient colour in the end
+constexpr float AMBIENT_BOOST = 7.0f;                       // A value 1.0f - 10.0f to increase the ambient lighting of shapes and walls
+constexpr vec4 worldSkyColours[WORLDS] = {
+    vec4(0.529f, 0.808f, 0.922f, 1.0f),                     // Overworld sky colour
+    vec4(0.40f, 0.208f, 0.222f, 1.0f),                      // Nether sky colour
+    vec4(0.0f, 0.0f, 0.0f, 1.0f)                            // End sky colour
+};
+
+// Particle values
+constexpr float GRAVITY = 4.0f;								// Downward force applied to some particles
+constexpr float BURST_SCALE = 0.3f;							// How large each burst particle should be
+constexpr float FLAME_RISE = 1.0f;							// How quickly flames should accelerate upward from the origin
+constexpr float FLAME_SCALE = 0.2f;							// How large each flame particle should be
+constexpr int DEFAULT_BURST_AMOUNT = 100;					// How many particles should be in a default burst
+constexpr float DEFAULT_BURST_FORCE = 10.0f;				// How powerful a default burst should be
 
 // SHADERS
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
@@ -61,10 +74,12 @@ constexpr char SHADOW_DEPTH_SHADER_FILEPATH[] = "../Source/ShadowDepth.glsl";
 
 // TEXTURES
 constexpr char* TEXTURE_PATH_TILE = "../Assets/Textures/tile.jpg";
-constexpr char* TEXTURE_PATH_METAL = "../Assets/Textures/metal.jpg";
+constexpr char* TEXTURE_PATH_BLOCK = "../Assets/Textures/emerald.jpg";
 constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";
 constexpr char* TEXTURE_PATH_FIRE = "../Assets/Textures/fire.jpg";
 constexpr char* TEXTURE_PATH_PARTICLE = "../Assets/Textures/particle.jpg";
+constexpr char* TEXTURE_PATH_SUN = "../Assets/Textures/sun.jpg";
+constexpr char* TEXTURE_PATH_MOON = "../Assets/Textures/moon.jpg";
 constexpr char* TEXTURE_PATH_GRASS = "../Assets/Textures/block/grass_block_top.png";
 constexpr char* TEXTURE_PATH_WATER = "../Assets/Textures/block/light_blue_concrete.png";
 constexpr char* TEXTURE_PATH_LOG = "../Assets/Textures/block/oak_log.png";

@@ -63,12 +63,14 @@ void Shape::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
     glBindTexture(GL_TEXTURE_2D, _texture);
     shaderProgram->setVec3("colour", _colour);
     shaderProgram->setInt("textureSampler", 0);
+    shaderProgram->setFloat("ambientBoost", AMBIENT_BOOST);
     //mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(displayOrientation) * scale(mat4(1.0f), _scale);
     mat4 worldMatrix = translate(mat4(1.0f), _position) * toMat4(displayOrientation);
     for (auto it = begin(voxels); it != end(voxels); ++it) {
         it->anchorMatrix = worldMatrix;
         it->draw(renderingMode, shaderProgram);
     }
+    shaderProgram->setFloat("ambientBoost", 1.0f);
 }
 
 void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
@@ -76,10 +78,10 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
     case INITIALIZED: {
         randomRightAngleRotations();
         userInputResponse = false;
-        for (Voxel& voxel : voxels) {
-            voxel.displayPosition.x += (rand() % ANIMATE_CREATION_VOXEL_SPREAD) - (ANIMATE_CREATION_VOXEL_SPREAD / 2);
-            voxel.displayPosition.y += (rand() % ANIMATE_CREATION_VOXEL_SPREAD) - (ANIMATE_CREATION_VOXEL_SPREAD / 2);
-            voxel.displayPosition.z += (rand() % ANIMATE_CREATION_VOXEL_SPREAD) - (ANIMATE_CREATION_VOXEL_SPREAD / 2);
+        for (Voxel& _voxel : voxels) {
+            _voxel.displayPosition.x += (rand() % ANIMATE_CREATION_VOXEL_SPREAD) - (ANIMATE_CREATION_VOXEL_SPREAD / 2);
+            _voxel.displayPosition.y += (rand() % ANIMATE_CREATION_VOXEL_SPREAD) - (ANIMATE_CREATION_VOXEL_SPREAD / 2);
+            _voxel.displayPosition.z += (rand() % ANIMATE_CREATION_VOXEL_SPREAD) - (ANIMATE_CREATION_VOXEL_SPREAD / 2);
         }
         state = ANIMATE_CREATION;
         break;
@@ -87,39 +89,39 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
     case ANIMATE_CREATION: {
         userInputResponse = false;
         bool finished = true;
-        for (Voxel& voxel : voxels) {
-            if (voxel.displayPosition.x < voxel._position.x - ANIMATE_CREATION_MOVE_SPEED * dt) {
-                voxel.displayPosition.x += ANIMATE_CREATION_MOVE_SPEED * dt;
+        for (Voxel& _voxel : voxels) {
+            if (_voxel.displayPosition.x < _voxel._position.x - ANIMATE_CREATION_MOVE_SPEED * dt) {
+                _voxel.displayPosition.x += ANIMATE_CREATION_MOVE_SPEED * dt;
                 finished = false;
             }
-            else if (voxel.displayPosition.x > voxel._position.x + ANIMATE_CREATION_MOVE_SPEED * dt) {
-                voxel.displayPosition.x -= ANIMATE_CREATION_MOVE_SPEED * dt;
-                finished = false;
-            }
-            else {
-                voxel.displayPosition.x = voxel._position.x;
-            }
-            if (voxel.displayPosition.y < voxel._position.y - ANIMATE_CREATION_MOVE_SPEED * dt) {
-                voxel.displayPosition.y += ANIMATE_CREATION_MOVE_SPEED * dt;
-                finished = false;
-            }
-            else if (voxel.displayPosition.y > voxel._position.y + ANIMATE_CREATION_MOVE_SPEED * dt) {
-                voxel.displayPosition.y -= ANIMATE_CREATION_MOVE_SPEED * dt;
+            else if (_voxel.displayPosition.x > _voxel._position.x + ANIMATE_CREATION_MOVE_SPEED * dt) {
+                _voxel.displayPosition.x -= ANIMATE_CREATION_MOVE_SPEED * dt;
                 finished = false;
             }
             else {
-                voxel.displayPosition.y = voxel._position.y;
+                _voxel.displayPosition.x = _voxel._position.x;
             }
-            if (voxel.displayPosition.z < voxel._position.z - ANIMATE_CREATION_MOVE_SPEED * dt) {
-                voxel.displayPosition.z += ANIMATE_CREATION_MOVE_SPEED * dt;
+            if (_voxel.displayPosition.y < _voxel._position.y - ANIMATE_CREATION_MOVE_SPEED * dt) {
+                _voxel.displayPosition.y += ANIMATE_CREATION_MOVE_SPEED * dt;
                 finished = false;
             }
-            else if (voxel.displayPosition.z > voxel._position.z + ANIMATE_CREATION_MOVE_SPEED * dt) {
-                voxel.displayPosition.z -= ANIMATE_CREATION_MOVE_SPEED * dt;
+            else if (_voxel.displayPosition.y > _voxel._position.y + ANIMATE_CREATION_MOVE_SPEED * dt) {
+                _voxel.displayPosition.y -= ANIMATE_CREATION_MOVE_SPEED * dt;
                 finished = false;
             }
             else {
-                voxel.displayPosition.z = voxel._position.z;
+                _voxel.displayPosition.y = _voxel._position.y;
+            }
+            if (_voxel.displayPosition.z < _voxel._position.z - ANIMATE_CREATION_MOVE_SPEED * dt) {
+                _voxel.displayPosition.z += ANIMATE_CREATION_MOVE_SPEED * dt;
+                finished = false;
+            }
+            else if (_voxel.displayPosition.z > _voxel._position.z + ANIMATE_CREATION_MOVE_SPEED * dt) {
+                _voxel.displayPosition.z -= ANIMATE_CREATION_MOVE_SPEED * dt;
+                finished = false;
+            }
+            else {
+                _voxel.displayPosition.z = _voxel._position.z;
             }
         }
         if (finished) {
@@ -148,24 +150,24 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
     case ANIMATE_DESTRUCTION: {
         userInputResponse = false;
         timer += dt;
-        for (Voxel& voxel : voxels) {
-            if (voxel._position.x < 0) {
-                voxel.displayPosition.x -= ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
+        for (Voxel& _voxel : voxels) {
+            if (_voxel._position.x < 0) {
+                _voxel.displayPosition.x -= ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
-            else if (voxel._position.x >= 0) {
-                voxel.displayPosition.x += ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
+            else if (_voxel._position.x >= 0) {
+                _voxel.displayPosition.x += ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
-            if (voxel._position.y < 0) {
-                voxel.displayPosition.y -= ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
+            if (_voxel._position.y < 0) {
+                _voxel.displayPosition.y -= ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
-            else if (voxel._position.y >= 0) {
-                voxel.displayPosition.y += ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
+            else if (_voxel._position.y >= 0) {
+                _voxel.displayPosition.y += ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
-            if (voxel._position.z < 0) {
-                voxel.displayPosition.z -= ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
+            if (_voxel._position.z < 0) {
+                _voxel.displayPosition.z -= ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
-            else if (voxel._position.z >= 0) {
-                voxel.displayPosition.z += ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
+            else if (_voxel._position.z >= 0) {
+                _voxel.displayPosition.z += ANIMATE_DESTRUCTION_MOVE_SPEED * dt;
             }
         }
         if (timer >= 2) {

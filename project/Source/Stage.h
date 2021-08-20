@@ -15,6 +15,7 @@
 #include "TerrainComponent.h"
 #include "Emitter.h"
 #include "Model.h"
+#include "Sun.h"
 
 using namespace glm;
 using namespace std;
@@ -30,11 +31,13 @@ public:
     void processEvent(Event event);
     void attachTerrain(TerrainComponent terrain, vec3 position);
     void attachModel(Model model);
+    void attachSun(Sun* newSun);
 
     double timer = 0;
     int currentWorld = 0;
     vector<TerrainComponent> terrainList;
     vector<Model> modelList;
+    Sun* sun;
     enum {
         INITIALIZED,
         IDLE,
