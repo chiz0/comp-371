@@ -62,6 +62,8 @@ constexpr float FLAME_RISE = 1.0f;							// How quickly flames should accelerate
 constexpr float FLAME_SCALE = 0.2f;							// How large each flame particle should be
 constexpr int DEFAULT_BURST_AMOUNT = 100;					// How many particles should be in a default burst
 constexpr float DEFAULT_BURST_FORCE = 10.0f;				// How powerful a default burst should be
+constexpr int DEFAULT_FLAME_AMOUNT = 10.0f;				    // How many particles emerge per frame from a flame
+constexpr float DEFAULT_FLAME_FORCE = 10.0f;				// How quickly a flame particle should move
 
 // SHADERS
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";

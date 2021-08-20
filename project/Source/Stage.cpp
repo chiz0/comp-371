@@ -103,6 +103,10 @@ void Stage::attachTerrain(TerrainComponent terrain, vec3 position) {
     );
 }
 
+void Stage::setFlameParticle(vec3 position) {
+    particleEmitter->EmitFlame(position, DEFAULT_FLAME_AMOUNT, DEFAULT_FLAME_FORCE);
+}
+
 void Stage::attachModel(Model model) {
     modelList.push_back(model);
 }

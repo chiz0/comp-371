@@ -29,6 +29,7 @@ public:
     void draw(GLenum* renderingMode, ShaderManager* shaderProgram);
     void update(vector<ScheduledEvent>* eventQueue, double dt);
     void processEvent(Event event);
+    void setFlameParticle(vec3 position);
     void attachTerrain(TerrainComponent terrain, vec3 position);
     void attachModel(Model model);
 
