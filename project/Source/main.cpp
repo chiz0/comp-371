@@ -12,7 +12,7 @@
 // CONTRIBUTIONS
 //
 //  Theodor
-// 
+// -
 //  Alexander
 // - Particle effects
 // - Audio
@@ -20,9 +20,11 @@
 // - Dynamic lighting (Day/night & world based lighting)
 //
 //  Antonio
-//
+// - Dynamic User Interface that displays time and score
+// - UI keeps a fixed distance with camera 
+// - Created the UI models using blender
 //  Chi
-//
+// -
 
 // Preprocessor macros
 // Standard library
