@@ -631,7 +631,7 @@ int main(int argc, char* argv[])
         char* modelMinutesOnes = models[i / 60 % 10];
         char* modelMinutesTens = models[i / 600 % 10];
         char* scoreSingle = models[playerScore%10];
-        char* scoreDouble = models[playerScore % 60 / 10 % 10];
+        char* scoreDouble = models[playerScore / 10 % 10];
         Model ZeroSec = Model(modelSecondsOnes,
             glm::translate(mat4(1.0f), vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
@@ -648,7 +648,7 @@ int main(int argc, char* argv[])
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
             glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-        Model ZeroMin2nd = Model(modelMinutesOnes,
+        Model ZeroMin2nd = Model(modelMinutesTens,
             glm::translate(mat4(1.0f), vec3(cameraPosition.x + 6, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
