@@ -32,7 +32,7 @@ constexpr float WORLD_SIZE = 400.0f;						// The length on the Z axis of each wo
 // Difficulty values
 constexpr vec3 STAGE_STARTING_LOCATION = { 0, -20, 10 };     // The starting position of the stage origin
 constexpr float STAGE_INITIAL_SCALE = 2.0f;                 // The initial scale for the stage
-constexpr float INITIAL_STAGE_SPEED = 4.0f;                 // The starting speed for the stage moving towards the camera
+constexpr float INITIAL_STAGE_SPEED = 40.0f;                 // The starting speed for the stage moving towards the camera
 constexpr float INITIAL_WALL_SPEED = 2.0f;					// The starting speed of walls moving towards objects
 constexpr int STARTING_DIFFICULTY = 9;                      // The starting number of cubes in the shape
 constexpr float DIFFICULTY_SPEED_GROWTH = 0.1f;				// How much to increment the wall speed as difficulty increases
@@ -96,6 +96,11 @@ constexpr char* TEXTURE_PATH_NETHERRACK = "../Assets/Textures/block2/netherrack.
 constexpr char* TEXTURE_PATH_LAVA = "../Assets/Textures/block/lava_still.png";
 constexpr char* TEXTURE_PATH_ENDSTONE = "../Assets/Textures/block2/end_stone_bricks.png";
 constexpr char* TEXTURE_PATH_ENDSPACE = "../Assets/Textures/block/dragon_egg.png";
+constexpr char* TEXTURE_PATH_WARPWOOD = "../Assets/Textures/block2/warped_stem.png";
+constexpr char* TEXTURE_PATH_WARPLEAVES = "../Assets/Textures/block2/warped_wart_block.png";
+constexpr char* TEXTURE_PATH_WARPPLANKS = "../Assets/Textures/block2/warped_door_top.png";
+constexpr char* TEXTURE_PATH_NETHERBRICKS = "../Assets/Textures/block2/nether_bricks.png";
+constexpr char* TEXTURE_PATH_ENDPORTAL = "../Assets/Textures/block2/end_portal_frame_top.png";
 
 //UI
 constexpr char* MODEL_PATH_L = "../Assets/Models/UI/Score/L.obj";
@@ -127,6 +132,16 @@ constexpr char* MODEL_PATH_SPIDER = "../Assets/Models/Spider/spider.obj";
 constexpr char* MODEL_PATH_WITHERSKELETON = "../Assets/Models/Wither Skeleton/skeleton+skeleton_stray+wither_skeleton.obj";
 constexpr char* MODEL_PATH_ZOMBIE = "../Assets/Models/Zombie/zombie.obj";
 constexpr char* MODEL_PATH_CYLINDER = "../Assets/Models/CYLINDER/cylinder.obj";
+constexpr char* MODEL_PATH_PIGLIN = "../Assets/Models/Piglin/piglin.obj";
+constexpr char* MODEL_PATH_ZOGLIN = "../Assets/Models/Zoglin/zoglin.obj";
+constexpr char* MODEL_PATH_HOGLIN = "../Assets/Models/Zoglin/hoglin.obj";
+constexpr char* MODEL_PATH_BLOCK = "../Assets/Models/Block/mega_brick.obj";
+constexpr char* MODEL_PATH_GHAST = "../Assets/Models/Ghast/ghast.obj";
+constexpr char* MODEL_PATH_ENDTOWER = "../Assets/Models/EndTower/block.obj";
+constexpr char* MODEL_PATH_EGG = "../Assets/Models/Egg/egg.obj";
+constexpr char* MODEL_PATH_FDRAGON = "../Assets/Models/Dragon/fancy/enderdragon.obj";
+constexpr char* MODEL_PATH_WATER = "../Assets/Models/Dragon/Water/water.obj";
+constexpr char* MODEL_PATH_LAVA = "../Assets/Models/Dragon/Lava/lava.obj";
 
 // AUDIO
 constexpr char* AUDIO_PATH_MUSIC = "../Assets/Audio/mii.ogg";

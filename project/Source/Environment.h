@@ -758,10 +758,10 @@ vector<ivec3> cave {
 	{ 4, 1, 2 },
 }; 
 
-vector<ivec3> generatePortal(){
+vector<ivec3> generatePortal() {
 	vector<ivec3> portal;
 	for (int i = 0; i < 9; i++) {
-		portal.push_back({i,0,0});
+		portal.push_back({ i,0,0 });
 		portal.push_back({ i,8,0 });
 		portal.push_back({ 0,i,0 });
 		portal.push_back({ 8,i,0 });
@@ -769,226 +769,197 @@ vector<ivec3> generatePortal(){
 	return portal;
 };
 
+vector<ivec3> generateNetherTemple(Stage* stage) {
+	vector<ivec3> netherTemple;
+	netherTemple.push_back({ 0, 0, 0 });
 
-void pushMobs(){
-
-	//4TH chunk mobs
-	mobs[3].push_back(Model(MODEL_PATH_COW,
-		glm::translate(mat4(1.0f), vec3(10.0f, 2.5f, 60.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(-120.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(-14.0f, 4.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
 		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[3].push_back(Model(MODEL_PATH_COW,
-		glm::translate(mat4(1.0f), vec3(-10.0f, 2.5f, 68.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(120.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 14));
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(-14.0f, 4.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
 		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[3].push_back(Model(MODEL_PATH_COW,
-		glm::translate(mat4(1.0f), vec3(-13.0f, 3.5f, 70.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(30.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 15));
+
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(14.0f, 4.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
 		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
-		glm::scale(mat4(1.0f), vec3(0.5f))));
-	mobs[3].push_back(Model(MODEL_PATH_COW,
-		glm::translate(mat4(1.0f), vec3(18.0f, 4.5f, 76.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(-45.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 14));
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(14.0f, 4.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
 		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
-		glm::scale(mat4(1.0f), vec3(0.5f))));
+		glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 15));
 
-	mobs[3].push_back(Model(MODEL_PATH_CHICKEN,
-		glm::translate(mat4(1.0f), vec3(8.0f, 2.5f, 63.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[3].push_back(Model(MODEL_PATH_CHICKEN,
-		glm::translate(mat4(1.0f), vec3(7.0f, 2.5f, 65.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(-130.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[3].push_back(Model(MODEL_PATH_CHICKEN,
-		glm::translate(mat4(1.0f), vec3(-15.0f, 4.5f, 64.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-
-	mobs[3].push_back(Model(MODEL_PATH_SHEEP,
-		glm::translate(mat4(1.0f), vec3(12.0f, 3.5f, 63.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[3].push_back(Model(MODEL_PATH_SHEEP,
-		glm::translate(mat4(1.0f), vec3(7.0f, 1.5f, 69.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[3].push_back(Model(MODEL_PATH_SHEEP,
-		glm::translate(mat4(1.0f), vec3(-2.0f, 0.5f, 76.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));
-	
-
-
-
-	//5TH chunk mobs
-	mobs[4].push_back(Model(MODEL_PATH_COW,
-		glm::translate(mat4(1.0f), vec3(10.0f, 2.5f, 80.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(-120.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(-14.0f, 15.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
 		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[4].push_back(Model(MODEL_PATH_COW,
-		glm::translate(mat4(1.0f), vec3(10.0f, 2.5f, 88.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 14));
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(-14.0f, 15.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
 		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[4].push_back(Model(MODEL_PATH_COW,
-		glm::translate(mat4(1.0f), vec3(13.0f, 3.5f, 90.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(-30.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 15));
+
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(14.0f, 15.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
 		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
-		glm::scale(mat4(1.0f), vec3(0.5f))));
-
-	mobs[4].push_back(Model(MODEL_PATH_CHICKEN,
-		glm::translate(mat4(1.0f), vec3(-7.0f, 2.5f, 83.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[4].push_back(Model(MODEL_PATH_CHICKEN,
-		glm::translate(mat4(1.0f), vec3(-6.0f, 2.5f, 85.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(130.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-	mobs[4].push_back(Model(MODEL_PATH_CHICKEN,
-		glm::translate(mat4(1.0f), vec3(15.0f, 4.5f, 84.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));									  //Scale
-
-	mobs[4].push_back(Model(MODEL_PATH_SHEEP,
-		glm::translate(mat4(1.0f), vec3(-9.0f, 2.5f, 82.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.5f))));
-
-	mobs[4].push_back(Model(MODEL_PATH_PIG,
-		glm::translate(mat4(1.0f), vec3(-12.0f, 3.5f, 86.0f)) *                     //Position
-		glm::rotate(mat4(1.0f), radians(120.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.25f))));
-	mobs[4].push_back(Model(MODEL_PATH_PIG,
-		glm::translate(mat4(1.0f), vec3(-15.0f, 4.25f, 89.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(0.25f))));
+		glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 14));
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(14.0f, 15.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 15));
 
 
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(19.5f, -4.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+		glm::scale(mat4(1.0f), vec3(0.0f, 10.0f, 19.0f)), 14));
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(19.5f, -4.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+		glm::scale(mat4(1.0f), vec3(0.0f, 10.0f, 19.0f)), 15));
 
-	//6TH chunk mobs
-	mobs[5].push_back(Model(MODEL_PATH_SKELETON,
-		glm::translate(mat4(1.0f), vec3(18.0f, 4.5f, 100.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-80.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[5].push_back(Model(MODEL_PATH_SKELETON,
-		glm::translate(mat4(1.0f), vec3(-11.0f, 3.5f, 105.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[5].push_back(Model(MODEL_PATH_SKELETON,
-		glm::translate(mat4(1.0f), vec3(11.0f, 3.5f, 110.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-80.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[5].push_back(Model(MODEL_PATH_SKELETON,
-		glm::translate(mat4(1.0f), vec3(-18.0f, 4.5f, 115.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-80.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(-19.5f, -4.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+		glm::scale(mat4(1.0f), vec3(0.0f, 10.0f, 19.0f)), 14));
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(-19.5f, -4.5f, 299.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+		glm::scale(mat4(1.0f), vec3(0.0f, 10.0f, 19.0f)), 15));
 
-	mobs[5].push_back(Model(MODEL_PATH_ZOMBIE,
-		glm::translate(mat4(1.0f), vec3(14.0f, 4.5f, 102.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-80.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[5].push_back(Model(MODEL_PATH_ZOMBIE,
-		glm::translate(mat4(1.0f), vec3(12.0f, 3.5f, 105.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-110.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[5].push_back(Model(MODEL_PATH_ZOMBIE,
-		glm::translate(mat4(1.0f), vec3(-11.0f, 3.5f, 110.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(14.0f, -5.5f, 279.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 10.0f, 0.0f)), 14));
 
-	mobs[5].push_back(Model(MODEL_PATH_SPIDER,
-		glm::translate(mat4(1.0f), vec3(17.0f, 4.5f, 115.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[5].push_back(Model(MODEL_PATH_SPIDER,
-		glm::translate(mat4(1.0f), vec3(-16.0f, 3.5f, 107.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(60.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[5].push_back(Model(MODEL_PATH_SPIDER,
-		glm::translate(mat4(1.0f), vec3(-9.0f, 1.5f, 117.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(20.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(-14.0f, -5.5f, 279.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 10.0f, 0.0f)), 14));
+
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(14.0f, -5.5f, 318.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 10.0f, 0.0f)), 15));
+
+	stage->attachModel(Model(MODEL_PATH_BLOCK,
+		glm::translate(mat4(1.0f), vec3(-14.0f, -5.5f, 318.5f)) *                     //Position
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+		glm::scale(mat4(1.0f), vec3(6.5f, 10.0f, 0.0f)), 15));
 
 
+	for (int i = 0; i < 15; i++) {
+		netherTemple.push_back({ 7, i, 0 });
+		netherTemple.push_back({ -7, i, 0 });
+		netherTemple.push_back({ 7, i, 39 });
+		netherTemple.push_back({ -7, i, 39 });
+	}
+	for (int i = 7; i < 21; i++) {
+		netherTemple.push_back({ i, 14, 0 });
+		netherTemple.push_back({ -i, 14, 0 });
+		netherTemple.push_back({ i, 14, 39 });
+		netherTemple.push_back({ -i, 14, 39 });
+		if (i % 2 == 1) {
+			netherTemple.push_back({ i, 15, 0 });
+			netherTemple.push_back({ -i, 15, 0 });
+			netherTemple.push_back({ i, 15, 39 });
+			netherTemple.push_back({ -i, 15, 39 });
+		}
 
-	//7TH chunk mobs
-	mobs[6].push_back(Model(MODEL_PATH_SKELETON,
-		glm::translate(mat4(1.0f), vec3(18.0f, 4.5f, 120.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-120.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[6].push_back(Model(MODEL_PATH_SKELETON,
-		glm::translate(mat4(1.0f), vec3(-11.0f, 3.5f, 125.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[6].push_back(Model(MODEL_PATH_SKELETON,
-		glm::translate(mat4(1.0f), vec3(11.0f, 3.5f, 130.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-120.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[6].push_back(Model(MODEL_PATH_SKELETON,
-		glm::translate(mat4(1.0f), vec3(-18.0f, 4.5f, 135.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
+		if (i % 6 == 3) {
+			stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+				glm::translate(mat4(1.0f), vec3(3 + i, 15.5f, 281.0f)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(0.5f)), 14));
+			stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+				glm::translate(mat4(1.0f), vec3(-3 - i, 15.5f, 281.0f)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(0.5f)), 14));
 
-	mobs[6].push_back(Model(MODEL_PATH_ZOMBIE,
-		glm::translate(mat4(1.0f), vec3(-14.0f, 4.5f, 132.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[6].push_back(Model(MODEL_PATH_ZOMBIE,
-		glm::translate(mat4(1.0f), vec3(-12.0f, 3.5f, 135.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(110.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[6].push_back(Model(MODEL_PATH_ZOMBIE,
-		glm::translate(mat4(1.0f), vec3(11.0f, 3.5f, 139.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
+			stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+				glm::translate(mat4(1.0f), vec3(-i, 15.5f, 318.0f)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+			stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+				glm::translate(mat4(1.0f), vec3(i, 15.5f, 318.0f)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+		}
+	}
 
-	mobs[6].push_back(Model(MODEL_PATH_SPIDER,
-		glm::translate(mat4(1.0f), vec3(-17.0f, 4.5f, 125.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-145.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[6].push_back(Model(MODEL_PATH_SPIDER,
-		glm::translate(mat4(1.0f), vec3(16.0f, 3.5f, 127.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-60.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
-	mobs[6].push_back(Model(MODEL_PATH_SPIDER,
-		glm::translate(mat4(1.0f), vec3(9.0f, 1.5f, 137.0f))*                     //Position
-		glm::rotate(mat4(1.0f), radians(-20.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
-		glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*		  //Orientation around x
-		glm::scale(mat4(1.0f), vec3(1.0f))));
+	for (int i = 1; i < 39; i++) {
+		netherTemple.push_back({ 7, 14, i });
+		netherTemple.push_back({ -7, 14, i });
+		netherTemple.push_back({ 7, 3, i });
+		netherTemple.push_back({ -7, 3, i });
 
+		if (i % 2 == 0) {
+			netherTemple.push_back({ 7, 15, i });
+			netherTemple.push_back({ -7, 15, i });
+			netherTemple.push_back({ 7, 4, i });
+			netherTemple.push_back({ -7, 4, i });
+		}
+
+		if (i % 6 == 3) {
+
+			stage->attachModel(Model(MODEL_PATH_BLAZE,
+				glm::translate(mat4(1.0f), vec3(-12.0f, 8.5f, 280.5f + i)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(5)), 15));
+			stage->attachModel(Model(MODEL_PATH_BLAZE,
+				glm::translate(mat4(1.0f), vec3(12.0f, 8.5f, 280.5f + i)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(5)), 15));
+		}
+
+		if (i % 10 == 1) {
+
+			stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+				glm::translate(mat4(1.0f), vec3(-10.0f, 15.5f, 281.5f + i)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+			stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+				glm::translate(mat4(1.0f), vec3(8.0f, 15.5f, 281.5f + i)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+
+
+			stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+				glm::translate(mat4(1.0f), vec3(-10.0f, 4.5f, 281.5f + i)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+			stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+				glm::translate(mat4(1.0f), vec3(8.0f, 4.5f, 281.5f + i)) *                     //Position
+				glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+				glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+				glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+		}
+	}
+	return netherTemple;
 }
