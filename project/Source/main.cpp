@@ -64,8 +64,7 @@ using namespace irrklang;
 #include "OBJloader.h"    //For loading .obj files
 #include "OBJloaderV2.h"  //For loading .obj files using a polygon list format
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+
 
 using namespace glm;
 using namespace std;
@@ -83,6 +82,7 @@ GLuint setupModelVBO(string path, int& vertexCount);
 //void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, Shape lightbulb, int tileTexture, int cameraPosition, float cameraHorizontalAngle);
 void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObject*>* gameEntities);
 void pushMobs(Stage* stage);
+void pushUi(Stage* stage, vec3 cam, ShaderManager shaderManager, int count);
 
 bool initContext();
 
@@ -195,7 +195,8 @@ int main(int argc, char* argv[])
     // Create stage
     Stage* stage = new Stage(STAGE_STARTING_LOCATION, cubeVAO);
     stage->_scale = vec3(STAGE_INITIAL_SCALE);
-
+    Stage* stage1 = new Stage(STAGE_STARTING_LOCATION, cubeVAO);
+    stage->_scale = vec3(STAGE_INITIAL_SCALE);
     // Landscape
     for (int chunk = 0; chunk < 30; chunk++) {
         if (chunk >= 20) {
@@ -310,7 +311,7 @@ int main(int argc, char* argv[])
     // Create entity pointer container
     vector<GameObject*> gameEntities;
     gameEntities.push_back(stage);
-
+    gameEntities.push_back(stage1);
     // Initialize random seed
     srand(time(NULL));
 
@@ -391,6 +392,8 @@ int main(int argc, char* argv[])
             case GAME_START: {
                 stage->speed = INITIAL_STAGE_SPEED;
                 stage->currentWorld = 0;
+                stage1->speed = 0;
+                stage1->currentWorld = 0;
                 eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
                 break;
             }
@@ -635,7 +638,7 @@ int main(int argc, char* argv[])
         shaderManager.setMat4("viewMatrix", viewMatrix);
 
     }
-
+    pushUi(stage1, cameraPosition, shaderManager, glfwGetTime());
     // Shutdown GLFW
     glfwTerminate();
 
@@ -1392,5 +1395,50 @@ void pushMobs(Stage* stage) {
         glm::rotate(mat4(1.0f), radians(-20.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
         glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+
+}
+void pushUi(Stage* stage, vec3 cam, ShaderManager shaderManager, int count) {
+    shaderManager.setBool("ignoreLighting", true);
+    stage->attachModel(Model(MODEL_PATH_L,
+        glm::translate(mat4(1.0f), vec3(cam.x + 8, cam.y + 15, cam.z + 10)) *             //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    shaderManager.setBool("ignoreLighting", true);
+    stage->attachModel(Model(MODEL_PATH_TIME,
+        glm::translate(mat4(1.0f), vec3(cam.x - 3, cam.y + 15, cam.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    //minutes (max 90)
+    stage->attachModel(Model(MODEL_PATH_ZERO,
+        glm::translate(mat4(1.0f), vec3(cam.x - 7, cam.y + 15, cam.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    //COLON
+    stage->attachModel(Model(MODEL_PATH_COLON,
+        glm::translate(mat4(1.0f), vec3(cam.x - 8, cam.y + 15, cam.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    //Ten seconds
+    stage->attachModel(Model(MODEL_PATH_ZERO,
+        glm::translate(mat4(1.0f), vec3(cam.x - 9, cam.y + 15, cam.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
+    /*
+    char* models[10] = { MODEL_PATH_ZERO, MODEL_PATH_ONE, MODEL_PATH_TWO, MODEL_PATH_THREE, MODEL_PATH_FOUR, MODEL_PATH_FIVE, MODEL_PATH_SIX, MODEL_PATH_SEVEN, MODEL_PATH_EIGHT, MODEL_PATH_NINE };
+    char* modelSecondsOnes = models[count % 10];
+    char* modelSecondsTens = models[count / 10 % 10];
+    char* modelMinutesOnes = models[count / 60 % 10];
+    char* modelMinutesTens = models[count / 600 % 10];
+          */
+    stage->attachModel(Model(MODEL_PATH_ZERO,
+        glm::translate(mat4(1.0f), vec3(cam.x - 10, cam.y + 15, cam.z + 10)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
 
 }
