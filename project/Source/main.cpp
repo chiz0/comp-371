@@ -375,75 +375,11 @@ int main(int argc, char* argv[])
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
         glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    /*
-    *  //minutes (max 90)
-    Model ZeroMin = Model(MODEL_PATH_ZERO,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 97, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    //Ten seconds
-    Model ZeroTen = Model(MODEL_PATH_ZERO,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 99, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    //seconds
-  
-    Model ZeroSec = Model(MODEL_PATH_ZERO,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    Model OneSec = Model(MODEL_PATH_ONE,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    Model TwoSec = Model(MODEL_PATH_TWO,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    Model ThreeSec = Model(MODEL_PATH_THREE,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    Model FourSec = Model(MODEL_PATH_FOUR,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    Model FiveSec = Model(MODEL_PATH_FIVE,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    Model SixSec = Model(MODEL_PATH_SIX,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    Model SevenSec = Model(MODEL_PATH_SEVEN,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y - 20, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    Model EightSec = Model(MODEL_PATH_EIGHT,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-    Model NineSec = Model(MODEL_PATH_NINE,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-        */
+    int playerScore = 0;
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
     {
+       
         // Frame time
         double now = glfwGetTime();
         double dt = now - lastFrameTime;
@@ -515,6 +451,8 @@ int main(int argc, char* argv[])
             case LEVEL_FAILED: {
                 eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 0 });
                 soundEngine->play2D(AUDIO_PATH_IMPACT, false);
+               
+                cout << playerScore << endl;
                 break;
             }
 
@@ -524,6 +462,8 @@ int main(int argc, char* argv[])
                 currentWallSpeed += currentWallSpeed >= DIFFICULTY_SPEED_MAX ? 0 : DIFFICULTY_SPEED_GROWTH;
                 soundEngine->play2D(AUDIO_PATH_LAUNCH, false);
                 soundEngine->play2D(AUDIO_PATH_BLAST, false);
+                playerScore ++;
+                cout << playerScore << endl;
                 break;
             }
 
@@ -687,10 +627,11 @@ int main(int argc, char* argv[])
         int i = glfwGetTime();
         char* models[10] = { MODEL_PATH_ZERO,MODEL_PATH_ONE,MODEL_PATH_TWO,MODEL_PATH_THREE,MODEL_PATH_FOUR,MODEL_PATH_FIVE,MODEL_PATH_SIX,MODEL_PATH_SEVEN,MODEL_PATH_EIGHT,MODEL_PATH_NINE };
         char* modelSecondsOnes = models[i % 10];
-        char* modelSecondsTens = models[i / 10 % 10];
+        char* modelSecondsTens = models[i % 60 / 10 % 10];
         char* modelMinutesOnes = models[i / 60 % 10];
         char* modelMinutesTens = models[i / 600 % 10];
-       
+        char* scoreSingle = models[playerScore%10];
+        char* scoreDouble = models[playerScore % 60 / 10 % 10];
         Model ZeroSec = Model(modelSecondsOnes,
             glm::translate(mat4(1.0f), vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
@@ -712,11 +653,24 @@ int main(int argc, char* argv[])
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
             glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+        Model ZeroScoreSingle = Model(scoreSingle,
+            glm::translate(mat4(1.0f), vec3(cameraPosition.x - 2, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+            glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+            glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+            glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+        Model ZeroScoreDouble = Model(scoreDouble,
+            glm::translate(mat4(1.0f), vec3(cameraPosition.x - 3, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+            glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+            glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+            glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+
       
         ZeroSec.Draw(&shaderManager);
         ZeroTen.Draw(&shaderManager);
         ZeroMin.Draw(&shaderManager);
         ZeroMin2nd.Draw(&shaderManager);
+        ZeroScoreSingle.Draw(&shaderManager);
+        ZeroScoreDouble.Draw(&shaderManager);
 
         // End Frame
         glfwSwapBuffers(window);
