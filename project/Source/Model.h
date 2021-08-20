@@ -23,7 +23,7 @@ class Model
 public:
     Model(char* path, mat4 position, int chunk);
     void Draw(ShaderManager* shader);
-
+    void Move(vec3 translation);
     int _chunk = 0;
     mat4 anchorMatrix=mat4(1.0f);;
     

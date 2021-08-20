@@ -82,7 +82,6 @@ GLuint setupModelVBO(string path, int& vertexCount);
 //void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, Shape lightbulb, int tileTexture, int cameraPosition, float cameraHorizontalAngle);
 void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObject*>* gameEntities);
 void pushMobs(Stage* stage);
-void pushUi(Stage* stage, vec3 cam, ShaderManager shaderManager, int count);
 
 bool initContext();
 
@@ -357,14 +356,91 @@ int main(int argc, char* argv[])
     }
 
     ISound* bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
-
+    //drawnum
     int world = 0;
-    Model seven = Model(MODEL_PATH_SEVEN,
-        glm::translate(mat4(1.0f), vec3(cameraPosition.x - 10, cameraPosition.y + 15, cameraPosition.z - 34)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+   
+    Model Score =Model(MODEL_PATH_L,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x - 8, cameraPosition.y + 8, cameraPosition.z - 23)) *             //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
         glm::scale(mat4(1.0f), vec3(1.5f)), 3);
-   
+    shaderManager.setBool("ignoreLighting", true);
+
+    Model Time = Model(MODEL_PATH_TIME,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 2, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    //minutes (max 90)
+    Model ZeroMin = Model(MODEL_PATH_ZERO,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 97, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    //COLON
+    Model Colon = Model(MODEL_PATH_COLON,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 8, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    //Ten seconds
+    Model ZeroTen = Model(MODEL_PATH_ZERO,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 99, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    //seconds
+ 
+    Model ZeroSec = Model(MODEL_PATH_ZERO,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model OneSec = Model(MODEL_PATH_ONE,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model TwoSec = Model(MODEL_PATH_TWO,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model ThreeSec = Model(MODEL_PATH_THREE,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model FourSec = Model(MODEL_PATH_FOUR,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model FiveSec = Model(MODEL_PATH_FIVE,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model SixSec = Model(MODEL_PATH_SIX,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model SevenSec = Model(MODEL_PATH_SEVEN,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y - 20, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model EightSec = Model(MODEL_PATH_EIGHT,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+    Model NineSec = Model(MODEL_PATH_NINE,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -531,8 +607,8 @@ int main(int argc, char* argv[])
             entity->update(&eventQueue, dt);
         }
         emitter.Update(dt);
-        pushUi(stage1, cameraPosition, shaderManager, glfwGetTime());
-        seven.Draw(&shaderManager);
+        
+        
         // Clear Depth Buffer Bit
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -601,8 +677,62 @@ int main(int argc, char* argv[])
         drawScene(shaderManager, renderingMode, &gameEntities);
 
         // Update and draw particles
+        //DrawNum
         emitter.Draw(shaderManager);
-
+        
+        ZeroMin.Draw(&shaderManager);
+        Colon.Draw(&shaderManager);
+        ZeroTen.Draw(&shaderManager);
+        ZeroSec.Draw(&shaderManager);
+        TwoSec.Draw(&shaderManager);
+        ThreeSec.Draw(&shaderManager);
+        FourSec.Draw(&shaderManager);
+        FiveSec.Draw(&shaderManager);
+        SixSec.Draw(&shaderManager);
+        SevenSec.Draw(&shaderManager);
+        EightSec.Draw(&shaderManager);
+        NineSec.Draw(&shaderManager);
+       
+        Time.Draw(&shaderManager);
+        Score.Draw(&shaderManager);
+        if (glfwGetTime() > 0&& glfwGetTime()<1)
+        {
+            ZeroSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
+        }
+        if (glfwGetTime() > 1&& glfwGetTime()<2)
+        {
+            ZeroSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
+            OneSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
+        }
+        if (glfwGetTime() > 2 && glfwGetTime() < 3)
+        {
+            OneSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
+            TwoSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
+        }
+        if (glfwGetTime() > 3 && glfwGetTime() < 4)
+        {
+            TwoSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
+            ThreeSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
+        }
+        if (glfwGetTime() > 4 && glfwGetTime() < 5)
+        {
+            ThreeSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
+            FourSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
+        }
+        if (glfwGetTime() > 5 && glfwGetTime() < 6)
+        {
+            FourSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
+            FiveSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
+        }
+        /*
+        int i = glfwGetTime();
+        Model models[10] = { ZeroSec, OneSec,TwoSec,ThreeSec,FourSec,FiveSec,SixSec, SevenSec, EightSec, NineSec};
+        Model modelSecondsOnes = models[i % 10];
+        Model modelSecondsTens = models[i / 10 % 10];
+        Model modelMinutesOnes = models[i / 60 % 10];
+        Model modelMinutesTens = models[i / 600 % 10];
+        modelSecondsOnes.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
+        */
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -1402,54 +1532,5 @@ void pushMobs(Stage* stage) {
         glm::rotate(mat4(1.0f), radians(-20.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
         glm::scale(mat4(1.0f), vec3(1.0f)), 6));
-
-}
-
-void pushUi(Stage* stage, vec3 cam, ShaderManager shaderManager, int count) {
-    shaderManager.setBool("ignoreLighting", true);
-    stage->attachModel(Model(MODEL_PATH_L,
-        glm::translate(mat4(1.0f), vec3(cam.x + 8, cam.y + 15, cam.z + 10)) *             //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
-    shaderManager.setBool("ignoreLighting", true);
-
-    stage->attachModel(Model(MODEL_PATH_TIME,
-        glm::translate(mat4(1.0f), vec3(cam.x - 3, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
-    //minutes (max 90)
-    stage->attachModel(Model(MODEL_PATH_ZERO,
-        glm::translate(mat4(1.0f), vec3(cam.x - 7, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
-    //COLON
-    stage->attachModel(Model(MODEL_PATH_COLON,
-        glm::translate(mat4(1.0f), vec3(cam.x - 8, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
-    //Ten seconds
-    stage->attachModel(Model(MODEL_PATH_ZERO,
-        glm::translate(mat4(1.0f), vec3(cam.x - 9, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
-   
-    
-    char* models[10] = { MODEL_PATH_ZERO, MODEL_PATH_ONE, MODEL_PATH_TWO, MODEL_PATH_THREE, MODEL_PATH_FOUR, MODEL_PATH_FIVE, MODEL_PATH_SIX, MODEL_PATH_SEVEN, MODEL_PATH_EIGHT, MODEL_PATH_NINE };
-    char* modelSecondsOnes = models[count % 10];
-    char* modelSecondsTens = models[count / 10 % 10];
-    char* modelMinutesOnes = models[count / 60 % 10];
-    char* modelMinutesTens = models[count / 600 % 10];
-    //seconds
-    stage->attachModel(Model(MODEL_PATH_ZERO,
-        glm::translate(mat4(1.0f), vec3(cam.x - 10, cam.y + 15, cam.z + 10)) *    //Position
-        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
-        glm::scale(mat4(1.0f), vec3(1.5f)), 3));
-    
 
 }

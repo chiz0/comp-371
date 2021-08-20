@@ -7,7 +7,10 @@ Model::Model(char* path, mat4 pos, int chunk) : _chunk(chunk)
     loadModel(path);
     position = pos;   
 }
-
+void Model::Move(vec3 move)
+{
+    position = (glm::translate(mat4(1.0f),move));
+}
 void Model::Draw(ShaderManager* shader)
 {
     mat4 localPosition = anchorMatrix * position;
