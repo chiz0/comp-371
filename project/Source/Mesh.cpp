@@ -5,7 +5,7 @@ Mesh::Mesh(vector<Vertex> mVertices, vector<unsigned int> mIndices, vector<Textu
     setupMesh();
 }
 
-void Mesh::Draw(ShaderManager shader, mat4 position)
+void Mesh::Draw(ShaderManager* shader, mat4 position)
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -20,11 +20,11 @@ void Mesh::Draw(ShaderManager shader, mat4 position)
         else if (name == "texture_specular")
             number = to_string(specularNr++);
 
-        shader.setFloat(("material." + name + "[" + number + "]").c_str(), i);
+        shader->setFloat(("material." + name + "[" + number + "]").c_str(), i);
         glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);
-    shader.setMat4("worldMatrix", position);
+    shader->setMat4("worldMatrix", position);
 
     // draw mesh
     glBindVertexArray(VAO);
@@ -61,7 +61,6 @@ void Mesh::setupMesh()
     // vertex texture coords
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-
 
     glBindVertexArray(0);
 }

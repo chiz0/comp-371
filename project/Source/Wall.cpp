@@ -122,7 +122,12 @@ void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {
 }
 
 void Wall::processEvent(Event event) {
-
+    switch (event) {
+    case DESTROY_SHAPE_AND_WALL_WORLD_TRANSITION: {
+        state = SUCCESS;
+        timer = 0;
+    }
+    }
 }
 
 bool Wall::testCollision() {

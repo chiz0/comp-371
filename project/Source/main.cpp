@@ -48,7 +48,6 @@
 
 #include "Model.h"
 #include "Constants.h"
-#include "Environment.h"
 #include "Shape.h"
 #include "ShaderManager.h"
 #include "ControlState.h"
@@ -80,6 +79,7 @@ int loadTexture(string name, char* path);
 GLuint setupModelVBO(string path, int& vertexCount);
 //void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, Shape lightbulb, int tileTexture, int cameraPosition, float cameraHorizontalAngle);
 void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObject*>* gameEntities);
+void pushMobs(Stage* stage);
 
 bool initContext();
 
@@ -174,6 +174,11 @@ int main(int argc, char* argv[])
 
     ///////// DESIGN MODELS HERE /////////
 
+    // Only use one VAO (set colours with uniform)
+    int cubeVAO = createVertexArrayObjectTextured(vec3(1.0f));
+    glBindVertexArray(cubeVAO);
+
+
     //Light
     vector<ivec3> lightbulbShape{
         {0, 0, 0}
@@ -181,10 +186,9 @@ int main(int argc, char* argv[])
 
     Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, whiteColour, metalTexture);
 
-    pushMobs();
 
     // Create stage
-    Stage* stage = new Stage(STAGE_STARTING_LOCATION);
+    Stage* stage = new Stage(STAGE_STARTING_LOCATION, cubeVAO);
     stage->_scale = vec3(STAGE_INITIAL_SCALE);
 
     // Landscape
@@ -267,6 +271,12 @@ int main(int argc, char* argv[])
     //chunk 10
     stage->attachTerrain(TerrainComponent(DESCRIPTION_PORTAL, whiteColour, obsidianTexture, 9), vec3(-4, 5, 199));
 
+    // Chunk 20
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_PORTAL, whiteColour, obsidianTexture, 19), vec3(-4, 5, 399));
+
+    // Add mobs
+
+    pushMobs(stage);
 
     // Persistent game variables
     vector<Event> currentFrameEvents;
@@ -275,10 +285,8 @@ int main(int argc, char* argv[])
     int selectedShape = -1;
     int currentDifficulty = STARTING_DIFFICULTY;
     float currentWallSpeed = INITIAL_WALL_SPEED;
+    bool pauseShapeCreation = false;
 
-    // Only use one VAO (set colours with uniform)
-    int cubeVAO = createVertexArrayObjectTextured(vec3(1.0f));
-    glBindVertexArray(cubeVAO);
 
     // Create event queue
     vector<ScheduledEvent> eventQueue{
@@ -386,20 +394,23 @@ int main(int argc, char* argv[])
             switch (event) {
             case GAME_START: {
                 stage->speed = INITIAL_STAGE_SPEED;
+                stage->currentWorld = 0;
                 eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
                 break;
             }
 
             case CREATE_SHAPE_AND_WALL: {
-                vec3 shapeColour = vec3((float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f);
-                Shape* newShape = new Shape(vec3(0), currentDifficulty, shapeColour, metalTexture);
-                shapes.push_back(newShape);
-                selectedShape = 0;
-                Wall* newWall = new Wall(vec3(0, 0, -WALL_DISTANCE), shapes[selectedShape], vec3(1), brickTexture);
-                walls.push_back(newWall);
-                newWall->speed = currentWallSpeed;
-                newWall->particleEmitter = &emitter;
-                gameEntities.push_back(newWall);
+                if (!pauseShapeCreation) {
+                    vec3 shapeColour = vec3((float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f);
+                    Shape* newShape = new Shape(vec3(0), currentDifficulty, shapeColour, metalTexture);
+                    shapes.push_back(newShape);
+                    selectedShape = 0;
+                    Wall* newWall = new Wall(vec3(0, 0, -WALL_DISTANCE), shapes[selectedShape], vec3(1), brickTexture);
+                    walls.push_back(newWall);
+                    newWall->speed = currentWallSpeed;
+                    newWall->particleEmitter = &emitter;
+                    gameEntities.push_back(newWall);
+                }
                 break;
             }
 
@@ -420,16 +431,14 @@ int main(int argc, char* argv[])
             }
 
             case LEVEL_FAILED: {
-                cout << "Failure...\n";
                 eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 0 });
                 soundEngine->play2D(AUDIO_PATH_IMPACT, false);
                 break;
             }
 
             case LEVEL_SUCCESS: {
-                cout << "Success!\n";
                 eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 3 });
-                currentDifficulty++;
+                currentDifficulty += stage->currentWorld + 1;
                 currentWallSpeed += currentWallSpeed >= DIFFICULTY_SPEED_MAX ? 0 : DIFFICULTY_SPEED_GROWTH;
                 soundEngine->play2D(AUDIO_PATH_LAUNCH, false);
                 soundEngine->play2D(AUDIO_PATH_BLAST, false);
@@ -437,24 +446,43 @@ int main(int argc, char* argv[])
             }
 
             case DESTROY_SHAPE_AND_WALL: {
-                shapes[selectedShape]->processEvent(event);
-                selectedShape = -1;
-                shapes.clear();
-                walls.clear();
-                eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 2 });
+                if (selectedShape >= 0) {
+                    shapes[selectedShape]->processEvent(event);
+                    selectedShape = -1;
+                    shapes.clear();
+                    walls.clear();
+                }
+                if (!pauseShapeCreation) {
+                    eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 2 });
+                }
                 
+                /*
                 // TODO: Finalise implementation of world progress
                 level++;
                 if (level >= LEVELS_PER_WORLD) {
                     level = 0;
                     eventQueue.push_back({ WORLD_TRANSITION, 1 });
                 }
+                */
+                break;
+            }
+
+            case DESTROY_SHAPE_AND_WALL_WORLD_TRANSITION: {
+                if (selectedShape >= 0) {
+                    shapes[selectedShape]->processEvent(event);
+                    walls[selectedShape]->processEvent(event);
+                    selectedShape = -1;
+                    shapes.clear();
+                    walls.clear();
+                }
                 break;
             }
 
             case WORLD_TRANSITION: {
                 bgMusic->stop();
-                bgMusic->drop();
+                if (bgMusic->isFinished()) {
+                    bgMusic->drop();
+                }
                 // Move to next world
                 soundEngine->play2D(AUDIO_PATH_CHIMES);
                 world++;
@@ -481,7 +509,14 @@ int main(int argc, char* argv[])
                     }
 
                     glClearColor(worldSkyColours[world].x, worldSkyColours[world].y, worldSkyColours[world].z, worldSkyColours[world].a);
+                    pauseShapeCreation = false;
+                    eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
                 }
+                break;
+            }
+
+            case PORTAL_ON_HORIZON: {
+                pauseShapeCreation = true;
                 break;
             }
 
@@ -576,7 +611,6 @@ int main(int argc, char* argv[])
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-
         //Light position as we move the camera
         if (cameraPosition.z >= 100.0f && cameraPosition.z < 140.0f) {
             if (((int)(cameraHorizontalAngle / 180.0f) % 2) == 1 || ((int)(cameraHorizontalAngle / 180.0f) % 2) == -1) {
@@ -609,8 +643,12 @@ int main(int argc, char* argv[])
         cameraHorizontalAngle -= dx * CAMERA_ANGULAR_SPEED * dt;
         cameraVerticalAngle -= dy * CAMERA_ANGULAR_SPEED * dt;
 
+        // Clamp camera angles
+        cameraHorizontalAngle = std::max(60.0f, std::min(cameraHorizontalAngle, 120.0f));
+        cameraVerticalAngle = std::max(-30.0f, std::min(cameraVerticalAngle, 15.0f));
+
         // Clamp vertical angle to [-85, 85] degrees
-        cameraVerticalAngle = clamp(cameraVerticalAngle, -85.0f, 85.0f);
+        //cameraVerticalAngle = clamp(cameraVerticalAngle, -85.0f, 85.0f);
 
         // Hacky modulus operation
         while (cameraHorizontalAngle > 360)
@@ -1170,4 +1208,227 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObj
     for (GameObject*& entity : *gameEntities) {
         entity->draw(&renderingMode, &shaderManager);
     }
+}
+
+void pushMobs(Stage* stage) {
+
+    //4TH chunk mobs
+    stage->attachModel(Model(MODEL_PATH_COW,
+        glm::translate(mat4(1.0f), vec3(10.0f, 2.5f, 60.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(-120.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_COW,
+        glm::translate(mat4(1.0f), vec3(-10.0f, 2.5f, 68.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(120.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_COW,
+        glm::translate(mat4(1.0f), vec3(-13.0f, 3.5f, 70.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(30.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));
+    stage->attachModel(Model(MODEL_PATH_COW,
+        glm::translate(mat4(1.0f), vec3(18.0f, 4.5f, 76.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(-45.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));
+
+    stage->attachModel(Model(MODEL_PATH_CHICKEN,
+        glm::translate(mat4(1.0f), vec3(8.0f, 2.5f, 63.0f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_CHICKEN,
+        glm::translate(mat4(1.0f), vec3(7.0f, 2.5f, 65.0f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(-130.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_CHICKEN,
+        glm::translate(mat4(1.0f), vec3(-15.0f, 4.5f, 64.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));								  //Scale
+
+    stage->attachModel(Model(MODEL_PATH_SHEEP,
+        glm::translate(mat4(1.0f), vec3(12.0f, 3.5f, 63.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_SHEEP,
+        glm::translate(mat4(1.0f), vec3(7.0f, 1.5f, 69.0f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_SHEEP,
+        glm::translate(mat4(1.0f), vec3(-2.0f, 0.5f, 76.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 3));
+
+
+
+
+    //5TH chunk mobs
+    stage->attachModel(Model(MODEL_PATH_COW,
+        glm::translate(mat4(1.0f), vec3(10.0f, 2.5f, 80.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(-120.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.5f)), 4));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_COW,
+        glm::translate(mat4(1.0f), vec3(10.0f, 2.5f, 88.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.5f)), 4));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_COW,
+        glm::translate(mat4(1.0f), vec3(13.0f, 3.5f, 90.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(-30.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.5f)), 4));
+
+    stage->attachModel(Model(MODEL_PATH_CHICKEN,
+        glm::translate(mat4(1.0f), vec3(-7.0f, 2.5f, 83.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 4));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_CHICKEN,
+        glm::translate(mat4(1.0f), vec3(-6.0f, 2.5f, 85.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(130.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 4));								  //Scale
+    stage->attachModel(Model(MODEL_PATH_CHICKEN,
+        glm::translate(mat4(1.0f), vec3(15.0f, 4.5f, 84.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 4));								  //Scale
+
+    stage->attachModel(Model(MODEL_PATH_SHEEP,
+        glm::translate(mat4(1.0f), vec3(-9.0f, 2.5f, 82.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.5f)), 4));
+
+    stage->attachModel(Model(MODEL_PATH_PIG,
+        glm::translate(mat4(1.0f), vec3(-12.0f, 3.5f, 86.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(120.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.25f)), 4));
+    stage->attachModel(Model(MODEL_PATH_PIG,
+        glm::translate(mat4(1.0f), vec3(-15.0f, 4.25f, 89.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(0.25f)), 4));
+
+
+
+    //6TH chunk mobs
+    stage->attachModel(Model(MODEL_PATH_SKELETON,
+        glm::translate(mat4(1.0f), vec3(18.0f, 4.5f, 100.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(-80.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+    stage->attachModel(Model(MODEL_PATH_SKELETON,
+        glm::translate(mat4(1.0f), vec3(-11.0f, 3.5f, 105.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+    stage->attachModel(Model(MODEL_PATH_SKELETON,
+        glm::translate(mat4(1.0f), vec3(11.0f, 3.5f, 110.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(-80.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+    stage->attachModel(Model(MODEL_PATH_SKELETON,
+        glm::translate(mat4(1.0f), vec3(-18.0f, 4.5f, 115.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(-80.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+
+    stage->attachModel(Model(MODEL_PATH_ZOMBIE,
+        glm::translate(mat4(1.0f), vec3(14.0f, 4.5f, 102.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(-80.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+    stage->attachModel(Model(MODEL_PATH_ZOMBIE,
+        glm::translate(mat4(1.0f), vec3(12.0f, 3.5f, 105.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(-110.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+    stage->attachModel(Model(MODEL_PATH_ZOMBIE,
+        glm::translate(mat4(1.0f), vec3(-11.0f, 3.5f, 110.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+
+    stage->attachModel(Model(MODEL_PATH_SPIDER,
+        glm::translate(mat4(1.0f), vec3(17.0f, 4.5f, 115.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+    stage->attachModel(Model(MODEL_PATH_SPIDER,
+        glm::translate(mat4(1.0f), vec3(-16.0f, 3.5f, 107.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(60.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+    stage->attachModel(Model(MODEL_PATH_SPIDER,
+        glm::translate(mat4(1.0f), vec3(-9.0f, 1.5f, 117.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(20.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 5));
+
+
+
+    //7TH chunk mobs
+    stage->attachModel(Model(MODEL_PATH_SKELETON,
+        glm::translate(mat4(1.0f), vec3(18.0f, 4.5f, 120.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(-120.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+    stage->attachModel(Model(MODEL_PATH_SKELETON,
+        glm::translate(mat4(1.0f), vec3(-11.0f, 3.5f, 125.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+    stage->attachModel(Model(MODEL_PATH_SKELETON,
+        glm::translate(mat4(1.0f), vec3(11.0f, 3.5f, 130.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(-120.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+    stage->attachModel(Model(MODEL_PATH_SKELETON,
+        glm::translate(mat4(1.0f), vec3(-18.0f, 4.5f, 135.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+
+    stage->attachModel(Model(MODEL_PATH_ZOMBIE,
+        glm::translate(mat4(1.0f), vec3(-14.0f, 4.5f, 132.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f)) *         //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+    stage->attachModel(Model(MODEL_PATH_ZOMBIE,
+        glm::translate(mat4(1.0f), vec3(-12.0f, 3.5f, 135.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(110.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+    stage->attachModel(Model(MODEL_PATH_ZOMBIE,
+        glm::translate(mat4(1.0f), vec3(11.0f, 3.5f, 139.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(145.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+
+    stage->attachModel(Model(MODEL_PATH_SPIDER,
+        glm::translate(mat4(1.0f), vec3(-17.0f, 4.5f, 125.0f)) *                  //Position
+        glm::rotate(mat4(1.0f), radians(-145.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+    stage->attachModel(Model(MODEL_PATH_SPIDER,
+        glm::translate(mat4(1.0f), vec3(16.0f, 3.5f, 127.0f)) *                   //Position
+        glm::rotate(mat4(1.0f), radians(-60.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+    stage->attachModel(Model(MODEL_PATH_SPIDER,
+        glm::translate(mat4(1.0f), vec3(9.0f, 1.5f, 137.0f)) *                    //Position
+        glm::rotate(mat4(1.0f), radians(-20.0f), vec3(0.0f, 1.0f, 0.0f)) *        //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(1.0f)), 6));
+
 }

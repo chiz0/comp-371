@@ -23,24 +23,28 @@ using namespace std;
 class Stage : public GameObject {
 public:
     // Functions
-    Stage(vec3 position);
+    Stage(vec3 position, int defaultVAO);
 
     void draw(GLenum* renderingMode, ShaderManager* shaderProgram);
     void update(vector<ScheduledEvent>* eventQueue, double dt);
     void processEvent(Event event);
     void attachTerrain(TerrainComponent terrain, vec3 position);
-    void attachModel(Model model, vec3 position);
+    void attachModel(Model model);
 
     double timer = 0;
+    int currentWorld = 0;
     vector<TerrainComponent> terrainList;
     vector<Model> modelList;
     enum {
         INITIALIZED,
-        IDLE
+        IDLE,
+        IDLE_WORLD_TRANSITION
     } state = INITIALIZED;
     vec3 _position;
     vec3 _orientation = vec3(0);
     vec3 _scale = vec3(2.0f);
     float speed = 0;
+    float initialSpeed = 0;
     Emitter* particleEmitter;
+    int _defaultVAO;
 };

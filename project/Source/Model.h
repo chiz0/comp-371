@@ -21,8 +21,11 @@ using namespace std;
 class Model
 {
 public:
-    Model(char* path, mat4 position);
-    void Draw(ShaderManager shader);
+    Model(char* path, mat4 position, int chunk);
+    void Draw(ShaderManager* shader);
+
+    int _chunk = 0;
+    mat4 anchorMatrix;
 private:
     // model data
     vector<Mesh> meshes;
