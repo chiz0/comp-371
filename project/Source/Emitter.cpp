@@ -76,11 +76,11 @@ void Emitter::draw(GLenum* renderingMode, ShaderManager* shaderProgram)
 
 void Emitter::update(vector<ScheduledEvent>* eventQueue, double dt)
 {
-	for (BurstParticle particle : burstParticles) {
-		particle.update(eventQueue, dt);
+	for (auto it = burstParticles.begin(); it != burstParticles.end(); it++) {
+		it->update(eventQueue, dt);
 	}
-	for (FlameParticle particle : flameParticles) {
-		particle.update(eventQueue, dt);
+	for (auto it = flameParticles.begin(); it != flameParticles.end(); it++) {
+		it->update(eventQueue, dt);
 	}
 	// Delete all dead particles
 	burstParticles.erase(

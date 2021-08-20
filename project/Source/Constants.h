@@ -60,7 +60,7 @@ constexpr float GRAVITY = 4.0f;								// Downward force applied to some particl
 constexpr float BURST_SCALE = 0.3f;							// How large each burst particle should be
 constexpr float FLAME_RISE = 1.0f;							// How quickly flames should accelerate upward from the origin
 constexpr float FLAME_SCALE = 0.2f;							// How large each flame particle should be
-constexpr int DEFAULT_BURST_AMOUNT = 1;					// How many particles should be in a default burst
+constexpr int DEFAULT_BURST_AMOUNT = 100;					// How many particles should be in a default burst
 constexpr float DEFAULT_BURST_FORCE = 10.0f;				// How powerful a default burst should be
 
 // SHADERS
