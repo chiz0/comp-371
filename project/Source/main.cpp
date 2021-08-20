@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
     GLenum renderingMode = GL_TRIANGLES;
     glBindTexture(GL_TEXTURE_2D, shapeTexture);
 
-    vec3 whiteColour = vec3(1.0f, 1.0f, 0.0f);
+    vec3 whiteColour = vec3(1.0f, 1.0f, 1.0f);
 
     ///////// DESIGN MODELS HERE /////////
 
@@ -282,7 +282,7 @@ int main(int argc, char* argv[])
 
     // Add sun
     Sun* sun = new Sun(sunTexture, moonTexture);
-    stage->attachSun(sun);
+    stage->sun = sun;
 
     // Persistent game variables
     vector<Event> currentFrameEvents;
@@ -342,6 +342,7 @@ int main(int argc, char* argv[])
     mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
     Emitter emitter = Emitter(cubeVAO, particleTexture, particleTexture);
+    stage->particleEmitter = &emitter;
 
     // Sound settings
     ISoundEngine* soundEngine = createIrrKlangDevice();
@@ -517,7 +518,6 @@ int main(int argc, char* argv[])
         for (GameObject*& entity : gameEntities) {
             entity->update(&eventQueue, dt);
         }
-        emitter.Update(dt);
 
 
         // Clear Depth Buffer Bit
@@ -558,9 +558,6 @@ int main(int argc, char* argv[])
 
         drawScene(shadowShaderManager, renderingMode, &gameEntities);
 
-        // Update and draw particles
-        emitter.Draw(shadowShaderManager);
-
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. render scene as normal 
@@ -586,9 +583,6 @@ int main(int argc, char* argv[])
             //drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
         }
         drawScene(shaderManager, renderingMode, &gameEntities);
-
-        // Update and draw particles
-        emitter.Draw(shaderManager);
 
         // End Frame
         glfwSwapBuffers(window);

@@ -205,6 +205,7 @@
     <ClInclude Include="..\Source\ControlState.h" />
     <ClInclude Include="..\Source\Environment.h" />
     <ClInclude Include="..\Source\GameObject.h" />
+    <ClInclude Include="..\Source\Particle.h" />
     <ClInclude Include="..\Source\Sun.h" />
     <ClInclude Include="..\Source\TerrainComponent.h" />
     <ClInclude Include="..\Source\ScheduledEvent.h" />

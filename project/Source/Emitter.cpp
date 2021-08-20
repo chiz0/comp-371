@@ -59,47 +59,44 @@ void Emitter::EmitFlame(vec3 position, int particleCount, float force, int textu
 	}
 }
 
-void Emitter::Update(float dt)
+void Emitter::draw(GLenum* renderingMode, ShaderManager* shaderProgram)
 {
-	// Burst Particles
-	vector<int> toDelete;
-	for (auto it = burstParticles.begin(); it != burstParticles.end(); it++) {
-		it->Update(dt);
+	shaderProgram->use();
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glBindVertexArray(particleVAO);
+	for (BurstParticle particle : burstParticles) {
+		particle.draw(renderingMode, shaderProgram);
+	}
+	for (FlameParticle particle : flameParticles) {
+		particle.worldAnchor = worldAnchor;
+		particle.draw(renderingMode, shaderProgram);
+	}
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void Emitter::update(vector<ScheduledEvent>* eventQueue, double dt)
+{
+	for (BurstParticle particle : burstParticles) {
+		particle.update(eventQueue, dt);
+	}
+	for (FlameParticle particle : flameParticles) {
+		particle.update(eventQueue, dt);
 	}
 	// Delete all dead particles
 	burstParticles.erase(
 		remove_if(
 			burstParticles.begin(),
 			burstParticles.end(),
-			[](BurstParticle& b) { return b.isDead(); }
+			[](BurstParticle p) { return p.isDead(); }
 		),
 		burstParticles.end()
 	);
-
-	toDelete.clear();
-	for (auto it = flameParticles.begin(); it != flameParticles.end(); it++) {
-		it->Update(dt);
-	}
-	// Delete all dead particles
 	flameParticles.erase(
 		remove_if(
 			flameParticles.begin(),
 			flameParticles.end(),
-			[](FlameParticle& f) { return f.isDead(); }
+			[](FlameParticle p) { return p.isDead(); }
 		),
 		flameParticles.end()
 	);
-}
-
-void Emitter::Draw(ShaderManager shaderManager) {
-	shaderManager.use();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	glBindVertexArray(particleVAO);
-	for (auto it = burstParticles.begin(); it != burstParticles.end(); it++) {
-		it->Draw(shaderManager);
-	}
-	for (auto it = flameParticles.begin(); it != flameParticles.end(); it++) {
-		it->Draw(shaderManager);
-	}
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }

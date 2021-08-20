@@ -10,6 +10,7 @@ Model::Model(char* path, mat4 pos, int chunk) : _chunk(chunk)
 
 void Model::Draw(ShaderManager* shader)
 {
+    shader->setVec3("colour", vec3(1.0f));
     mat4 localPosition = anchorMatrix * position;
     for (unsigned int i = 0; i < meshes.size(); i++) {
         meshes[i].Draw(shader, localPosition);

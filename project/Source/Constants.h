@@ -44,7 +44,6 @@ constexpr float LIGHT_AMBIENT_STRENGTH = 0.1f;				// Intensity of the ambient li
 constexpr float LIGHT_DIFFUSE_STRENGTH = 0.6f;				// Intensity of the diffuse light
 constexpr float LIGHT_SPECULAR_STRENGTH = 0.9f;				// Intensity of the specular light
 constexpr float SHININESS = 4.0f;							// Shininess coefficient of specular light
-constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 10.0f, 10.0f);		// Where, relative to the focused object, to place the light source
 constexpr vec3 LIGHT_COLOUR_DAY = vec3(1.0f, 1.0f, 1.0f);	// Ambient colour in daytime
 constexpr vec3 LIGHT_COLOUR_NIGHT = vec3(0.1f, 0.1f, 0.4f);	// Ambient colour in night time
 constexpr vec3 LIGHT_COLOUR_NETHER = vec3(1.0f, 0.3f, 0.3f);// Ambient colour in the nether
@@ -61,7 +60,7 @@ constexpr float GRAVITY = 4.0f;								// Downward force applied to some particl
 constexpr float BURST_SCALE = 0.3f;							// How large each burst particle should be
 constexpr float FLAME_RISE = 1.0f;							// How quickly flames should accelerate upward from the origin
 constexpr float FLAME_SCALE = 0.2f;							// How large each flame particle should be
-constexpr int DEFAULT_BURST_AMOUNT = 100;					// How many particles should be in a default burst
+constexpr int DEFAULT_BURST_AMOUNT = 1;					// How many particles should be in a default burst
 constexpr float DEFAULT_BURST_FORCE = 10.0f;				// How powerful a default burst should be
 
 // SHADERS

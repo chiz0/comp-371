@@ -9,16 +9,19 @@
 
 #include "Constants.h"
 #include "ShaderManager.h"
+#include "GameObject.h"
 
 using namespace glm;
 using namespace std;
 
-class FlameParticle {
+class FlameParticle : public GameObject {
 public:
 	FlameParticle(vec3 position, vec3 velocity, vec3 colour, float duration, int texture);
-	void Draw(ShaderManager shaderManager);
-	void Update(float dt);
+	void draw(GLenum* renderingMode, ShaderManager* shaderProgram);
+	void update(vector<ScheduledEvent>* eventQueue, double dt);
 	bool isDead();
+
+	mat4 worldAnchor = mat4(1.0f);
 
 private:
 	vec3 mPosition;

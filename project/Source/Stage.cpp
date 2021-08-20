@@ -11,6 +11,10 @@ void Stage::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
     // Calculate anchor matrix
     mat4 worldMatrix = translate(mat4(1.0f), _position) * rotate(mat4(1.0f), radians(_orientation.y), vec3(0.0f, 1.0f, 0.0f)) * scale(mat4(1.0f), _scale);
 
+    // Draw particles
+    particleEmitter->worldAnchor = worldMatrix;
+    particleEmitter->draw(renderingMode, shaderProgram);
+
     // Draw all TerrainComponents and bind texture only if different from previous
     int prevTexture = -1;
     glActiveTexture(GL_TEXTURE0);
@@ -54,6 +58,7 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
         }
         sun->progress = _position.z;
         sun->update(eventQueue, dt);
+        particleEmitter->update(eventQueue, dt);
         break;
     }
     case IDLE_WORLD_TRANSITION: {
@@ -71,6 +76,7 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
         }
         sun->progress = _position.z;
         sun->update(eventQueue, dt);
+        particleEmitter->update(eventQueue, dt);
         break;
     }
     }
@@ -99,8 +105,4 @@ void Stage::attachTerrain(TerrainComponent terrain, vec3 position) {
 
 void Stage::attachModel(Model model) {
     modelList.push_back(model);
-}
-
-void Stage::attachSun(Sun* newSun) {
-    sun = newSun;
 }

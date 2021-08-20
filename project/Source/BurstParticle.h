@@ -11,15 +11,16 @@
 
 #include "Constants.h"
 #include "ShaderManager.h"
+#include "GameObject.h"
 
 using namespace glm;
 using namespace std;
 
-class BurstParticle {
+class BurstParticle : public GameObject {
 public:
 	BurstParticle(vec3 position, vec3 velocity, vec3 colour, float duration, int texture, quat rotation);
-	void Draw(ShaderManager shaderManager);
-	void Update(float dt);
+	void draw(GLenum* renderingMode, ShaderManager* shaderProgram);
+	void update(vector<ScheduledEvent>* eventQueue, double dt);
 	bool isDead();
 
 private:
