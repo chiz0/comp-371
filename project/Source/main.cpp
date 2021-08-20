@@ -155,7 +155,8 @@ int main(int argc, char* argv[])
     int lavaTexture = loadTexture("lavaTexture", TEXTURE_PATH_LAVA);
     int endStoneTexture = loadTexture("endStoneTexture", TEXTURE_PATH_ENDSTONE);
     int endSpaceTexture = loadTexture("endSpaceTexture", TEXTURE_PATH_ENDSPACE);
-
+    int titleTexture = loadTexture("titleTexture", TEXTURE_PATH_TITLE);
+    int thankyouTexture = loadTexture("thankyouTexture", TEXTURE_PATH_THANKYOU);
 
     // Other camera parameters
     float cameraHorizontalAngle = 90.0f;
@@ -290,6 +291,9 @@ int main(int argc, char* argv[])
     stage->sun = sun;
 
     // Persistent game variables
+    double timer = 0;
+    bool gameStarted = false;
+    bool gameFinished = false;
     vector<Event> currentFrameEvents;
     vector<Shape*> shapes;
     vector<Wall*> walls;
@@ -300,9 +304,7 @@ int main(int argc, char* argv[])
     int playerScore = 0;
 
     // Create event queue
-    vector<ScheduledEvent> eventQueue{
-        {GAME_START, 0}
-    };
+    vector<ScheduledEvent> eventQueue;
 
     // Set event callbacks
     glfwSetWindowSizeCallback(window, &windowSizeCallback);
@@ -312,7 +314,6 @@ int main(int argc, char* argv[])
     // Create entity pointer container
     vector<GameObject*> gameEntities;
     gameEntities.push_back(stage);
-    gameEntities.push_back(stage1);
     // Initialize random seed
     srand(time(NULL));
 
@@ -324,7 +325,7 @@ int main(int argc, char* argv[])
 
     // Camera parameters for view transform
     vec3 cameraPosition = CAMERA_OFFSET;
-    vec3 cameraLookAt(0.0f, -1.0f, 0.0f);
+    vec3 cameraLookAt(0.0f, 0.0f, 0.0f);
     vec3 cameraUp(0.0f, 1.0f, 0.0f);
     shaderManager.setVec3("cameraPosition", cameraPosition);
 
@@ -356,7 +357,7 @@ int main(int argc, char* argv[])
     }
 
     ISound* bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
-    //drawnum
+
     int world = 0;
    
     Model Score =Model(MODEL_PATH_L,
@@ -432,11 +433,17 @@ int main(int argc, char* argv[])
         // Process current frame events
         for (Event event : currentFrameEvents) {
             switch (event) {
+            case INPUT_SPACEBAR: {
+                if (!gameStarted) {
+                    shaderManager.setFloat("ambientLight", LIGHT_AMBIENT_STRENGTH);
+                    eventQueue.push_back({ GAME_START, 0 });
+                }
+                gameStarted = true;
+                break;
+            }
             case GAME_START: {
                 stage->speed = INITIAL_STAGE_SPEED;
                 stage->currentWorld = 0;
-                stage1->speed = 0;
-                stage1->currentWorld = 0;
                 eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
                 break;
             }
@@ -525,7 +532,8 @@ int main(int argc, char* argv[])
                 world++;
                 if (world >= WORLDS) {
                     // End the game, VICTORY!
-                    eventQueue.push_back({ EXIT_PROGRAM, 2 });
+                    gameFinished = true;
+                    eventQueue.push_back({ EXIT_PROGRAM, 5 });
                 }
                 else {
                     switch (world) {
@@ -567,8 +575,12 @@ int main(int argc, char* argv[])
         currentFrameEvents.clear();
 
         // Update entities
-        for (GameObject*& entity : gameEntities) {
-            entity->update(&eventQueue, dt);
+        if (gameStarted && !gameFinished) {
+            timer += dt;
+
+            for (GameObject*& entity : gameEntities) {
+                entity->update(&eventQueue, dt);
+            }
         }
       
         // Clear Depth Buffer Bit
@@ -635,74 +647,111 @@ int main(int argc, char* argv[])
         }
         drawScene(shaderManager, renderingMode, &gameEntities);
         
-        Time.Draw(&shaderManager);
-        Score.Draw(&shaderManager);
-        Colon.Draw(&shaderManager);
         
-        int timeElapsed = (int)now;
+        // Draw UI
+        if (gameStarted && !gameFinished) {
+            shaderManager.setVec3("colour", vec3(1));
+            glBindTexture(GL_TEXTURE_2D, tileTexture);
+            shaderManager.setBool("ignoreLighting", true);
 
-        Model* modelSecondsOnes = models[timeElapsed % 10];
-        Model* modelSecondsTens = models[timeElapsed % 60 / 10 % 10];
-        Model* modelMinutesOnes = models[timeElapsed / 60 % 10];
-        Model* modelMinutesTens = models[timeElapsed / 600 % 10];
+            Time.Draw(&shaderManager);
+            Score.Draw(&shaderManager);
+            Colon.Draw(&shaderManager);
 
-        Model* timeToDisplay[4] = { modelSecondsOnes , modelSecondsTens , modelMinutesOnes , modelMinutesTens };
+            int timeElapsed = (int)timer;
 
-        Model* scoreSingle = models[playerScore % 10];
-        Model* scoreDouble = models[playerScore / 10 % 10];
+            Model* modelSecondsOnes = models[timeElapsed % 10];
+            Model* modelSecondsTens = models[timeElapsed % 60 / 10 % 10];
+            Model* modelMinutesOnes = models[timeElapsed / 60 % 10];
+            Model* modelMinutesTens = models[timeElapsed / 600 % 10];
 
-        Model* scoreToDisplay[2] = { scoreSingle , scoreDouble };
+            Model* timeToDisplay[4] = { modelSecondsOnes , modelSecondsTens , modelMinutesOnes , modelMinutesTens };
 
-        for (int i = 0; i < sizeof(timeToDisplay) / sizeof(*timeToDisplay); i++) {
-            timeToDisplay[i]->position = timeModelPositions[i];
-            timeToDisplay[i]->Draw(&shaderManager);
+            Model* scoreSingle = models[playerScore % 10];
+            Model* scoreDouble = models[playerScore / 10 % 10];
+
+            Model* scoreToDisplay[2] = { scoreSingle , scoreDouble };
+
+            for (int i = 0; i < sizeof(timeToDisplay) / sizeof(*timeToDisplay); i++) {
+                timeToDisplay[i]->position = timeModelPositions[i];
+                timeToDisplay[i]->Draw(&shaderManager);
+            }
+
+            for (int i = 0; i < sizeof(scoreToDisplay) / sizeof(*scoreToDisplay); i++) {
+                scoreToDisplay[i]->position = scoreModelPositions[i];
+                scoreToDisplay[i]->Draw(&shaderManager);
+            }
+            shaderManager.setBool("ignoreLighting", false);
+        }
+        
+        if (!gameStarted) {
+            glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
+            shaderManager.setFloat("ambientLight", 1.0f);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, titleTexture);
+            shaderManager.setVec3("colour", vec3(1));
+            mat4 orthoMatrix = glm::ortho(0.0f, VIEW_WIDTH, 0.0f, VIEW_HEIGHT, 0.1f, 100.0f);
+            shaderManager.setMat4("viewMatrix", orthoMatrix);
+            mat4 modelMatrix = translate(mat4(1), vec3(VIEW_WIDTH / 2, VIEW_HEIGHT / 2, 3.0f)) * scale(mat4(1), vec3(VIEW_WIDTH, VIEW_HEIGHT, 0.1f));
+            shaderManager.setMat4("worldMatrix", modelMatrix);
+            glDrawArrays(renderingMode, 0, 36);
         }
 
-        for (int i = 0; i < sizeof(scoreToDisplay) / sizeof(*scoreToDisplay); i++) {
-            scoreToDisplay[i]->position = scoreModelPositions[i];
-            scoreToDisplay[i]->Draw(&shaderManager);
+        if (gameFinished) {
+            shaderManager.setFloat("ambientLight", 1.0f);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, thankyouTexture);
+            shaderManager.setVec3("colour", vec3(1));
+            mat4 orthoMatrix = glm::ortho(0.0f, VIEW_WIDTH, 0.0f, VIEW_HEIGHT, 0.1f, 100.0f);
+            shaderManager.setMat4("viewMatrix", orthoMatrix);
+            mat4 modelMatrix = translate(mat4(1), vec3(VIEW_WIDTH / 2, VIEW_HEIGHT / 2, 3.0f)) * scale(mat4(1), vec3(VIEW_WIDTH, VIEW_HEIGHT, 0.1f));
+            shaderManager.setMat4("worldMatrix", modelMatrix);
+            glDrawArrays(renderingMode, 0, 36);
         }
 
         // End Frame
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        double mousePosX, mousePosY;
-        glfwGetCursorPos(window, &mousePosX, &mousePosY);
+        if (gameStarted && !gameFinished) {
+            double mousePosX, mousePosY;
+            glfwGetCursorPos(window, &mousePosX, &mousePosY);
 
-        double dx = mousePosX - lastMousePosX;
-        double dy = mousePosY - lastMousePosY;
+            double dx = mousePosX - lastMousePosX;
+            double dy = mousePosY - lastMousePosY;
 
-        lastMousePosX = mousePosX;
-        lastMousePosY = mousePosY;
+            lastMousePosX = mousePosX;
+            lastMousePosY = mousePosY;
 
-        cameraHorizontalAngle -= dx * CAMERA_ANGULAR_SPEED * dt;
-        cameraVerticalAngle -= dy * CAMERA_ANGULAR_SPEED * dt;
+            cameraHorizontalAngle -= dx * CAMERA_ANGULAR_SPEED * dt;
+            cameraVerticalAngle -= dy * CAMERA_ANGULAR_SPEED * dt;
 
-        // Clamp camera angles
-        cameraHorizontalAngle = std::max(60.0f, std::min(cameraHorizontalAngle, 120.0f));
-        cameraVerticalAngle = std::max(-30.0f, std::min(cameraVerticalAngle, 15.0f));
+            // Clamp camera angles
+            cameraHorizontalAngle = std::max(60.0f, std::min(cameraHorizontalAngle, 120.0f));
+            cameraVerticalAngle = std::max(-30.0f, std::min(cameraVerticalAngle, 15.0f));
 
-        // Hacky modulus operation
-        while (cameraHorizontalAngle > 360)
-        {
-            cameraHorizontalAngle -= 360;
+            // Hacky modulus operation
+            while (cameraHorizontalAngle > 360)
+            {
+                cameraHorizontalAngle -= 360;
+            }
+            while (cameraHorizontalAngle < -360)
+            {
+                cameraHorizontalAngle += 360;
+            }
+
+            float theta = radians(cameraHorizontalAngle);
+            float phi = radians(cameraVerticalAngle);
+
+            cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
+
+            float radius = sqrt(pow(cameraPosition.x, 2) + pow(cameraPosition.y, 2) + pow(cameraPosition.z, 2));
+            vec3 position = vec3(0.0f, 1.0f, 0.0f) - radius * cameraLookAt;
+            viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
+            shaderManager.setVec3("cameraPosition", cameraPosition);
+            shaderManager.setMat4("viewMatrix", viewMatrix);
         }
-        while (cameraHorizontalAngle < -360)
-        {
-            cameraHorizontalAngle += 360;
-        }
-
-        float theta = radians(cameraHorizontalAngle);
-        float phi = radians(cameraVerticalAngle);
-
-        cameraLookAt = vec3(cosf(phi) * cosf(theta), sinf(phi), -cosf(phi) * sinf(theta));
-
-        float radius = sqrt(pow(cameraPosition.x, 2) + pow(cameraPosition.y, 2) + pow(cameraPosition.z, 2));
-        vec3 position = vec3(0.0f, 1.0f, 0.0f) - radius * cameraLookAt;
-        viewMatrix = lookAt(position, position + cameraLookAt, cameraUp);
-        shaderManager.setVec3("cameraPosition", cameraPosition);
-        shaderManager.setMat4("viewMatrix", viewMatrix);
+        
 
     }
    
@@ -1103,7 +1152,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
         eventQueue->push_back({ INPUT_RIGHT, 0 });
     }
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        eventQueue->push_back({ INPUT_SPACEBAR, 0 });
+    }
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         eventQueue->push_back({ EXIT_PROGRAM, 0 });
     }
 }

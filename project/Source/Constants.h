@@ -16,7 +16,7 @@ constexpr float SCALE_RATE = 0.2f;							// The rate at which models grow and sh
 constexpr float ROTATE_RATE = 20;							// The rate at which models rotate
 constexpr float TRANSLATE_RATE = 2.0f;						// The rate at which models move left, right, up, and down
 constexpr float CAMERA_JUMP_SPEED = 8.0f;					// The speed at which a camera moves from model to model
-constexpr float CAMERA_ANGULAR_SPEED = 60.0f;				// The speed at which the camera rotates
+constexpr float CAMERA_ANGULAR_SPEED = 10.0f;				// The speed at which the camera rotates
 constexpr float CAMERA_SPEED = 10.0f;						// Speed of camera zooming
 constexpr vec3 CAMERA_OFFSET = vec3(0.0f, 0.0f, 10.0f);		// The default position of the camera relative to a model
 constexpr float FIELD_OF_VIEW = 70.0f;						// The starting zoom level of the camera
@@ -74,6 +74,8 @@ constexpr char SHADOW_FRAGMENT_SHADER_FILEPATH[] = "../Source/ShadowFrag.glsl";
 constexpr char SHADOW_DEPTH_SHADER_FILEPATH[] = "../Source/ShadowDepth.glsl";
 
 // TEXTURES
+constexpr char* TEXTURE_PATH_TITLE = "../Assets/Textures/titlescreen.png";
+constexpr char* TEXTURE_PATH_THANKYOU = "../Assets/Textures/thankyou.png";
 constexpr char* TEXTURE_PATH_TILE = "../Assets/Textures/tile.jpg";
 constexpr char* TEXTURE_PATH_BLOCK = "../Assets/Textures/emerald.jpg";
 constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/bricks.png";
