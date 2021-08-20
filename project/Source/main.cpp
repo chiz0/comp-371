@@ -14,6 +14,10 @@
 //  Theodor
 // 
 //  Alexander
+// - Particle effects
+// - Audio
+// - Quaternion based shape rotations
+// - Dynamic lighting (Day/night & world based lighting)
 //
 //  Antonio
 //
@@ -82,6 +86,7 @@ GLuint setupModelVBO(string path, int& vertexCount);
 //void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, Shape lightbulb, int tileTexture, int cameraPosition, float cameraHorizontalAngle);
 void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObject*>* gameEntities);
 void pushMobs(Stage* stage);
+void pushParticles(Stage* stage);
 
 bool initContext();
 
@@ -149,6 +154,7 @@ int main(int argc, char* argv[])
     int netherrackTexture = loadTexture("netherrackTexture", TEXTURE_PATH_NETHERRACK);
     int lavaTexture = loadTexture("lavaTexture", TEXTURE_PATH_LAVA);
     int endStoneTexture = loadTexture("endStoneTexture", TEXTURE_PATH_ENDSTONE);
+    int endSpaceTexture = loadTexture("endSpaceTexture", TEXTURE_PATH_ENDSPACE);
 
 
     // Other camera parameters
@@ -174,26 +180,22 @@ int main(int argc, char* argv[])
     GLenum renderingMode = GL_TRIANGLES;
     glBindTexture(GL_TEXTURE_2D, shapeTexture);
 
-    vec3 whiteColour = vec3(1.0f, 1.0f, 0.0f);
-
-    ///////// DESIGN MODELS HERE /////////
+    vec3 whiteColour = vec3(1.0f, 1.0f, 1.0f);
 
     // Create cube VAO
     int cubeVAO = createVertexArrayObjectTextured(vec3(1.0f));
 
-    //Light
-    vector<ivec3> lightbulbShape{
-        {0, 0, 0}
-    };
-
-    Shape lightbulb = Shape(vec3(0.0f, 0.0f, 0.0f), lightbulbShape, whiteColour, shapeTexture);
-
-
     // Create stage
     Stage* stage = new Stage(STAGE_STARTING_LOCATION, cubeVAO);
     stage->_scale = vec3(STAGE_INITIAL_SCALE);
-    Stage* stage1 = new Stage(STAGE_STARTING_LOCATION, cubeVAO);
-    stage->_scale = vec3(STAGE_INITIAL_SCALE);
+    stage->floorTextures[0] = waterTexture;
+    stage->floorTextures[1] = lavaTexture;
+    stage->floorTextures[2] = endSpaceTexture;
+
+    // Create particle emitter
+    Emitter emitter = Emitter(cubeVAO, particleTexture, particleTexture);
+    stage->particleEmitter = &emitter;
+
     // Landscape
     for (int chunk = 0; chunk < 30; chunk++) {
         if (chunk >= 20) {
@@ -278,8 +280,10 @@ int main(int argc, char* argv[])
     stage->attachTerrain(TerrainComponent(DESCRIPTION_PORTAL, whiteColour, obsidianTexture, 19), vec3(-4, 5, 399));
 
     // Add mobs
-
     pushMobs(stage);
+
+    // Add particles
+    pushParticles(stage);
 
     // Add sun
     Sun* sun = new Sun(sunTexture, moonTexture);
@@ -342,8 +346,6 @@ int main(int argc, char* argv[])
    
   
     mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
-
-    Emitter emitter = Emitter(cubeVAO, particleTexture, particleTexture);
 
     // Sound settings
     ISoundEngine* soundEngine = createIrrKlangDevice();
@@ -568,9 +570,7 @@ int main(int argc, char* argv[])
         for (GameObject*& entity : gameEntities) {
             entity->update(&eventQueue, dt);
         }
-        emitter.Update(dt);
-        
-        
+      
         // Clear Depth Buffer Bit
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -608,9 +608,6 @@ int main(int argc, char* argv[])
         }
 
         drawScene(shadowShaderManager, renderingMode, &gameEntities);
-       
-        // Update and draw particles
-        emitter.Draw(shadowShaderManager);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -637,10 +634,6 @@ int main(int argc, char* argv[])
             //drawScene(shaderManager, renderingMode, shapes, lightbulb, waterTexture, cameraPosition.z, cameraHorizontalAngle);
         }
         drawScene(shaderManager, renderingMode, &gameEntities);
-
-        // Update and draw particles
-        //DrawNum
-        emitter.Draw(shaderManager);
         
         Time.Draw(&shaderManager);
         Score.Draw(&shaderManager);
@@ -1470,4 +1463,13 @@ void pushMobs(Stage* stage) {
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
         glm::scale(mat4(1.0f), vec3(1.0f)), 6));
 
+}
+
+void pushParticles(Stage* stage) {
+    stage->setFlameParticle(vec3(10.0f, 0.0f, 150.0f));
+
+    stage->setFlameParticle(vec3(10.0f, 0.0f, WORLD_SIZE + 50.0f));
+    stage->setFlameParticle(vec3(-10.0f, 0.0f, WORLD_SIZE + 50.0f));
+    stage->setFlameParticle(vec3(-15.0f, 0.0f, WORLD_SIZE + 150.0f));
+    stage->setFlameParticle(vec3(15.0f, 0.0f, WORLD_SIZE + 75.0f));
 }

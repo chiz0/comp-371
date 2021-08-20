@@ -4,22 +4,23 @@ FlameParticle::FlameParticle(vec3 position, vec3 velocity, vec3 colour, float du
 
 }
 
-void FlameParticle::Draw(ShaderManager shaderManager)
+void FlameParticle::draw(GLenum* renderingMode, ShaderManager* shaderProgram)
 {
-	mat4 matrix = translate(mat4(1.0f), mPosition) * scale(mat4(1.0f), vec3(FLAME_SCALE));
-	shaderManager.setMat4("worldMatrix", matrix);
-	shaderManager.setVec3("colour", mColour);
+	mat4 matrix = translate(worldAnchor, mPosition) * scale(mat4(1.0f), vec3(FLAME_SCALE));
+	shaderProgram->setMat4("worldMatrix", matrix);
+	shaderProgram->setVec3("colour", mColour);
+	shaderProgram->setBool("ignoreLighting", true);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mTexture);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
-	shaderManager.setVec3("colour", vec3(1.0f, 1.0f, 1.0f));
+	shaderProgram->setBool("ignoreLighting", false);
 }
 
-void FlameParticle::Update(float dt)
+void FlameParticle::update(vector<ScheduledEvent>* eventQueue, double dt)
 {
 	mDuration -= dt;
 	mVelocity.y += dt * FLAME_RISE;
-	mPosition += mVelocity * dt;
+	mPosition += mVelocity * (float)dt;
 }
 
 bool FlameParticle::isDead()

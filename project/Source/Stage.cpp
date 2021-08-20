@@ -1,6 +1,6 @@
 #include "Stage.h"
 
-Stage::Stage(vec3 position, int defaultVAO) : _position(position), _defaultVAO(defaultVAO), sun(nullptr) {
+Stage::Stage(vec3 position, int defaultVAO) : _position(position), _defaultVAO(defaultVAO), floor(Voxel(vec3(0.0f))) {
     _orientation = vec3(0, 180, 0);
 }
 
@@ -12,6 +12,10 @@ void Stage::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
 
     // Calculate anchor matrix
     mat4 worldMatrix = translate(mat4(1.0f), _position) * rotate(mat4(1.0f), radians(_orientation.y), vec3(0.0f, 1.0f, 0.0f)) * scale(mat4(1.0f), _scale);
+
+    // Draw particles
+    particleEmitter->worldAnchor = worldMatrix;
+    particleEmitter->draw(renderingMode, shaderProgram);
 
     // Draw all TerrainComponents and bind texture only if different from previous
     int prevTexture = -1;
@@ -26,6 +30,16 @@ void Stage::draw(GLenum* renderingMode, ShaderManager* shaderProgram) {
             it->anchorMatrix = worldMatrix;
             it->draw(renderingMode, shaderProgram);
         }
+    }
+
+    // Draw floor
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, floorTextures[currentWorld]);
+    int startingChunk = (_position.z - 10) / (20 * _scale.z);
+    int endingChunk = glm::min(startingChunk + FAR_PLANE / (20 * _scale.z), WORLD_SIZE * (currentWorld + 1) / (20 * _scale.z));
+    for (int i = startingChunk; i < endingChunk; i++) {
+        floor.anchorMatrix = translate(worldMatrix, vec3(0.0f, 0.0f, i * 20 + 10)) * scale(mat4(1.0f), vec3(20, 1, 20));
+        floor.draw(renderingMode, shaderProgram);
     }
 
     // Draw models
@@ -54,10 +68,18 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
             initialSpeed = speed;
             state = IDLE_WORLD_TRANSITION;
         }
-        if (sun != nullptr) {
-            sun->progress = _position.z;
-            sun->update(eventQueue, dt);
+        sun->progress = _position.z;
+        sun->update(eventQueue, dt);
+        for (int i = fires.size() - 1; i >= 0; i--) {
+            if (fires[i].z < _position.z + FAR_PLANE) {
+                particleEmitter->EmitFlame(fires[i], DEFAULT_FLAME_AMOUNT, DEFAULT_FLAME_FORCE);
+            }
+            // Delete fires as they pass the camera
+            if (fires[i].z + CAMERA_OFFSET.z < _position.z / _scale.z) {
+                fires.erase(fires.begin() + i);
+            }
         }
+        particleEmitter->update(eventQueue, dt);
         break;
     }
     case IDLE_WORLD_TRANSITION: {
@@ -73,10 +95,19 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
             speed = initialSpeed;
             state = IDLE;
         }
-        if (sun != nullptr) {
-            sun->progress = _position.z;
-            sun->update(eventQueue, dt);
+        sun->progress = _position.z;
+        sun->update(eventQueue, dt);
+
+        for (int i = fires.size() - 1; i >= 0; i--) {
+            if (fires[i].z < _position.z + FAR_PLANE) {
+                particleEmitter->EmitFlame(fires[i], DEFAULT_FLAME_AMOUNT, DEFAULT_FLAME_FORCE);
+            }
+            // Delete fires as they pass the camera
+            if (fires[i].z + CAMERA_OFFSET.z < _position.z / _scale.z) {
+                fires.erase(fires.begin() + i);
+            }
         }
+        particleEmitter->update(eventQueue, dt);
         break;
     }
     }
@@ -101,6 +132,10 @@ void Stage::attachTerrain(TerrainComponent terrain, vec3 position) {
             return a._texture < b._texture;
         }
     );
+}
+
+void Stage::setFlameParticle(vec3 position) {
+    fires.push_back(position);
 }
 
 void Stage::attachModel(Model model) {

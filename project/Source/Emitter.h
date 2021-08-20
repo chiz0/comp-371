@@ -12,17 +12,20 @@
 #include "Constants.h"
 #include "BurstParticle.h"
 #include "FlameParticle.h"
+#include "GameObject.h"
 
 using namespace glm;
 using namespace std;
 
-class Emitter {
+class Emitter : public GameObject {
 public:
 	Emitter(int VAO, int burstTexture, int flameTexture);
 	void EmitBurst(vec3 position, int particleCount, float force, int texture = -1);
 	void EmitFlame(vec3 position, int particleCount, float force, int texture = -1);
-	void Update(float dt);
-	void Draw(ShaderManager shaderManager);
+	void draw(GLenum* renderingMode, ShaderManager* shaderProgram);
+	void update(vector<ScheduledEvent>* eventQueue, double dt);
+
+	mat4 worldAnchor = mat4(1.0f);
 
 private:
 	vector<BurstParticle> burstParticles;

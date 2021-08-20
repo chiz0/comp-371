@@ -44,7 +44,6 @@ constexpr float LIGHT_AMBIENT_STRENGTH = 0.1f;				// Intensity of the ambient li
 constexpr float LIGHT_DIFFUSE_STRENGTH = 0.6f;				// Intensity of the diffuse light
 constexpr float LIGHT_SPECULAR_STRENGTH = 0.9f;				// Intensity of the specular light
 constexpr float SHININESS = 4.0f;							// Shininess coefficient of specular light
-constexpr vec3 LIGHT_OFFSET = vec3(0.0f, 10.0f, 10.0f);		// Where, relative to the focused object, to place the light source
 constexpr vec3 LIGHT_COLOUR_DAY = vec3(1.0f, 1.0f, 1.0f);	// Ambient colour in daytime
 constexpr vec3 LIGHT_COLOUR_NIGHT = vec3(0.1f, 0.1f, 0.4f);	// Ambient colour in night time
 constexpr vec3 LIGHT_COLOUR_NETHER = vec3(1.0f, 0.3f, 0.3f);// Ambient colour in the nether
@@ -63,6 +62,8 @@ constexpr float FLAME_RISE = 1.0f;							// How quickly flames should accelerate
 constexpr float FLAME_SCALE = 0.2f;							// How large each flame particle should be
 constexpr int DEFAULT_BURST_AMOUNT = 100;					// How many particles should be in a default burst
 constexpr float DEFAULT_BURST_FORCE = 10.0f;				// How powerful a default burst should be
+constexpr int DEFAULT_FLAME_AMOUNT = 1.0f;				    // How many particles emerge per frame from a flame
+constexpr float DEFAULT_FLAME_FORCE = 1.0f;				    // How quickly a flame particle should move
 
 // SHADERS
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
@@ -75,7 +76,7 @@ constexpr char SHADOW_DEPTH_SHADER_FILEPATH[] = "../Source/ShadowDepth.glsl";
 // TEXTURES
 constexpr char* TEXTURE_PATH_TILE = "../Assets/Textures/tile.jpg";
 constexpr char* TEXTURE_PATH_BLOCK = "../Assets/Textures/emerald.jpg";
-constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";
+constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/bricks.png";
 constexpr char* TEXTURE_PATH_FIRE = "../Assets/Textures/fire.jpg";
 constexpr char* TEXTURE_PATH_PARTICLE = "../Assets/Textures/particle.jpg";
 constexpr char* TEXTURE_PATH_SUN = "../Assets/Textures/sun.jpg";
@@ -92,6 +93,8 @@ constexpr char* TEXTURE_PATH_OBSIDIAN = "../Assets/Textures/block/obsidian.png";
 constexpr char* TEXTURE_PATH_NETHERRACK = "../Assets/Textures/block2/netherrack.png";
 constexpr char* TEXTURE_PATH_LAVA = "../Assets/Textures/block/lava_still.png";
 constexpr char* TEXTURE_PATH_ENDSTONE = "../Assets/Textures/block2/end_stone_bricks.png";
+constexpr char* TEXTURE_PATH_ENDSPACE = "../Assets/Textures/block/dragon_egg.png";
+
 //UI
 constexpr char* MODEL_PATH_L = "../Assets/Models/UI/Score/L.obj";
 constexpr char* MODEL_PATH_TIME = "../Assets/Models/UI/Time/Time.obj";
