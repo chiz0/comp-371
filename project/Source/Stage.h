@@ -50,4 +50,5 @@ public:
     float initialSpeed = 0;
     Emitter* particleEmitter;
     int _defaultVAO;
+    vector<vec3> fires;
 };

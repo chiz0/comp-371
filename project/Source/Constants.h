@@ -62,8 +62,8 @@ constexpr float FLAME_RISE = 1.0f;							// How quickly flames should accelerate
 constexpr float FLAME_SCALE = 0.2f;							// How large each flame particle should be
 constexpr int DEFAULT_BURST_AMOUNT = 100;					// How many particles should be in a default burst
 constexpr float DEFAULT_BURST_FORCE = 10.0f;				// How powerful a default burst should be
-constexpr int DEFAULT_FLAME_AMOUNT = 10.0f;				    // How many particles emerge per frame from a flame
-constexpr float DEFAULT_FLAME_FORCE = 10.0f;				// How quickly a flame particle should move
+constexpr int DEFAULT_FLAME_AMOUNT = 1.0f;				    // How many particles emerge per frame from a flame
+constexpr float DEFAULT_FLAME_FORCE = 1.0f;				    // How quickly a flame particle should move
 
 // SHADERS
 constexpr char VERTEX_SHADER_FILEPATH[] = "../Source/TexturedVert.glsl";
@@ -76,7 +76,7 @@ constexpr char SHADOW_DEPTH_SHADER_FILEPATH[] = "../Source/ShadowDepth.glsl";
 // TEXTURES
 constexpr char* TEXTURE_PATH_TILE = "../Assets/Textures/tile.jpg";
 constexpr char* TEXTURE_PATH_BLOCK = "../Assets/Textures/emerald.jpg";
-constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/brick.jpg";
+constexpr char* TEXTURE_PATH_BRICK = "../Assets/Textures/bricks.png";
 constexpr char* TEXTURE_PATH_FIRE = "../Assets/Textures/fire.jpg";
 constexpr char* TEXTURE_PATH_PARTICLE = "../Assets/Textures/particle.jpg";
 constexpr char* TEXTURE_PATH_SUN = "../Assets/Textures/sun.jpg";

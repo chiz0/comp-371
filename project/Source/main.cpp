@@ -80,6 +80,7 @@ GLuint setupModelVBO(string path, int& vertexCount);
 //void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<Shape> shapes, Shape lightbulb, int tileTexture, int cameraPosition, float cameraHorizontalAngle);
 void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObject*>* gameEntities);
 void pushMobs(Stage* stage);
+void pushParticles(Stage* stage);
 
 bool initContext();
 
@@ -193,6 +194,10 @@ int main(int argc, char* argv[])
     Stage* stage = new Stage(STAGE_STARTING_LOCATION, cubeVAO);
     stage->_scale = vec3(STAGE_INITIAL_SCALE);
 
+    // Create particle emitter
+    Emitter emitter = Emitter(cubeVAO, particleTexture, particleTexture);
+    stage->particleEmitter = &emitter;
+
     // Landscape
     for (int chunk = 0; chunk < 30; chunk++) {
         if (chunk >= 20) {
@@ -280,6 +285,9 @@ int main(int argc, char* argv[])
 
     pushMobs(stage);
 
+    // Add particles
+    pushParticles(stage);
+
     // Add sun
     Sun* sun = new Sun(sunTexture, moonTexture);
     stage->sun = sun;
@@ -340,9 +348,6 @@ int main(int argc, char* argv[])
 
 
     mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
-
-    Emitter emitter = Emitter(cubeVAO, particleTexture, particleTexture);
-    stage->particleEmitter = &emitter;
 
     // Sound settings
     ISoundEngine* soundEngine = createIrrKlangDevice();
@@ -1384,4 +1389,9 @@ void pushMobs(Stage* stage) {
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation around x
         glm::scale(mat4(1.0f), vec3(1.0f)), 6));
 
+}
+
+void pushParticles(Stage* stage) {
+    stage->setFlameParticle(vec3(5.0f, 0.0f, 50.0f));
+    stage->setFlameParticle(vec3(-5.0f, 0.0f, 50.0f));
 }

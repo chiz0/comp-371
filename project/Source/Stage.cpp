@@ -58,6 +58,20 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
         }
         sun->progress = _position.z;
         sun->update(eventQueue, dt);
+        for (int i = fires.size() - 1; i >= 0; i--) {
+            if (fires[i].z + CAMERA_OFFSET.z < _position.z) {
+                fires.erase(fires.begin() + i);
+            }
+        }
+
+        for (int i = fires.size() - 1; i >= 0; i--) {
+            if (fires[i].z < _position.z + FAR_PLANE) {
+                particleEmitter->EmitFlame(fires[i], DEFAULT_FLAME_AMOUNT, DEFAULT_FLAME_FORCE);
+            }
+            if (fires[i].z + CAMERA_OFFSET.z < _position.z / _scale.z) {
+                fires.erase(fires.begin() + i);
+            }
+        }
         particleEmitter->update(eventQueue, dt);
         break;
     }
@@ -76,6 +90,15 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
         }
         sun->progress = _position.z;
         sun->update(eventQueue, dt);
+
+        for (int i = fires.size() - 1; i >= 0; i--) {
+            if (fires[i].z < _position.z + FAR_PLANE) {
+                particleEmitter->EmitFlame(fires[i], DEFAULT_FLAME_AMOUNT, DEFAULT_FLAME_FORCE);
+            }
+            if (fires[i].z + CAMERA_OFFSET.z < _position.z / _scale.z) {
+                fires.erase(fires.begin() + i);
+            }
+        }
         particleEmitter->update(eventQueue, dt);
         break;
     }
@@ -104,7 +127,7 @@ void Stage::attachTerrain(TerrainComponent terrain, vec3 position) {
 }
 
 void Stage::setFlameParticle(vec3 position) {
-    particleEmitter->EmitFlame(position, DEFAULT_FLAME_AMOUNT, DEFAULT_FLAME_FORCE);
+    fires.push_back(position);
 }
 
 void Stage::attachModel(Model model) {
