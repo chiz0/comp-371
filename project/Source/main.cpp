@@ -684,50 +684,8 @@ int main(int argc, char* argv[])
         Score.Draw(&shaderManager);
         Colon.Draw(&shaderManager);
         
-        /*
-        ZeroSec.Draw(&shaderManager);
-        TwoSec.Draw(&shaderManager);
-        ThreeSec.Draw(&shaderManager);
-        FourSec.Draw(&shaderManager);
-        FiveSec.Draw(&shaderManager);
-        SixSec.Draw(&shaderManager);
-        SevenSec.Draw(&shaderManager);
-        EightSec.Draw(&shaderManager);
-        NineSec.Draw(&shaderManager);
-       
-       
-        if (glfwGetTime() > 0&& glfwGetTime()<1)
-        {
-            ZeroSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
-        }
-        if (glfwGetTime() > 1&& glfwGetTime()<2)
-        {
-            ZeroSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
-            OneSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
-        }
-        if (glfwGetTime() > 2 && glfwGetTime() < 3)
-        {
-            OneSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
-            TwoSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
-        }
-        if (glfwGetTime() > 3 && glfwGetTime() < 4)
-        {
-            TwoSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
-            ThreeSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
-        }
-        if (glfwGetTime() > 4 && glfwGetTime() < 5)
-        {
-            ThreeSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
-            FourSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
-        }
-        if (glfwGetTime() > 5 && glfwGetTime() < 6)
-        {
-            FourSec.Move(vec3(cameraPosition.x + 910, cameraPosition.y + 8, cameraPosition.z - 23));
-            FiveSec.Move(vec3(cameraPosition.x + 10, cameraPosition.y + 8, cameraPosition.z - 23));
-        }
-        */
         int i = glfwGetTime();
-        char* models[10] = { MODEL_PATH_ZERO,MODEL_PATH_ONE,MODEL_PATH_TWO,MODEL_PATH_THREE,MODEL_PATH_FOUR,MODEL_PATH_FIVE,MODEL_PATH_SIX,MODEL_PATH_SEVEN };
+        char* models[10] = { MODEL_PATH_ZERO,MODEL_PATH_ONE,MODEL_PATH_TWO,MODEL_PATH_THREE,MODEL_PATH_FOUR,MODEL_PATH_FIVE,MODEL_PATH_SIX,MODEL_PATH_SEVEN,MODEL_PATH_EIGHT,MODEL_PATH_NINE };
         char* modelSecondsOnes = models[i % 10];
         char* modelSecondsTens = models[i / 10 % 10];
         char* modelMinutesOnes = models[i / 60 % 10];
@@ -738,6 +696,7 @@ int main(int argc, char* argv[])
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
             glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+        
         Model ZeroTen = Model(modelSecondsTens,
             glm::translate(mat4(1.0f), vec3(cameraPosition.x + 9, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
@@ -748,10 +707,16 @@ int main(int argc, char* argv[])
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
             glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
             glm::scale(mat4(1.0f), vec3(1.5f)), 3);
+        Model ZeroMin2nd = Model(modelMinutesOnes,
+            glm::translate(mat4(1.0f), vec3(cameraPosition.x + 6, cameraPosition.y + 8, cameraPosition.z - 23)) *    //Position
+            glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+            glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+            glm::scale(mat4(1.0f), vec3(1.5f)), 3);
       
         ZeroSec.Draw(&shaderManager);
         ZeroTen.Draw(&shaderManager);
         ZeroMin.Draw(&shaderManager);
+        ZeroMin2nd.Draw(&shaderManager);
 
         // End Frame
         glfwSwapBuffers(window);
