@@ -342,7 +342,8 @@ int main(int argc, char* argv[])
     shaderManager.setFloat("shininess", SHININESS);
     shaderManager.setInt("depthMap", 1);
 
-
+   
+  
     mat4 shadowProjection = perspective(radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
     Emitter emitter = Emitter(cubeVAO, particleTexture, particleTexture);
@@ -358,7 +359,11 @@ int main(int argc, char* argv[])
     ISound* bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
 
     int world = 0;
-    
+    Model seven = Model(MODEL_PATH_SEVEN,
+        glm::translate(mat4(1.0f), vec3(cameraPosition.x - 10, cameraPosition.y + 15, cameraPosition.z - 34)) *    //Position
+        glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation
+        glm::scale(mat4(1.0f), vec3(1.5f)), 3);
    
     // Entering Game Loop
     while (!glfwWindowShouldClose(window))
@@ -378,7 +383,7 @@ int main(int argc, char* argv[])
                 eventQueue.erase(eventQueue.begin() + i);
             }
         }
-
+        
         // Delete flagged entities
         for (int i = gameEntities.size() - 1; i >= 0; i--) {
             if (gameEntities.at(i)->destroyFlag) {
@@ -386,7 +391,8 @@ int main(int argc, char* argv[])
                 gameEntities.erase(gameEntities.begin() + i);
             }
         }
-
+        
+      
         // Process current frame events
         for (Event event : currentFrameEvents) {
             switch (event) {
@@ -526,7 +532,7 @@ int main(int argc, char* argv[])
         }
         emitter.Update(dt);
         pushUi(stage1, cameraPosition, shaderManager, glfwGetTime());
-
+        seven.Draw(&shaderManager);
         // Clear Depth Buffer Bit
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -564,7 +570,7 @@ int main(int argc, char* argv[])
         }
 
         drawScene(shadowShaderManager, renderingMode, &gameEntities);
-
+       
         // Update and draw particles
         emitter.Draw(shadowShaderManager);
 
@@ -1439,7 +1445,7 @@ void pushUi(Stage* stage, vec3 cam, ShaderManager shaderManager, int count) {
     char* modelMinutesOnes = models[count / 60 % 10];
     char* modelMinutesTens = models[count / 600 % 10];
     //seconds
-    stage->attachModel(Model(modelSecondsOnes,
+    stage->attachModel(Model(MODEL_PATH_ZERO,
         glm::translate(mat4(1.0f), vec3(cam.x - 10, cam.y + 15, cam.z + 10)) *    //Position
         glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *       //Orientation
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		    //Orientation

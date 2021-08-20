@@ -25,14 +25,15 @@ public:
     void Draw(ShaderManager* shader);
 
     int _chunk = 0;
-    mat4 anchorMatrix;
+    mat4 anchorMatrix=mat4(1.0f);;
+    
 private:
     // model data
     vector<Mesh> meshes;
     vector<Texture> textures_loaded;
     string directory;
     mat4 position;
-
+    
     void loadModel(string path);
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);
