@@ -140,8 +140,6 @@ constexpr char* MODEL_PATH_GHAST = "../Assets/Models/Ghast/ghast.obj";
 constexpr char* MODEL_PATH_ENDTOWER = "../Assets/Models/EndTower/block.obj";
 constexpr char* MODEL_PATH_EGG = "../Assets/Models/Egg/egg.obj";
 constexpr char* MODEL_PATH_FDRAGON = "../Assets/Models/Dragon/fancy/enderdragon.obj";
-constexpr char* MODEL_PATH_WATER = "../Assets/Models/Dragon/Water/water.obj";
-constexpr char* MODEL_PATH_LAVA = "../Assets/Models/Dragon/Lava/lava.obj";
 
 // AUDIO
 constexpr char* AUDIO_PATH_MUSIC = "../Assets/Audio/mii.ogg";

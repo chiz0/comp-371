@@ -1263,12 +1263,6 @@ void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObj
 
 void pushMobs(Stage* stage) {
 
-    stage->attachModel(Model(MODEL_PATH_WATER,
-        glm::translate(mat4(1.0f), vec3(0.0f, 0, 60.0f)) *                     //Position
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
-        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *	  //Orientation
-        glm::scale(mat4(1.0f), vec3(1.0f)), 1));
-
     //4TH chunk mobs
     stage->attachModel(Model(MODEL_PATH_COW,
         glm::translate(mat4(1.0f), vec3(10.0f, 2.5f, 60.0f)) *                    //Position
