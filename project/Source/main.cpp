@@ -342,10 +342,19 @@ int main(int argc, char* argv[])
 
     //chunk 10
     stage->attachTerrain(TerrainComponent(generatePortal(), whiteColour, obsidianTexture, 9), vec3(-4, 5, 199));
+    stage->attachModel(Model(MODEL_PATH_LIT,
+        glm::translate(mat4(1.0f), vec3(0, 5, 199))*                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*	  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(4.0f, 4.0f, 0.1f)), 9));	  //Scale
 
     // Chunk 20
-    stage->attachTerrain(TerrainComponent(DESCRIPTION_PORTAL, whiteColour, obsidianTexture, 19), vec3(-4, 5, 399));
-
+    stage->attachTerrain(TerrainComponent(generatePortal(), whiteColour, endPortalTexture, 19), vec3(-4, 5, 399));
+    stage->attachModel(Model(MODEL_PATH_LIT,
+        glm::translate(mat4(1.0f), vec3(0, 5, 399))*                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f))*	  //Orientation around x
+        glm::scale(mat4(1.0f), vec3(4.0f, 4.0f, 0.1f)), 19));	  //Scale
     // Add mobs
     pushMobs(stage);
 
@@ -508,6 +517,7 @@ int main(int argc, char* argv[])
                 break;
             }
             case GAME_START: {
+                glClearColor(worldSkyColours[0].x, worldSkyColours[0].y, worldSkyColours[0].z, worldSkyColours[0].a);
                 stage->speed = INITIAL_STAGE_SPEED;
                 stage->currentWorld = 0;
                 eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
@@ -730,6 +740,7 @@ int main(int argc, char* argv[])
         }
         
         if (!gameStarted) {
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
             shaderManager.setFloat("ignoreLighting", true);
             glActiveTexture(GL_TEXTURE0);
@@ -744,6 +755,7 @@ int main(int argc, char* argv[])
         }
 
         if (gameFinished) {
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             shaderManager.setFloat("ignoreLighting", true);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, thankyouTexture);
@@ -1154,6 +1166,7 @@ bool initContext() {     // Initialize GLFW and OpenGL version
         return false;
     }
     glfwMakeContextCurrent(window);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Initialize GLEW
     glewExperimental = true; // Needed for core profile
