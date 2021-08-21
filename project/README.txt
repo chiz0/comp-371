@@ -10,6 +10,11 @@ Welcome to SuperHyperCube - Copyright Infringement Edition
 Presented by Team Spiral Staircase
 --------------------------------------------------------------------------------------------------------
 
+IMPORTANT
+--------------------------------------------------------------------------------------------------------
+When building this project, please ensure you target x64 in the Visual Studio configuration manager.
+
+
 OVERVIEW
 --------------------------------------------------------------------------------------------------------
 In this game, the player is presented with a randomly generated shape built of several cubic voxels, and
