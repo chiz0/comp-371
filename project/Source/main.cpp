@@ -13,7 +13,6 @@
 //
 //  Theodor
 // -
-// 
 //  Alexander
 // - Particle effects
 // - Audio
@@ -24,9 +23,10 @@
 // - Dynamic User Interface that displays time and score
 // - UI keeps a fixed distance with camera 
 // - Created the UI models using blender
-// 
+//
 //  Chi
-// -
+// - Game loop and event queue system
+// - Shape and wall classes and animations
 
 // Preprocessor macros
 // Standard library
@@ -58,7 +58,6 @@
 #include "Constants.h"
 #include "Shape.h"
 #include "ShaderManager.h"
-#include "ControlState.h"
 #include "Wall.h"
 #include "Emitter.h"
 #include "Stage.h"

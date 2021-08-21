@@ -2,11 +2,8 @@
 #include <string>
 #include <glm/glm.hpp>
 #include <vector>
-#include "Coordinates.h"
 #include "Shape.h"
 #include "Model.h"
-
-
 
 vector<Shape> shapes;
 vector<Shape> owChunks[30];
