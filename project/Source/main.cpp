@@ -213,7 +213,9 @@ int main(int argc, char* argv[])
             stage->attachTerrain(TerrainComponent(DESCRIPTION_GRASS_HILL, whiteColour, endStoneTexture, chunk), vec3(0, 0, chunk * 20));
         }
         else if (chunk >= 10) {
-            stage->attachTerrain(TerrainComponent(DESCRIPTION_GRASS_HILL, whiteColour, netherrackTexture, chunk), vec3(0, 0, chunk * 20));
+            if (chunk != 14 && chunk != 15) {
+                stage->attachTerrain(TerrainComponent(DESCRIPTION_GRASS_HILL, whiteColour, netherrackTexture, chunk), vec3(0, 0, chunk * 20));
+            }
         }
         else {
             stage->attachTerrain(TerrainComponent(DESCRIPTION_GRASS_HILL, whiteColour, grassTexture, chunk), vec3(0, 0, chunk * 20));
@@ -250,8 +252,8 @@ int main(int argc, char* argv[])
     stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 1), vec3(-18, 10, 39));
     stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 1), vec3(19, 5, 26));
     stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 1), vec3(19, 10, 26));
-    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 1), vec3(14, 5, 36));
-    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 1), vec3(14, 10, 36));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 1), vec3(15, 5, 37));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 1), vec3(15, 10, 37));
 
     stage->attachTerrain(TerrainComponent(DESCRIPTION_CUT_PLANKS, whiteColour, planksTexture, 1), vec3(0, 1, 36));
     stage->attachTerrain(TerrainComponent(DESCRIPTION_CUT_PLANKS, whiteColour, planksTexture, 1), vec3(10, 3, 29));
@@ -263,8 +265,8 @@ int main(int argc, char* argv[])
     stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 2), vec3(-18, 10, 59));
     stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 2), vec3(19, 5, 46));
     stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 2), vec3(19, 10, 46));
-    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 2), vec3(14, 5, 56));
-    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 2), vec3(14, 10, 56));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_TRUNK, whiteColour, logTexture, 2), vec3(15, 5, 57));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, leavesTexture, 2), vec3(15, 10, 57));
 
     stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, rockTexture, 2), vec3(0, 1, 56));
     stage->attachTerrain(TerrainComponent(DESCRIPTION_ROCK_FORMATION, whiteColour, rockTexture, 2), vec3(10, 3, 49));
@@ -1567,12 +1569,14 @@ void pushMobs(Stage* stage) {
         glm::translate(mat4(1.0f), vec3(-12.0f, 8.5f, 266.0f)) *                     //Position
         glm::rotate(mat4(1.0f), radians(120.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *	  //Orientation around x
-        glm::scale(mat4(1.0f), vec3(0.5f)), 13));
+        glm::scale(mat4(1.0f), vec3(5)), 13));
+    stage->setFlameParticle(vec3(-12.0f, 8.5f, 266.0f));
     stage->attachModel(Model(MODEL_PATH_BLAZE,
         glm::translate(mat4(1.0f), vec3(-15.0f, 11.25f, 269.0f)) *                     //Position
         glm::rotate(mat4(1.0f), radians(80.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation around y
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *	  //Orientation around x
-        glm::scale(mat4(1.0f), vec3(0.5f)), 13));  	//chunk 17 + 18
+        glm::scale(mat4(1.0f), vec3(5)), 13));  	//chunk 17 + 18
+    stage->setFlameParticle(vec3(-15.0f, 11.25f, 269.0f));
     stage->attachModel(Model(MODEL_PATH_GHAST,
         glm::translate(mat4(1.0f), vec3(10.0f, 3.5f, 340.0f)) *                     //Position
         glm::rotate(mat4(1.0f), radians(-120.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation

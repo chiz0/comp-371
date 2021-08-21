@@ -40,15 +40,15 @@ constexpr float DIFFICULTY_SPEED_MAX = 4.0f;				// How much to increment the wal
 constexpr int WORLDS = 3;                                   // Number of worlds in the game (overworld, nether, end)
 
 // Lighting
-constexpr float LIGHT_AMBIENT_STRENGTH = 0.1f;				// Intensity of the ambient light
-constexpr float LIGHT_DIFFUSE_STRENGTH = 0.6f;				// Intensity of the diffuse light
+constexpr float LIGHT_AMBIENT_STRENGTH = 0.4f;				// Intensity of the ambient light
+constexpr float LIGHT_DIFFUSE_STRENGTH = 0.5f;				// Intensity of the diffuse light
 constexpr float LIGHT_SPECULAR_STRENGTH = 0.9f;				// Intensity of the specular light
 constexpr float SHININESS = 4.0f;							// Shininess coefficient of specular light
 constexpr vec3 LIGHT_COLOUR_DAY = vec3(1.0f, 1.0f, 1.0f);	// Ambient colour in daytime
 constexpr vec3 LIGHT_COLOUR_NIGHT = vec3(0.1f, 0.1f, 0.4f);	// Ambient colour in night time
 constexpr vec3 LIGHT_COLOUR_NETHER = vec3(1.0f, 0.3f, 0.3f);// Ambient colour in the nether
 constexpr vec3 LIGHT_COLOUR_END = vec3(1.0f, 1.0f, 1.0f);	// Ambient colour in the end
-constexpr float AMBIENT_BOOST = 7.0f;                       // A value 1.0f - 10.0f to increase the ambient lighting of shapes and walls
+constexpr float AMBIENT_BOOST = 3.0f;                       // A value 1.0f - 10.0f to increase the ambient lighting of shapes and walls
 constexpr vec4 worldSkyColours[WORLDS] = {
     vec4(0.529f, 0.808f, 0.922f, 1.0f),                     // Overworld sky colour
     vec4(0.40f, 0.208f, 0.222f, 1.0f),                      // Nether sky colour
