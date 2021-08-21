@@ -518,6 +518,7 @@ int main(int argc, char* argv[])
             }
             case GAME_START: {
                 glClearColor(worldSkyColours[0].x, worldSkyColours[0].y, worldSkyColours[0].z, worldSkyColours[0].a);
+                glClear(GL_COLOR_BUFFER_BIT);
                 stage->speed = INITIAL_STAGE_SPEED;
                 stage->currentWorld = 0;
                 eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
@@ -741,6 +742,7 @@ int main(int argc, char* argv[])
         
         if (!gameStarted) {
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
             glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
             shaderManager.setFloat("ignoreLighting", true);
             glActiveTexture(GL_TEXTURE0);
@@ -750,12 +752,13 @@ int main(int argc, char* argv[])
             shaderManager.setMat4("viewMatrix", orthoMatrix);
             mat4 modelMatrix = translate(mat4(1), vec3(VIEW_WIDTH / 2, VIEW_HEIGHT / 2, 3.0f)) * scale(mat4(1), vec3(VIEW_WIDTH, VIEW_HEIGHT, 0.1f));
             shaderManager.setMat4("worldMatrix", modelMatrix);
-            glDrawArrays(renderingMode, 0, 36);
+            glDrawArrays(renderingMode, 18, 6);
             shaderManager.setFloat("ignoreLighting", false);
         }
 
         if (gameFinished) {
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
             shaderManager.setFloat("ignoreLighting", true);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, thankyouTexture);
@@ -764,7 +767,7 @@ int main(int argc, char* argv[])
             shaderManager.setMat4("viewMatrix", orthoMatrix);
             mat4 modelMatrix = translate(mat4(1), vec3(VIEW_WIDTH / 2, VIEW_HEIGHT / 2, 3.0f)) * scale(mat4(1), vec3(VIEW_WIDTH, VIEW_HEIGHT, 0.1f));
             shaderManager.setMat4("worldMatrix", modelMatrix);
-            glDrawArrays(renderingMode, 0, 36);
+            glDrawArrays(renderingMode, 18, 6);
             shaderManager.setFloat("ignoreLighting", false);
         }
 
