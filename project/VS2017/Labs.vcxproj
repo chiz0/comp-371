@@ -202,13 +202,10 @@
     <ClCompile Include="..\Source\Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Source\ControlState.h" />
-    <ClInclude Include="..\Source\Environment.h" />
     <ClInclude Include="..\Source\GameObject.h" />
     <ClInclude Include="..\Source\Sun.h" />
     <ClInclude Include="..\Source\TerrainComponent.h" />
     <ClInclude Include="..\Source\ScheduledEvent.h" />
-    <ClInclude Include="..\Source\Coordinates.h" />
     <ClInclude Include="..\Source\BurstParticle.h" />
     <ClInclude Include="..\Source\Emitter.h" />
     <ClInclude Include="..\Source\FlameParticle.h" />
