@@ -12,7 +12,11 @@
 // CONTRIBUTIONS
 //
 //  Theodor
-// -
+// - Creating the game map
+// - Setting game mobs
+// - Making some of the models using blender
+// - Making the video
+// 
 //  Alexander
 // - Particle effects
 // - Audio
