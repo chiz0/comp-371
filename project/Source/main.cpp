@@ -16,7 +16,7 @@
 // - Setting game mobs
 // - Making some of the models using blender
 // - Making the video
-// 
+// -
 //  Alexander
 // - Particle effects
 // - Audio
@@ -66,7 +66,6 @@
 #include "Emitter.h"
 #include "Stage.h"
 #include "TerrainComponent.h"
-#include "Environment.h"
 
 
 using namespace glm;
@@ -94,6 +93,7 @@ GLuint setupModelVBO(string path, int& vertexCount);
 void drawScene(ShaderManager shaderManager, GLenum renderingMode, vector<GameObject*>* gameEntities);
 void pushMobs(Stage* stage);
 void pushParticles(Stage* stage);
+vector<ivec3> generateNetherTemple(Stage* stage);
 
 bool initContext();
 
@@ -345,7 +345,7 @@ int main(int argc, char* argv[])
     stage->attachTerrain(TerrainComponent(DESCRIPTION_TREE_LEAVES, whiteColour, warpLeavesTexture, 18), vec3(14, 10, 376));
 
     //chunk 10
-    stage->attachTerrain(TerrainComponent(generatePortal(), whiteColour, obsidianTexture, 9), vec3(-4, 5, 199));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_PORTAL, whiteColour, obsidianTexture, 9), vec3(-4, 5, 199));
     stage->attachModel(Model(MODEL_PATH_LIT,
         glm::translate(mat4(1.0f), vec3(0, 5, 199))*                     //Position
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
@@ -353,7 +353,7 @@ int main(int argc, char* argv[])
         glm::scale(mat4(1.0f), vec3(4.0f, 4.0f, 0.1f)), 9));	  //Scale
 
     // Chunk 20
-    stage->attachTerrain(TerrainComponent(generatePortal(), whiteColour, endPortalTexture, 19), vec3(-4, 5, 399));
+    stage->attachTerrain(TerrainComponent(DESCRIPTION_PORTAL, whiteColour, endPortalTexture, 19), vec3(-4, 5, 399));
     stage->attachModel(Model(MODEL_PATH_LIT,
         glm::translate(mat4(1.0f), vec3(0, 5, 399))*                     //Position
         glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f))*          //Orientation around y
@@ -1726,4 +1726,199 @@ void pushParticles(Stage* stage) {
     stage->setFlameParticle(vec3(-10.0f, 0.0f, WORLD_SIZE / stage->_scale.z + 50.0f));
     stage->setFlameParticle(vec3(-15.0f, 0.0f, WORLD_SIZE / stage->_scale.z + 150.0f));
     stage->setFlameParticle(vec3(15.0f, 0.0f, WORLD_SIZE / stage->_scale.z + 75.0f));
+}
+
+vector<ivec3> generateNetherTemple(Stage* stage) {
+    vector<ivec3> netherTemple;
+    netherTemple.push_back({ 0, 0, 0 });
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(-14.0f, 4.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 14));
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(-14.0f, 4.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 15));
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(14.0f, 4.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 14));
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(14.0f, 4.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 15));
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(-14.0f, 15.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 14));
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(-14.0f, 15.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 15));
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(14.0f, 15.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 14));
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(14.0f, 15.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 0.0f, 19.0f)), 15));
+
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(19.5f, -4.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.0f, 10.0f, 19.0f)), 14));
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(19.5f, -4.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.0f, 10.0f, 19.0f)), 15));
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(-19.5f, -4.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.0f, 10.0f, 19.0f)), 14));
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(-19.5f, -4.5f, 299.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(0.0f, 10.0f, 19.0f)), 15));
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(14.0f, -5.5f, 279.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 10.0f, 0.0f)), 14));
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(-14.0f, -5.5f, 279.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 10.0f, 0.0f)), 14));
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(14.0f, -5.5f, 318.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 10.0f, 0.0f)), 15));
+
+    stage->attachModel(Model(MODEL_PATH_BLOCK,
+        glm::translate(mat4(1.0f), vec3(-14.0f, -5.5f, 318.5f)) *                     //Position
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+        glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+        glm::scale(mat4(1.0f), vec3(6.5f, 10.0f, 0.0f)), 15));
+
+
+    for (int i = 0; i < 15; i++) {
+        netherTemple.push_back({ 7, i, 0 });
+        netherTemple.push_back({ -7, i, 0 });
+        netherTemple.push_back({ 7, i, 39 });
+        netherTemple.push_back({ -7, i, 39 });
+    }
+    for (int i = 7; i < 21; i++) {
+        netherTemple.push_back({ i, 14, 0 });
+        netherTemple.push_back({ -i, 14, 0 });
+        netherTemple.push_back({ i, 14, 39 });
+        netherTemple.push_back({ -i, 14, 39 });
+        if (i % 2 == 1) {
+            netherTemple.push_back({ i, 15, 0 });
+            netherTemple.push_back({ -i, 15, 0 });
+            netherTemple.push_back({ i, 15, 39 });
+            netherTemple.push_back({ -i, 15, 39 });
+        }
+
+        if (i % 6 == 3) {
+            stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+                glm::translate(mat4(1.0f), vec3(3 + i, 15.5f, 281.0f)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(0.5f)), 14));
+            stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+                glm::translate(mat4(1.0f), vec3(-3 - i, 15.5f, 281.0f)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(180.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(0.5f)), 14));
+
+            stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+                glm::translate(mat4(1.0f), vec3(-i, 15.5f, 318.0f)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+            stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+                glm::translate(mat4(1.0f), vec3(i, 15.5f, 318.0f)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+        }
+    }
+
+    for (int i = 1; i < 39; i++) {
+        netherTemple.push_back({ 7, 14, i });
+        netherTemple.push_back({ -7, 14, i });
+        netherTemple.push_back({ 7, 3, i });
+        netherTemple.push_back({ -7, 3, i });
+
+        if (i % 2 == 0) {
+            netherTemple.push_back({ 7, 15, i });
+            netherTemple.push_back({ -7, 15, i });
+            netherTemple.push_back({ 7, 4, i });
+            netherTemple.push_back({ -7, 4, i });
+        }
+
+        if (i % 6 == 3) {
+
+            stage->attachModel(Model(MODEL_PATH_BLAZE,
+                glm::translate(mat4(1.0f), vec3(-12.0f, 8.5f, 280.5f + i)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(5)), 15));
+            stage->attachModel(Model(MODEL_PATH_BLAZE,
+                glm::translate(mat4(1.0f), vec3(12.0f, 8.5f, 280.5f + i)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(5)), 15));
+        }
+
+        if (i % 10 == 1) {
+
+            stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+                glm::translate(mat4(1.0f), vec3(-10.0f, 15.5f, 281.5f + i)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+            stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+                glm::translate(mat4(1.0f), vec3(8.0f, 15.5f, 281.5f + i)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+
+
+            stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+                glm::translate(mat4(1.0f), vec3(-10.0f, 4.5f, 281.5f + i)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+            stage->attachModel(Model(MODEL_PATH_WITHERSKELETON,
+                glm::translate(mat4(1.0f), vec3(8.0f, 4.5f, 281.5f + i)) *                     //Position
+                glm::rotate(mat4(1.0f), radians(-90.0f), vec3(0.0f, 1.0f, 0.0f)) *          //Orientation
+                glm::rotate(mat4(1.0f), radians(0.0f), vec3(1.0f, 0.0f, 0.0f)) *		  //Orientation
+                glm::scale(mat4(1.0f), vec3(0.5f)), 15));
+        }
+    }
+    return netherTemple;
 }
