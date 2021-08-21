@@ -68,7 +68,6 @@
 using namespace glm;
 using namespace std;
 using namespace irrklang;
-#include "texture.h"
 #include "OBJloader.h"    //For loading .obj files
 #include "OBJloaderV2.h"  //For loading .obj files using a polygon list format
 
