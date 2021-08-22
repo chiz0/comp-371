@@ -126,6 +126,7 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
         }
         if (finished) {
             state = IDLE;
+            eventQueue->push_back({ SHAPE_CREATED, 0 });
         }
         break;
     }
@@ -179,13 +180,16 @@ void Shape::update(vector<ScheduledEvent>* eventQueue, double dt) {
         userInputResponse = true;
         break;
     }
+    case ABOUT_TO_COLLIDE: {
+        userInputResponse = false;
+        break;
+    }
     }
 }
 
 void Shape::processEvent(Event event) {
     if (userInputResponse) {
         switch (event) {
-
         case INPUT_UP: {
             previousOrientation = _orientation;
             slerpProgress = 0.0f;
@@ -225,6 +229,15 @@ void Shape::processEvent(Event event) {
     case DESTROY_SHAPE_AND_WALL: {
         state = ANIMATE_DESTRUCTION;
         timer = 0;
+        break;
+    }
+    case COLLISION_IMMINENT: {
+        state = ABOUT_TO_COLLIDE;
+        break;
+    }
+    case UNLOCK_SHAPE_ROTATION: {
+        state = IDLE;
+        break;
     }
     }
 }

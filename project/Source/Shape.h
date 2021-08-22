@@ -41,6 +41,7 @@ public:
         ANIMATE_CREATION,
         ANIMATE_DESTRUCTION,
         ANIMATE_ROTATE,
+        ABOUT_TO_COLLIDE
     } state = INITIALIZED;
     vec3 _position;
     quat _orientation = quat();

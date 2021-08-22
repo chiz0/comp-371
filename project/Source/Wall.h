@@ -53,7 +53,7 @@ public:
     float speed = 0;
     Emitter* particleEmitter;
     const float ANIMATE_CREATION_VOXEL_FALL_HEIGHT = 30.0f;
-    const float ANIMATE_CREATION_MOVE_SPEED = 50.0f;
+    const float ANIMATE_CREATION_MOVE_SPEED = 30.0f;
     const float ANIMATE_CREATION_VOXEL_INTERVAL = 3.0f;
     const float ANIMATE_CREATION_SIMULTANEOUS_ROWS = 3.0f;
     const float ANIMATE_DESTRUCTION_MOVE_SPEED = 2.0f;

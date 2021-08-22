@@ -62,7 +62,7 @@ void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {
     }
     case IDLE: {
         _position.z += speed * dt;
-        if (_position.z >= _shape->_position.z - 1) {
+        if (_position.z >= _shape->_position.z - 1.2f) {
             if (testCollision()) {
                 eventQueue->push_back({ LEVEL_SUCCESS, 0 });
                 state = SUCCESS;
@@ -75,6 +75,9 @@ void Wall::update(vector<ScheduledEvent>*eventQueue, double dt) {
                 state = FAILURE;
                 timer = 0;
             }
+        }
+        else if (_position.z >= _shape->_position.z - 1.5f) {
+            eventQueue->push_back({ COLLISION_IMMINENT, 0 });
         }
         displayPosition = _position;
         break;
@@ -128,6 +131,7 @@ void Wall::processEvent(Event event) {
     case DESTROY_SHAPE_AND_WALL_WORLD_TRANSITION: {
         state = SUCCESS;
         timer = 0;
+        break;
     }
     }
 }

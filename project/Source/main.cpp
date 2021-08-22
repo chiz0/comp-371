@@ -520,9 +520,22 @@ int main(int argc, char* argv[])
                 gameStarted = true;
                 break;
             }
+            case INPUT_KEY_R: {
+                if (gameFinished) {
+                    gameFinished = false;
+                    bgMusic = soundEngine->play2D(AUDIO_PATH_OVERWORLD, true, false, true);
+                    eventQueue.push_back({ GAME_START, 0 });
+                }
+                break;
+            }
             case GAME_START: {
+                timer = 0;
+                playerScore = 0;
+                pauseShapeCreation = false;
+                world = 0;
                 glClearColor(worldSkyColours[0].x, worldSkyColours[0].y, worldSkyColours[0].z, worldSkyColours[0].a);
                 glClear(GL_COLOR_BUFFER_BIT);
+                stage->_position = STAGE_STARTING_LOCATION;
                 stage->speed = INITIAL_STAGE_SPEED;
                 stage->currentWorld = 0;
                 eventQueue.push_back({ CREATE_SHAPE_AND_WALL, 0 });
@@ -531,6 +544,7 @@ int main(int argc, char* argv[])
 
             case CREATE_SHAPE_AND_WALL: {
                 if (!pauseShapeCreation) {
+                    stage->speed = stage->speed / 2;
                     vec3 shapeColour = vec3((float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f, (float)(rand() % 500) / 1000.0f + 0.5f);
                     Shape* newShape = new Shape(vec3(0), currentDifficulty, shapeColour, shapeTexture);
                     shapes.push_back(newShape);
@@ -547,6 +561,11 @@ int main(int argc, char* argv[])
             case DISPLAY_SHAPE: {
                 Shape* newShape = shapes.at(selectedShape);
                 gameEntities.push_back(newShape);
+                break;
+            }
+
+            case SHAPE_CREATED: {
+                stage->speed = stage->speed * 2;
                 break;
             }
 
@@ -569,6 +588,7 @@ int main(int argc, char* argv[])
             }
 
             case LEVEL_SUCCESS: {
+                eventQueue.push_back({ UNLOCK_SHAPE_ROTATION, 1 });
                 eventQueue.push_back({ DESTROY_SHAPE_AND_WALL, 3 });
                 currentDifficulty += stage->currentWorld + 1;
                 currentWallSpeed += currentWallSpeed >= DIFFICULTY_SPEED_MAX ? 0 : DIFFICULTY_SPEED_GROWTH;
@@ -614,7 +634,7 @@ int main(int argc, char* argv[])
                 if (world >= WORLDS) {
                     // End the game, VICTORY!
                     gameFinished = true;
-                    eventQueue.push_back({ EXIT_PROGRAM, 5 });
+                    eventQueue.clear();
                 }
                 else {
                     switch (world) {
@@ -646,9 +666,16 @@ int main(int argc, char* argv[])
                 break;
             }
 
+            case COLLISION_IMMINENT:
+            case UNLOCK_SHAPE_ROTATION: {
+                shapes[selectedShape]->processEvent(event);
+                break;
+            }
+
             case EXIT_PROGRAM: {
                 // Exit program
                 glfwSetWindowShouldClose(window, true);
+                break;
             }
             }
         }
@@ -794,7 +821,7 @@ int main(int argc, char* argv[])
 
             // Clamp camera angles
             cameraHorizontalAngle = std::max(60.0f, std::min(cameraHorizontalAngle, 120.0f));
-            cameraVerticalAngle = std::max(-30.0f, std::min(cameraVerticalAngle, 15.0f));
+            cameraVerticalAngle = std::max(-20.0f, std::min(cameraVerticalAngle, 15.0f));
 
             // Hacky modulus operation
             while (cameraHorizontalAngle > 360)
@@ -1221,6 +1248,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         eventQueue->push_back({ EXIT_PROGRAM, 0 });
+    }
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        eventQueue->push_back({ INPUT_KEY_R, 0 });
     }
 }
 

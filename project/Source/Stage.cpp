@@ -121,9 +121,6 @@ void Stage::update(vector<ScheduledEvent>* eventQueue, double dt) {
 
 void Stage::processEvent(Event event) {
     switch (event) {
-    case WORLD_TRANSITION:
-        destroyFlag = true;
-        break;
     }
 }
 
