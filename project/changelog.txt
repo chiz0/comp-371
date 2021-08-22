@@ -1,0 +1,7 @@
+2021-08-22
+- Added option to restart game upon completion
+- Adjusted vertical camera angle clamp to always keep UI within viewing angle
+- Earlier wall collision check
+- Lock shape rotation slightly before and after collision check
+- Slower wall construction animation
+- World movement slows down during wall construction
